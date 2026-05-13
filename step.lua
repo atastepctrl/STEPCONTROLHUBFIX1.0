@@ -1,78 +1,81 @@
--- [[ STEPCONTROL HUB - MAC-STYLE ULTRA PRECISION UI ]] --
+-- [[ STEPCONTROL HUB - PREMIUM EDITION (400-700 THB STYLE) ]] --
 
+local TweenService = game:GetService("TweenService")
 local targetParent = game:GetService("CoreGui")
 if not pcall(function() local a = game.CoreGui.Name end) then
     targetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
-if targetParent:FindFirstChild("StepControlHub") then
-    targetParent.StepControlHub:Destroy()
+if targetParent:FindFirstChild("StepControlPremium") then
+    targetParent.StepControlPremium:Destroy()
 end
 
--- 1. หน้าต่างรวมทั้งหมด (ScreenGui)
+-- 1. หน้าต่างหลัก (ScreenGui)
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "StepControlHub"
+ScreenGui.Name = "StepControlPremium"
 ScreenGui.Parent = targetParent
 ScreenGui.ResetOnSpawn = false
 
 -- 2. ตัวโครงเมนูหลัก (Main Frame)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 600, 0, 380) -- ขนาดกว้างสัดส่วนตรงตามภาพ
-MainFrame.Position = UDim2.new(0.5, -300, 0.5, -190)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- สีเทาเข้มเนื้อแมตต์แบบในภาพ
+MainFrame.Size = UDim2.new(0, 580, 0, 360)
+MainFrame.Position = UDim2.new(0.5, -290, 0.5, -180)
+MainFrame.BackgroundColor3 = Color3.fromRGB(13, 13, 15) -- สีดำเนื้อ Obsidian มืดลึกพรีเมียม
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
 local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.CornerRadius = UDim.new(0, 14)
 MainCorner.Parent = MainFrame
 
+-- ใส่เส้นขอบเรืองแสงจางๆ รอบตัวเมนูหลัก (Glow Border)
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Thickness = 1.5
+MainStroke.Color = Color3.fromRGB(30, 45, 35)
+MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+MainStroke.Parent = MainFrame
+
 -- ========================================================
--- [ ฝั่งซ้าย: SIDEBAR & MAC BUTTONS ]
+-- [ ฝั่งซ้าย: PREMIUM SIDEBAR ]
 -- ========================================================
 local Sidebar = Instance.new("Frame")
 Sidebar.Name = "Sidebar"
-Sidebar.Size = UDim2.new(0, 160, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(24, 24, 24) -- สี Sidebar มืดกว่าพื้นหลังขวา
+Sidebar.Size = UDim2.new(0, 150, 1, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(8, 8, 10) -- ดำเงาลึกเพื่อขับฝั่งขวาให้เด่น
 Sidebar.BorderSizePixel = 0
 Sidebar.Parent = MainFrame
 
 local SideCorner = Instance.new("UICorner")
-SideCorner.CornerRadius = UDim.new(0, 12)
+SideCorner.CornerRadius = UDim.new(0, 14)
 SideCorner.Parent = Sidebar
 
--- บล็อกสี่เหลี่ยมถมมุมขวาของ Sidebar ไม่ให้มนตามขอบหลัก
 local SidePatch = Instance.new("Frame")
-SidePatch.Size = UDim2.new(0, 12, 1, 0)
-SidePatch.Position = UDim2.new(1, -12, 0, 0)
-SidePatch.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+SidePatch.Size = UDim2.new(0, 14, 1, 0)
+SidePatch.Position = UDim2.new(1, -14, 0, 0)
+SidePatch.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
 SidePatch.BorderSizePixel = 0
 SidePatch.Parent = Sidebar
 
--- ปุ่ม 3 สีสไตล์ Mac OS (แดง, เหลือง, เขียว)
+-- ปุ่ม 3 สีสไตล์ Mac OS (Premium Finish)
 local MacButtons = Instance.new("Frame")
-MacButtons.Size = UDim2.new(0, 60, 0, 20)
+MacButtons.Size = UDim2.new(0, 50, 0, 12)
 MacButtons.Position = UDim2.new(0, 16, 0, 16)
 MacButtons.BackgroundTransparency = 1
 MacButtons.Parent = Sidebar
 
-local colors = {Color3.fromRGB(255, 95, 87), Color3.fromRGB(254, 188, 46), Color3.fromRGB(40, 200, 64)}
+local colors = {Color3.fromRGB(255, 90, 85), Color3.fromRGB(255, 190, 45), Color3.fromRGB(40, 205, 65)}
 for i, color in ipairs(colors) do
     local Dot = Instance.new("Frame")
-    Dot.Size = UDim2.new(0, 12, 0, 12)
-    Dot.Position = UDim2.new(0, (i-1) * 18, 0, 0)
+    Dot.Size = UDim2.new(0, 10, 0, 10)
+    Dot.Position = UDim2.new(0, (i-1) * 16, 0, 0)
     Dot.BackgroundColor3 = color
     Dot.BorderSizePixel = 0
     Dot.Parent = MacButtons
+    Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
     
-    local DotCorner = Instance.new("UICorner")
-    DotCorner.CornerRadius = UDim.new(1, 0) -- ทำเป็นทรงกลมเป๊ะๆ
-    DotCorner.Parent = Dot
-    
-    -- พิเศษ: กดปุ่มสีแดงเพื่อปิดสคริปต์ทันที
     if i == 1 then
         local CloseBtn = Instance.new("TextButton")
         CloseBtn.Size = UDim2.new(1, 0, 1, 0)
@@ -83,145 +86,235 @@ for i, color in ipairs(colors) do
     end
 end
 
--- หัวข้อหมวดหมู่ใน Sidebar (เช่น In-Game)
-local CategoryLabel = Instance.new("TextLabel")
-CategoryLabel.Text = "In-Game"
-CategoryLabel.Size = UDim2.new(1, -16, 0, 20)
-CategoryLabel.Position = UDim2.new(0, 16, 0, 45)
-CategoryLabel.TextColor3 = Color3.fromRGB(90, 90, 90) -- สีเทาจางตามภาพตัวอย่าง
-CategoryLabel.TextSize = 11
-CategoryLabel.Font = Enum.Font.SourceSansBold
-CategoryLabel.TextXAlignment = Enum.TextXAlignment.Left
-CategoryLabel.BackgroundTransparency = 1
-CategoryLabel.Parent = Sidebar
+-- ชื่อแบรนด์แบบมินิมอล (Brand Logo Text)
+local Brand = Instance.new("TextLabel")
+Brand.Text = "STEPCONTROL"
+Brand.Size = UDim2.new(1, -16, 0, 20)
+Brand.Position = UDim2.new(0, 16, 0, 42)
+Brand.TextColor3 = Color3.fromRGB(0, 230, 110) -- เขียวนีออนเกรดพรีเมียม
+Brand.TextSize = 13
+Brand.Font = Enum.Font.FredokaOne
+Brand.TextXAlignment = Enum.TextXAlignment.Left
+Brand.BackgroundTransparency = 1
+Brand.Parent = Sidebar
 
--- ปุ่มเมนูหลัก Auto Farm (ดีไซน์แถบสีเขียวนีออนตัดขอบมนยาว)
-local TabAutoFarm = Instance.new("TextButton")
-TabAutoFarm.Text = "  ⚡  Auto Farm"
-TabAutoFarm.Size = UDim2.new(1, -16, 0, 34)
-TabAutoFarm.Position = UDim2.new(0, 8, 0, 70)
-TabAutoFarm.BackgroundColor3 = Color3.fromRGB(0, 180, 70) -- สีเขียวสดระดับสายตาหลัก
-TabAutoFarm.TextColor3 = Color3.fromRGB(255, 255, 255)
-TabAutoFarm.Font = Enum.Font.SourceSansBold
-TabAutoFarm.TextSize = 13
-TabAutoFarm.TextXAlignment = Enum.TextXAlignment.Left
-TabAutoFarm.Parent = Sidebar
+-- ฟังก์ชันสำหรับสร้างปุ่มเมนูด้านซ้ายที่มีอนิเมชันสวยงาม
+local function CreateTab(name, icon, pos_y, active)
+    local Button = Instance.new("TextButton")
+    Button.Text = "  " .. icon .. "  " .. name
+    Button.Size = UDim2.new(1, -16, 0, 32)
+    Button.Position = UDim2.new(0, 8, 0, pos_y)
+    Button.TextColor3 = active and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(140, 140, 145)
+    Button.Font = Enum.Font.SourceSansBold
+    Button.TextSize = 13
+    Button.TextXAlignment = Enum.TextXAlignment.Left
+    Button.BorderSizePixel = 0
+    Button.Parent = Sidebar
+    Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 8)
 
-local TabCorner = Instance.new("UICorner")
-TabCorner.CornerRadius = UDim.new(0, 8)
-TabCorner.Parent = TabAutoFarm
+    if active then
+        Button.BackgroundColor3 = Color3.fromRGB(15, 45, 25)
+        local TabStroke = Instance.new("UIStroke", Button)
+        TabStroke.Color = Color3.fromRGB(0, 200, 90)
+        TabStroke.Thickness = 1
+    else
+        Button.BackgroundTransparency = 1
+    end
+
+    -- อนิเมชันเวลาเอาเมาส์มาชี้ (Hover EFFECT)
+    Button.MouseEnter:Connect(function()
+        if not active then
+            TweenService:Create(Button, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.9}):Play()
+            Button.BackgroundColor3 = Color3.fromRGB(0, 200, 90)
+        end
+    end)
+    Button.MouseLeave:Connect(function()
+        if not active then
+            TweenService:Create(Button, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(140, 140, 145), BackgroundTransparency = 1}):Play()
+        end
+    end)
+    return Button
+end
+
+CreateTab("Auto Farm", "⚡", 80, true)
+CreateTab("Auto Quest", "📜", 116, false)
+CreateTab("Dungeon/Raid", "⚔️", 152, false)
+CreateTab("Settings", "⚙️", 188, false)
 
 -- ========================================================
--- [ ฝั่งขวา: TOPBAR TITLE & CONTENT AREA ]
+-- [ ฝั่งขวา: HEADERS & PRESETS CONTROLS ]
 -- ========================================================
 local RightArea = Instance.new("Frame")
-RightArea.Name = "RightArea"
-RightArea.Size = UDim2.new(1, -160, 1, 0)
-RightArea.Position = UDim2.new(0, 160, 0, 0)
+RightArea.Size = UDim2.new(1, -150, 1, 0)
+RightArea.Position = UDim2.new(0, 150, 0, 0)
 RightArea.BackgroundTransparency = 1
 RightArea.Parent = MainFrame
 
--- แถบแสดงชื่อสคริปต์ด้านบนขวา
-local TitleBar = Instance.new("Frame")
-TitleBar.Size = UDim2.new(1, 0, 0, 50)
-TitleBar.BackgroundTransparency = 1
-TitleBar.Parent = RightArea
+local HeaderText = Instance.new("TextLabel")
+HeaderText.Text = "Attack on Titan Revolution  v2.4"
+HeaderText.Size = UDim2.new(1, -20, 0, 30)
+HeaderText.Position = UDim2.new(0, 20, 0, 15)
+HeaderText.TextColor3 = Color3.fromRGB(240, 240, 245)
+HeaderText.TextSize = 14
+HeaderText.Font = Enum.Font.SourceSansBold
+HeaderText.TextXAlignment = Enum.TextXAlignment.Left
+HeaderText.BackgroundTransparency = 1
+HeaderText.Parent = RightArea
 
-local Title = Instance.new("TextLabel")
-Title.Text = "STEPCONTROL HUB"
-Title.Size = UDim2.new(1, 0, 0, 25)
-Title.Position = UDim2.new(0, 0, 0, 12)
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 15
-Title.Font = Enum.Font.SourceSansBold
-Title.TextXAlignment = Enum.TextXAlignment.Center -- อยู่ตรงกลางเป๊ะตามสไตล์ Mac UI
-Title.BackgroundTransparency = 1
-Title.Parent = TitleBar
+-- พื้นที่วางตัวคอนโทรลแบบ Scrollable
+local Container = Instance.new("ScrollingFrame")
+Container.Size = UDim2.new(1, -30, 1, -65)
+Container.Position = UDim2.new(0, 20, 0, 50)
+Container.BackgroundTransparency = 1
+Container.BorderSizePixel = 0
+Container.ScrollBarThickness = 2
+Container.ScrollBarImageColor3 = Color3.fromRGB(40, 40, 45)
+Container.CanvasSize = UDim2.new(0, 0, 0, 350)
+Container.Parent = RightArea
 
-local SubTitle = Instance.new("TextLabel")
-SubTitle.Text = "Attack on Titan Revolution"
-SubTitle.Size = UDim2.new(1, 0, 0, 15)
-SubTitle.Position = UDim2.new(0, 0, 0, 28)
-SubTitle.TextColor3 = Color3.fromRGB(130, 130, 130) -- ตัวหนังสือซับไตเติ้ลสีเทาเล็ก
-SubTitle.TextSize = 11
-SubTitle.Font = Enum.Font.SourceSans
-SubTitle.TextXAlignment = Enum.TextXAlignment.Center
-SubTitle.BackgroundTransparency = 1
-SubTitle.Parent = TitleBar
+-- การแบ่งกลุ่มฟังก์ชันย่อย (Card Section)
+local Card = Instance.new("Frame")
+Card.Size = UDim2.new(1, -5, 0, 160)
+Card.BackgroundColor3 = Color3.fromRGB(18, 18, 22) -- การ์ดพื้นหลังฟังก์ชันสไตล์โมเดิร์น
+Card.BorderSizePixel = 0
+Card.Parent = Container
+Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 10)
 
--- พื้นที่แสดงผลคำสั่งต่างๆ (Container) พร้อม Scrollbar เลื่อนขึ้นลงได้แบบของจริง
-local ContentScroll = Instance.new("ScrollingFrame")
-ContentScroll.Size = UDim2.new(1, -20, 1, -65)
-ContentScroll.Position = UDim2.new(0, 10, 0, 55)
-ContentScroll.BackgroundTransparency = 1
-ContentScroll.BorderSizePixel = 0
-ContentScroll.ScrollBarThickness = 4
-ContentScroll.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60)
-ContentScroll.CanvasSize = UDim2.new(0, 0, 0, 400)
-ContentScroll.Parent = RightArea
+local CardStroke = Instance.new("UIStroke", Card)
+CardStroke.Color = Color3.fromRGB(25, 25, 30)
+CardStroke.Thickness = 1
 
--- หัวข้อ Game Options ในหน้าหลัก
-local SectionLabel = Instance.new("TextLabel")
-SectionLabel.Text = "🛠️ Game Options"
-SectionLabel.Size = UDim2.new(1, 0, 0, 30)
-SectionLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-SectionLabel.TextSize = 14
-SectionLabel.Font = Enum.Font.SourceSansBold
-SectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-SectionLabel.BackgroundTransparency = 1
-SectionLabel.Parent = ContentScroll
+local SectionTitle = Instance.new("TextLabel")
+SectionTitle.Text = "MAIN CONTROLLER"
+SectionTitle.Size = UDim2.new(1, -20, 0, 25)
+SectionTitle.Position = UDim2.new(0, 15, 0, 10)
+SectionTitle.TextColor3 = Color3.fromRGB(100, 105, 115) -- หัวข้อสีเทาสุขุม
+SectionTitle.TextSize = 11
+SectionTitle.Font = Enum.Font.SourceSansBold
+SectionTitle.TextXAlignment = Enum.TextXAlignment.Left
+SectionTitle.BackgroundTransparency = 1
+SectionTitle.Parent = Card
 
 -- ========================================================
--- [ ปุ่ม TOGGLE SWITCH ดีไซน์กลมมนแบบในภาพ ]
+-- [ ตัวเลือกที่ 1: PREMIUM TOGGLE SWITCH ]
 -- ========================================================
-local ToggleFrame = Instance.new("Frame")
-ToggleFrame.Size = UDim2.new(1, -10, 0, 40)
-ToggleFrame.Position = UDim2.new(0, 0, 0, 35)
-ToggleFrame.BackgroundTransparency = 1
-ToggleFrame.Parent = ContentScroll
+local ToggleLabel = Instance.new("TextLabel")
+ToggleLabel.Text = "Auto Farm Level"
+ToggleLabel.Size = UDim2.new(0, 200, 0, 30)
+ToggleLabel.Position = UDim2.new(0, 15, 0, 40)
+ToggleLabel.TextColor3 = Color3.fromRGB(220, 220, 225)
+ToggleLabel.TextSize = 13
+ToggleLabel.Font = Enum.Font.SourceSansBold
+ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+ToggleLabel.BackgroundTransparency = 1
+ToggleLabel.Parent = Card
 
-local ToggleText = Instance.new("TextLabel")
-ToggleText.Text = "Auto Retry (เปิดระบบท้าทายใหม่อัตโนมัติ)"
-ToggleText.Size = UDim2.new(0, 300, 1, 0)
-ToggleText.TextColor3 = Color3.fromRGB(230, 230, 230)
-ToggleText.TextSize = 13
-ToggleText.Font = Enum.Font.SourceSans
-ToggleText.TextXAlignment = Enum.TextXAlignment.Left
-ToggleText.BackgroundTransparency = 1
-ToggleText.Parent = ToggleFrame
-
--- ตัวสวิตช์วงรี (Switch BG)
 local Switch = Instance.new("TextButton")
 Switch.Text = ""
-Switch.Size = UDim2.new(0, 45, 0, 22)
-Switch.Position = UDim2.new(1, -55, 0, 9)
-Switch.BackgroundColor3 = Color3.fromRGB(60, 60, 65) -- สีเทาตอนปิด
-Switch.Parent = ToggleFrame
+Switch.Size = UDim2.new(0, 42, 0, 20)
+Switch.Position = UDim2.new(1, -57, 0, 45)
+Switch.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+Switch.Parent = Card
+local SwCorner = Instance.new("UICorner", Switch)
+SwCorner.CornerRadius = UDim.new(1, 0)
 
-local SwitchCorner = Instance.new("UICorner")
-SwitchCorner.CornerRadius = UDim.new(1, 0)
-SwitchCorner.Parent = Switch
-
--- ปุ่มกลมด้านในสวิตช์ (Slider Dot)
 local SwitchDot = Instance.new("Frame")
-SwitchDot.Size = UDim2.new(0, 18, 0, 18)
+SwitchDot.Size = UDim2.new(0, 16, 0, 16)
 SwitchDot.Position = UDim2.new(0, 2, 0, 2)
-SwitchDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SwitchDot.BackgroundColor3 = Color3.fromRGB(180, 180, 185)
 SwitchDot.Parent = Switch
+Instance.new("UICorner", SwitchDot).CornerRadius = UDim.new(1, 0)
 
-local DotCorner2 = Instance.new("UICorner")
-DotCorner2.CornerRadius = UDim.new(1, 0)
-DotCorner2.Parent = SwitchDot
-
--- [[ ระบบสลับสถานะสวิตช์ (สไตล์แอนิเมชันเปิด/ปิดสีเขียว) ]]
-_G.StepControlAuto = false
+local _G_FarmState = false
 Switch.MouseButton1Click:Connect(function()
-    _G.StepControlAuto = not _G.StepControlAuto
-    if _G.StepControlAuto then
-        Switch.BackgroundColor3 = Color3.fromRGB(0, 200, 80) -- เปลี่ยนเป็นสีเขียวเมื่อเปิด
-        SwitchDot:TweenPosition(UDim2.new(0, 25, 0, 2), "Out", "Quad", 0.15) -- เลื่อนปุ่มกลมไปทางขวา
+    _G_FarmState = not _G_FarmState
+    if _G_FarmState then
+        TweenService:Create(Switch, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 200, 90)}):Play()
+        TweenService:Create(SwitchDot, TweenInfo.new(0.2), {Position = UDim2.new(0, 24, 0, 2), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
     else
-        Switch.BackgroundColor3 = Color3.fromRGB(60, 60, 65) -- กลับเป็นสีเทาเมื่อปิด
-        SwitchDot:TweenPosition(UDim2.new(0, 2, 0, 2), "Out", "Quad", 0.15) -- เลื่อนกลับไปทางซ้าย
+        TweenService:Create(Switch, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}):Play()
+        TweenService:Create(SwitchDot, TweenInfo.new(0.2), {Position = UDim2.new(0, 2, 0, 2), BackgroundColor3 = Color3.fromRGB(180, 180, 185)}):Play()
+    end
+end)
+
+-- ========================================================
+-- [ ตัวเลือกที่ 2: PREMIUM SLIDER (แถบเลื่อนปรับค่าความปลอดภัย) ]
+-- ========================================================
+local SliderLabel = Instance.new("TextLabel")
+SliderLabel.Text = "Fail Safe At (%)"
+SliderLabel.Size = UDim2.new(0, 200, 0, 30)
+SliderLabel.Position = UDim2.new(0, 15, 0, 85)
+SliderLabel.TextColor3 = Color3.fromRGB(220, 220, 225)
+SliderLabel.TextSize = 13
+SliderLabel.Font = Enum.Font.SourceSansBold
+SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+SliderLabel.BackgroundTransparency = 1
+SliderLabel.Parent = Card
+
+local SliderValueText = Instance.new("TextLabel")
+SliderValueText.Text = "50%"
+SliderValueText.Size = UDim2.new(0, 40, 0, 30)
+SliderValueText.Position = UDim2.new(1, -55, 0, 85)
+SliderValueText.TextColor3 = Color3.fromRGB(0, 230, 110)
+SliderValueText.TextSize = 13
+SliderValueText.Font = Enum.Font.SourceSansBold
+SliderValueText.TextXAlignment = Enum.TextXAlignment.Right
+SliderValueText.BackgroundTransparency = 1
+SliderValueText.Parent = Card
+
+local SliderTrack = Instance.new("TextButton")
+SliderTrack.Text = ""
+SliderTrack.Size = UDim2.new(1, -30, 0, 5)
+SliderTrack.Position = UDim2.new(0, 15, 0, 125)
+SliderTrack.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+SliderTrack.BorderSizePixel = 0
+SliderTrack.Parent = Card
+Instance.new("UICorner", SliderTrack).CornerRadius = UDim.new(1, 0)
+
+local SliderFill = Instance.new("Frame")
+SliderFill.Size = UDim2.new(0.5, 0, 1, 0) -- ค่าเริ่มต้นที่ 50%
+SliderFill.BackgroundColor3 = Color3.fromRGB(0, 200, 90)
+SliderFill.BorderSizePixel = 0
+SliderFill.Parent = SliderTrack
+Instance.new("UICorner", SliderFill).CornerRadius = UDim.new(1, 0)
+
+local SliderDot = Instance.new("Frame")
+SliderDot.Size = UDim2.new(0, 13, 0, 13)
+SliderDot.Position = UDim2.new(0.5, -6, 0.5, -6)
+SliderDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SliderDot.Parent = SliderTrack
+Instance.new("UICorner", SliderDot).CornerRadius = UDim.new(1, 0)
+
+-- ระบบคำนวณและลาก Slider สมจริงแบบโปรนอก
+local UIS = game:GetService("UserInputService")
+local dragging = false
+
+local function updateSlider()
+    local mousePos = UIS:GetMouseLocation().X
+    local trackPos = SliderTrack.AbsolutePosition.X
+    local trackWidth = SliderTrack.AbsoluteSize.X
+    local percentage = math.clamp((mousePos - trackPos) / trackWidth, 0, 1)
+    
+    SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+    SliderDot.Position = UDim2.new(percentage, -6, 0.5, -6)
+    SliderValueText.Text = math.floor(percentage * 100) .. "%"
+end
+
+SliderTrack.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        updateSlider()
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        updateSlider()
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
     end
 end)
