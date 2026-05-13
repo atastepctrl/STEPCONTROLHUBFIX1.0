@@ -1,4 +1,4 @@
--- STEPCONTROL HUB V16.0 - UI SCALE RESIZER EDITION (PC & MOBILE)
+-- STEPCONTROL HUB V16.1 - OFFICIAL UI RESIZER FIXED (PC & MOBILE STABLE)
 local player = game.Players.LocalPlayer
 pcall(function() player.PlayerGui.StepControlUI:Destroy() end)
 
@@ -6,7 +6,6 @@ _G.StepSpeed = 16
 _G.AutoJump = false
 _G.NoClip = false
 
--- ตัวแปรควบคุมมาตราส่วนสัดส่วนหน้าจอ (Default Scale = 1.0)
 local currentScale = 1.0
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -14,7 +13,7 @@ ScreenGui.Name = "StepControlUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = player.PlayerGui
 
--- โครงสร้างหน้าต่างหลักสไตล์ ReaperX Hub 
+-- หน้าต่างโครงสร้างหลักสไตล์ ReaperX Hub 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 420, 0, 270)
 MainFrame.Position = UDim2.new(0.5, -210, 0.5, -135)
@@ -23,7 +22,7 @@ MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Parent = ScreenGui
 
--- ใช้ UIScale เพื่อควบคุมการย่อขยายขนาด Frame ทั้งหมดรวมถึงปุ่มภายในแบบอัตโนมัติ
+-- ใช้ UIScale ควบคุมมาตราส่วนสัดส่วนปุ่มภายในทั้งหมดอัตโนมัติแบบไร้บั๊ก
 local UI_Scale = Instance.new("UIScale")
 UI_Scale.Scale = currentScale
 UI_Scale.Parent = MainFrame
@@ -64,7 +63,7 @@ CreateMacClickableDot(Color3.fromRGB(255, 95, 86), 0, function() pcall(function(
 CreateMacClickableDot(Color3.fromRGB(255, 189, 46), 15, function() MainFrame.Visible = false OpenMenuBtn.Visible = true end) 
 CreateMacClickableDot(Color3.fromRGB(0, 255, 100), 30, function() end)
 
--- ระบบลากหน้าจอเมนูหลบลากนิ้วสัมผัสบนมือถือ
+-- ระบบลากหน้าจอเมนูหลบลากนิ้วสัมผัสบนจอมือถือ
 local UserInputService = game:GetService("UserInputService")
 local dragging, dragInput, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
@@ -88,7 +87,7 @@ Title.Text = "STEPCONTROL HUB"
 Title.TextColor3 = Color3.fromRGB(0, 255, 100)
 Title.Font = Enum.Font.GothamBold Title.TextSize = 11 Title.TextXAlignment = Enum.TextXAlignment.Left Title.BackgroundTransparency = 1 Title.Parent = MainFrame
 
--- [★ ฟังก์ชันเด็ด: ปุ่มปรับขนาดหน้าต่าง UI (Resizer Buttons) ★]
+-- ปุ่มปรับมาตราขนาดหน้าต่าง UI (➕ ขยาย / ➖ ย่อ)
 local ResizeContainer = Instance.new("Frame")
 ResizeContainer.Size = UDim2.new(0, 50, 0, 24)
 ResizeContainer.Position = UDim2.new(1, -60, 0, 8)
@@ -109,7 +108,6 @@ local function CreateScaleButton(text, posX, callback)
     Btn.MouseButton1Click:Connect(callback)
 end
 
--- กดปุ่มบวกเพื่อขยายให้ใหญ่ขึ้น (จำกัดสูงสุด 1.4 เท่ากันหลุดนอกจอ)
 CreateScaleButton("+", 26, function()
     if currentScale < 1.4 then
         currentScale = currentScale + 0.1
@@ -117,7 +115,6 @@ CreateScaleButton("+", 26, function()
     end
 end)
 
--- กดปุ่มลบเพื่อย่อให้เล็กลง (จำกัดต่ำสุด 0.7 เท่าไม่ให้เล็กเกินไป)
 CreateScaleButton("-", 0, function()
     if currentScale > 0.7 then
         currentScale = currentScale - 0.1
@@ -144,7 +141,7 @@ local function CreateSidebarTab(name, posY)
     Btn.Position = UDim2.new(0, 6, 0, posY)
     Btn.Text = "   " .. name
     Btn.Font = Enum.Font.GothamMedium Btn.TextSize = 10 Btn.TextXAlignment = Enum.TextXAlignment.Left Btn.Parent = Sidebar
-    local BC = Instance.new("UICorner") BC.CornerRadius = UDim.new(0, 4) BC.Parent = Btn
+    local BC = Instance.new("UICorner") BC.CornerRadius = UDim.new(0, 5) BC.Parent = Btn
     return Btn
 end
 
@@ -159,7 +156,9 @@ Container.BackgroundTransparency = 1 Container.Parent = MainFrame
 local Slider = Instance.new("Frame")
 Slider.Size = UDim2.new(1, -10, 0, 40)
 Slider.Position = UDim2.new(0, 0, 0, 5)
-Slider.BackgroundColor3 = Color3.fromRGB(20, 20, 20) Slider.BorderSizePixel = 0 Slider.Parent = Container
+Slider.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Slider.BorderSizePixel = 0
+Slider.Parent = Container
 local SC = Instance.new("UICorner") SC.CornerRadius = UDim.new(0, 4) SC.Parent = Slider
 
 local SLbl = Instance.new("TextLabel")
@@ -227,7 +226,8 @@ local function CreateReaperRowToggle(title, posY, callback)
     SKnob.Size = UDim2.new(0, 12, 0, 12)
     SKnob.Position = UDim2.new(0, 3, 0, 3)
     SKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    SKnob.BorderSizePixel = 0 SKnob.Parent = Switch
+    SKnob.BorderSizePixel = 0
+    SKnob.Parent = Switch
     local SKC = Instance.new("UICorner") SKC.CornerRadius = UDim.new(1, 0) SKC.Parent = SKnob
 
     local state = false
@@ -242,7 +242,7 @@ end
 CreateReaperRowToggle("Infinite Jump Engine", 50, function(v) _G.AutoJump = v end)
 CreateReaperRowToggle("No Clip Parameters Bypass", 95, function(v) _G.NoClip = v end)
 
--- ระบบลูปฟิสิกส์แกนหลักหลังบ้าน
+-- ระบบลูปฟิสิกส์แกนหลักหลังบ้าน ควบคุมตัวละครจริง
 local RunService = game:GetService("RunService")
 RunService.RenderStepped:Connect(function()
     pcall(function()
