@@ -1,12 +1,10 @@
--- STEPCONTROL HUB V16.1 - OFFICIAL UI RESIZER FIXED (PC & MOBILE STABLE)
+-- STEPCONTROL HUB V16.2 - SAFE SCREEN RESIZER EDITION (PC & MOBILE STABLE)
 local player = game.Players.LocalPlayer
 pcall(function() player.PlayerGui.StepControlUI:Destroy() end)
 
 _G.StepSpeed = 16
 _G.AutoJump = false
 _G.NoClip = false
-
-local currentScale = 1.0
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "StepControlUI"
@@ -15,17 +13,12 @@ ScreenGui.Parent = player.PlayerGui
 
 -- หน้าต่างโครงสร้างหลักสไตล์ ReaperX Hub 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 420, 0, 270)
+MainFrame.Size = UDim2.new(0, 420, 0, 270) -- ขนาดเริ่มต้นมาตรฐานมือถือ
 MainFrame.Position = UDim2.new(0.5, -210, 0.5, -135)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Parent = ScreenGui
-
--- ใช้ UIScale ควบคุมมาตราส่วนสัดส่วนปุ่มภายในทั้งหมดอัตโนมัติแบบไร้บั๊ก
-local UI_Scale = Instance.new("UIScale")
-UI_Scale.Scale = currentScale
-UI_Scale.Parent = MainFrame
 
 local MainCorner = Instance.new("UICorner") MainCorner.CornerRadius = UDim.new(0, 8) MainCorner.Parent = MainFrame
 local MainStroke = Instance.new("UIStroke") MainStroke.Thickness = 1.2 MainStroke.Color = Color3.fromRGB(0, 255, 100) MainStroke.Parent = MainFrame
@@ -63,7 +56,7 @@ CreateMacClickableDot(Color3.fromRGB(255, 95, 86), 0, function() pcall(function(
 CreateMacClickableDot(Color3.fromRGB(255, 189, 46), 15, function() MainFrame.Visible = false OpenMenuBtn.Visible = true end) 
 CreateMacClickableDot(Color3.fromRGB(0, 255, 100), 30, function() end)
 
--- ระบบลากหน้าจอเมนูหลบลากนิ้วสัมผัสบนจอมือถือ
+-- ระบบลากหน้าจอเมนูหลบลากนิ้วสัมผัสบนจอมือถือ แบบไม่ใช้พิกัดคำนวณ UIScale
 local UserInputService = game:GetService("UserInputService")
 local dragging, dragInput, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
@@ -76,7 +69,7 @@ MainFrame.InputChanged:Connect(function(input) if input.UserInputType == Enum.Us
 UserInputService.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
         local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + (delta.X / currentScale), startPos.Y.Scale, startPos.Y.Offset + (delta.Y / currentScale))
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
@@ -87,7 +80,7 @@ Title.Text = "STEPCONTROL HUB"
 Title.TextColor3 = Color3.fromRGB(0, 255, 100)
 Title.Font = Enum.Font.GothamBold Title.TextSize = 11 Title.TextXAlignment = Enum.TextXAlignment.Left Title.BackgroundTransparency = 1 Title.Parent = MainFrame
 
--- ปุ่มปรับมาตราขนาดหน้าต่าง UI (➕ ขยาย / ➖ ย่อ)
+-- [★ ระบบปรับขนาดแบบปลอดภัย: เปลี่ยนค่า Size ตรงๆ ไม่ใช้ UIScale บั๊กมือถือ ★]
 local ResizeContainer = Instance.new("Frame")
 ResizeContainer.Size = UDim2.new(0, 50, 0, 24)
 ResizeContainer.Position = UDim2.new(1, -60, 0, 8)
@@ -108,18 +101,22 @@ local function CreateScaleButton(text, posX, callback)
     Btn.MouseButton1Click:Connect(callback)
 end
 
+-- สั่งเปลี่ยนขนาดกว้างยาวของ MainFrame โดยตรงเมื่อกดปุ่มขยาย
 CreateScaleButton("+", 26, function()
-    if currentScale < 1.4 then
-        currentScale = currentScale + 0.1
-        UI_Scale.Scale = currentScale
-    end
+    pcall(function()
+        if MainFrame.Size.X.Offset < 520 then
+            MainFrame.Size = UDim2.new(0, MainFrame.Size.X.Offset + 30, 0, MainFrame.Size.Y.Offset + 20)
+        end
+    end)
 end)
 
+-- สั่งย่อขนาดกว้างยาวของ MainFrame โดยตรงเมื่อกดปุ่มลดขนาด
 CreateScaleButton("-", 0, function()
-    if currentScale > 0.7 then
-        currentScale = currentScale - 0.1
-        UI_Scale.Scale = currentScale
-    end
+    pcall(function()
+        if MainFrame.Size.X.Offset > 330 then
+            MainFrame.Size = UDim2.new(0, MainFrame.Size.X.Offset - 30, 0, MainFrame.Size.Y.Offset - 20)
+        end
+    end)
 end)
 
 local Sidebar = Instance.new("Frame")
@@ -141,7 +138,7 @@ local function CreateSidebarTab(name, posY)
     Btn.Position = UDim2.new(0, 6, 0, posY)
     Btn.Text = "   " .. name
     Btn.Font = Enum.Font.GothamMedium Btn.TextSize = 10 Btn.TextXAlignment = Enum.TextXAlignment.Left Btn.Parent = Sidebar
-    local BC = Instance.new("UICorner") BC.CornerRadius = UDim.new(0, 5) BC.Parent = Btn
+    local BC = Instance.new("UICorner") BC.CornerRadius = UDim.new(0, 4) BC.Parent = Btn
     return Btn
 end
 
@@ -234,7 +231,7 @@ local function CreateReaperRowToggle(title, posY, callback)
     Switch.MouseButton1Click:Connect(function()
         state = not state
         Switch.BackgroundColor3 = state and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(45, 45, 45)
-        SKnob:TweenPosition(state and UDim2.new(1, -15, 0, 3) or UDim2.new(0, 3, 0, 3), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.12, true)
+        Knob:TweenPosition(state and UDim2.new(1, -15, 0, 3) or UDim2.new(0, 3, 0, 3), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.12, true)
         callback(state)
     end)
 end
