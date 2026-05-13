@@ -1,4 +1,4 @@
--- STEPCONTROL HUB V16.2 - SAFE SCREEN RESIZER EDITION (PC & MOBILE STABLE)
+-- STEPCONTROL HUB V18.0 - PURE CLEAN REWRITE (NO MORE CHEAT LOOP BUGS)
 local player = game.Players.LocalPlayer
 pcall(function() player.PlayerGui.StepControlUI:Destroy() end)
 
@@ -11,9 +11,9 @@ ScreenGui.Name = "StepControlUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = player.PlayerGui
 
--- หน้าต่างโครงสร้างหลักสไตล์ ReaperX Hub 
+-- หน้าต่างหลักสีดำ-ขอบเขียวนีออน โผล่กลางจอชัวร์
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 420, 0, 270) -- ขนาดเริ่มต้นมาตรฐานมือถือ
+MainFrame.Size = UDim2.new(0, 420, 0, 270)
 MainFrame.Position = UDim2.new(0.5, -210, 0.5, -135)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.BorderSizePixel = 0
@@ -56,7 +56,7 @@ CreateMacClickableDot(Color3.fromRGB(255, 95, 86), 0, function() pcall(function(
 CreateMacClickableDot(Color3.fromRGB(255, 189, 46), 15, function() MainFrame.Visible = false OpenMenuBtn.Visible = true end) 
 CreateMacClickableDot(Color3.fromRGB(0, 255, 100), 30, function() end)
 
--- ระบบลากหน้าจอเมนูหลบลากนิ้วสัมผัสบนจอมือถือ แบบไม่ใช้พิกัดคำนวณ UIScale
+-- ระบบลากหน้าจอมือถือ/PC เขียนตรงระบบ ไม่ซับซ้อน
 local UserInputService = game:GetService("UserInputService")
 local dragging, dragInput, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
@@ -79,45 +79,6 @@ Title.Position = UDim2.new(0, 115, 0, 5)
 Title.Text = "STEPCONTROL HUB"
 Title.TextColor3 = Color3.fromRGB(0, 255, 100)
 Title.Font = Enum.Font.GothamBold Title.TextSize = 11 Title.TextXAlignment = Enum.TextXAlignment.Left Title.BackgroundTransparency = 1 Title.Parent = MainFrame
-
--- [★ ระบบปรับขนาดแบบปลอดภัย: เปลี่ยนค่า Size ตรงๆ ไม่ใช้ UIScale บั๊กมือถือ ★]
-local ResizeContainer = Instance.new("Frame")
-ResizeContainer.Size = UDim2.new(0, 50, 0, 24)
-ResizeContainer.Position = UDim2.new(1, -60, 0, 8)
-ResizeContainer.BackgroundTransparency = 1
-ResizeContainer.Parent = MainFrame
-
-local function CreateScaleButton(text, posX, callback)
-    local Btn = Instance.new("TextButton")
-    Btn.Size = UDim2.new(0, 22, 0, 22)
-    Btn.Position = UDim2.new(0, posX, 0, 0)
-    Btn.Text = text
-    Btn.TextColor3 = Color3.fromRGB(0, 0, 0)
-    Btn.BackgroundColor3 = Color3.fromRGB(0, 255, 100)
-    Btn.Font = Enum.Font.GothamBold
-    Btn.TextSize = 12
-    Btn.Parent = ResizeContainer
-    local BC = Instance.new("UICorner") BC.CornerRadius = UDim.new(0, 4) BC.Parent = Btn
-    Btn.MouseButton1Click:Connect(callback)
-end
-
--- สั่งเปลี่ยนขนาดกว้างยาวของ MainFrame โดยตรงเมื่อกดปุ่มขยาย
-CreateScaleButton("+", 26, function()
-    pcall(function()
-        if MainFrame.Size.X.Offset < 520 then
-            MainFrame.Size = UDim2.new(0, MainFrame.Size.X.Offset + 30, 0, MainFrame.Size.Y.Offset + 20)
-        end
-    end)
-end)
-
--- สั่งย่อขนาดกว้างยาวของ MainFrame โดยตรงเมื่อกดปุ่มลดขนาด
-CreateScaleButton("-", 0, function()
-    pcall(function()
-        if MainFrame.Size.X.Offset > 330 then
-            MainFrame.Size = UDim2.new(0, MainFrame.Size.X.Offset - 30, 0, MainFrame.Size.Y.Offset - 20)
-        end
-    end)
-end)
 
 local Sidebar = Instance.new("Frame")
 Sidebar.Size = UDim2.new(0, 110, 1, -40)
@@ -150,12 +111,11 @@ Container.Size = UDim2.new(1, -125, 1, -50)
 Container.Position = UDim2.new(0, 120, 0, 45)
 Container.BackgroundTransparency = 1 Container.Parent = MainFrame
 
+-- [ แถบสไลเดอร์ปรับความเร็ววิ่งสีเขียวนีออน ]
 local Slider = Instance.new("Frame")
 Slider.Size = UDim2.new(1, -10, 0, 40)
 Slider.Position = UDim2.new(0, 0, 0, 5)
-Slider.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Slider.BorderSizePixel = 0
-Slider.Parent = Container
+Slider.BackgroundColor3 = Color3.fromRGB(20, 20, 20) Slider.BorderSizePixel = 0 Slider.Parent = Container
 local SC = Instance.new("UICorner") SC.CornerRadius = UDim.new(0, 4) SC.Parent = Slider
 
 local SLbl = Instance.new("TextLabel")
@@ -185,8 +145,8 @@ local KC = Instance.new("UICorner") KC.CornerRadius = UDim.new(1, 0) KC.Parent =
 
 local s_dragging = false
 SliderBar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then s_dragging = true end end)
-game:GetService("UserInputService").InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then s_dragging = false end end)
-game:GetService("UserInputService").InputChanged:Connect(function(input)
+UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then s_dragging = false end end)
+UserInputService.InputChanged:Connect(function(input)
     if s_dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local percentage = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
         SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
@@ -196,6 +156,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
+-- [ ฟังก์ชันสร้างปุ่มท็อกเกิลเปิด-ปิด ]
 local function CreateReaperRowToggle(title, posY, callback)
     local Row = Instance.new("Frame")
     Row.Size = UDim2.new(1, -10, 0, 40)
@@ -231,7 +192,7 @@ local function CreateReaperRowToggle(title, posY, callback)
     Switch.MouseButton1Click:Connect(function()
         state = not state
         Switch.BackgroundColor3 = state and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(45, 45, 45)
-        Knob:TweenPosition(state and UDim2.new(1, -15, 0, 3) or UDim2.new(0, 3, 0, 3), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.12, true)
+        SKnob:TweenPosition(state and UDim2.new(1, -15, 0, 3) or UDim2.new(0, 3, 0, 3), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.12, true)
         callback(state)
     end)
 end
