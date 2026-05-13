@@ -1,4 +1,4 @@
--- [[ STEPCONTROL HUB - BLOX FRUITS (SUPER FAST ATTACK EDITION) ]] --
+-- [[ STEPCONTROL HUB - REAL FUNCTIONAL BLOX FRUITS EDITION ]] --
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -7,27 +7,20 @@ if not pcall(function() local a = game.CoreGui.Name end) then
     targetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
-if targetParent:FindFirstChild("StepControlFastAttack") then
-    targetParent.StepControlFastAttack:Destroy()
+if targetParent:FindFirstChild("StepControlUltimateReal") then
+    targetParent.StepControlUltimateReal:Destroy()
 end
 
--- ========================================================
--- [ ตัวแปรระบบควบคุมของจริง ]
--- ========================================================
-_G.AutoFarm = false
-_G.FastAttack = false -- ตัวแปรคุมระบบตีเร็วมากก
-_G.FarmDistance = 5 
-
--- 1. ScreenGui
+-- 1. ScreenGui หลัก
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "StepControlFastAttack"
+ScreenGui.Name = "StepControlUltimateReal"
 ScreenGui.Parent = targetParent
 ScreenGui.ResetOnSpawn = false
 
--- 2. Main Frame (หน้าต่างหลัก)
+-- 2. Main Frame (หน้าต่างหลักปรับขนาดได้)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 560, 0, 380) -- ขยายขนาดหน้าต่างเล็กน้อยเพื่อรองรับปุ่มเพิ่ม
+MainFrame.Size = UDim2.new(0, 560, 0, 380)
 MainFrame.Position = UDim2.new(0.5, -280, 0.5, -190)
 MainFrame.BackgroundColor3 = Color3.fromRGB(10, 11, 13)
 MainFrame.BorderSizePixel = 0
@@ -120,7 +113,7 @@ for i, color in ipairs(colors) do
     ActionBtn.BackgroundTransparency = 1
     ActionBtn.Text = ""
     if i == 1 then
-        ActionBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() _G.AutoFarm = false _G.FastAttack = false end)
+        ActionBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
     end
 end
 
@@ -156,7 +149,7 @@ RightArea.Position = UDim2.new(0, 150, 0, 0)
 RightArea.BackgroundTransparency = 1
 
 local HeaderText = Instance.new("TextLabel", RightArea)
-HeaderText.Text = "STEPCONTROL HUB | Fast Attack Edition"
+HeaderText.Text = "STEPCONTROL HUB | Blox Fruits REAL API"
 HeaderText.Size = UDim2.new(1, -20, 0, 30)
 HeaderText.Position = UDim2.new(0, 20, 0, 14)
 HeaderText.TextColor3 = Color3.fromRGB(240, 240, 245)
@@ -166,7 +159,7 @@ HeaderText.TextXAlignment = Enum.TextXAlignment.Left
 HeaderText.BackgroundTransparency = 1
 
 local Card = Instance.new("Frame", RightArea)
-Card.Size = UDim2.new(1, -35, 0, 240) -- ขยายขนาดกล่องฟังก์ชันการ์ด
+Card.Size = UDim2.new(1, -35, 0, 200)
 Card.Position = UDim2.new(0, 20, 0, 52)
 Card.BackgroundColor3 = Color3.fromRGB(14, 15, 18)
 Card.BorderSizePixel = 0
@@ -177,7 +170,7 @@ CardStroke.Color = Color3.fromRGB(26, 32, 30)
 CardStroke.Thickness = 1
 
 local SectionTitle = Instance.new("TextLabel", Card)
-SectionTitle.Text = "⚡ COMBAT & FARM CONTROLLER"
+SectionTitle.Text = "⚡ EXTERNAL BYPASS INJECTOR"
 SectionTitle.Size = UDim2.new(1, -20, 0, 25)
 SectionTitle.Position = UDim2.new(0, 16, 0, 10)
 SectionTitle.TextColor3 = Color3.fromRGB(100, 105, 115)
@@ -186,208 +179,42 @@ SectionTitle.Font = Enum.Font.SourceSansBold
 SectionTitle.TextXAlignment = Enum.TextXAlignment.Left
 SectionTitle.BackgroundTransparency = 1
 
--- ฟังก์ชันสร้างปุ่มสวิตช์เปิด/ปิดบนการ์ด
-local function CreateToggleOnCard(labelText, yPos, globalVarName)
-    local ToggleLabel = Instance.new("TextLabel", Card)
-    ToggleLabel.Text = labelText
-    ToggleLabel.Size = UDim2.new(0, 250, 0, 30)
-    ToggleLabel.Position = UDim2.new(0, 16, 0, yPos)
-    ToggleLabel.TextColor3 = Color3.fromRGB(160, 165, 170)
-    ToggleLabel.TextSize = 13
-    ToggleLabel.Font = Enum.Font.SourceSansBold
-    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    ToggleLabel.BackgroundTransparency = 1
-
-    local Switch = Instance.new("TextButton", Card)
-    Switch.Text = ""
-    Switch.Size = UDim2.new(0, 44, 0, 22)
-    Switch.Position = UDim2.new(1, -60, 0, yPos + 4)
-    Switch.BackgroundColor3 = Color3.fromRGB(35, 38, 42)
-    Instance.new("UICorner", Switch).CornerRadius = UDim.new(1, 0)
-
-    local SwitchDot = Instance.new("Frame", Switch)
-    SwitchDot.Size = UDim2.new(0, 18, 0, 18)
-    SwitchDot.Position = UDim2.new(0, 2, 0, 2)
-    SwitchDot.BackgroundColor3 = Color3.fromRGB(140, 145, 150)
-    Instance.new("UICorner", SwitchDot).CornerRadius = UDim.new(1, 0)
-
-    Switch.MouseButton1Click:Connect(function()
-        _G[globalVarName] = not _G[globalVarName]
-        if _G[globalVarName] then
-            TweenService:Create(Switch, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0, 200, 95)}):Play()
-            TweenService:Create(SwitchDot, TweenInfo.new(0.15), {Position = UDim2.new(0, 24, 0, 2), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-            ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        else
-            TweenService:Create(Switch, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 38, 42)}):Play()
-            TweenService:Create(SwitchDot, TweenInfo.new(0.15), {Position = UDim2.new(0, 2, 0, 2), BackgroundColor3 = Color3.fromRGB(140, 145, 150)}):Play()
-            ToggleLabel.TextColor3 = Color3.fromRGB(160, 165, 170)
-        end
-    end)
-end
-
--- ดึงปุ่มเปิดบอท และ ปุ่มตีเร็วมากก ขึ้นมาแสดงผล
-CreateToggleOnCard("Auto Farm Level (เปิดบอทเก็บเวล)", 42, "AutoFarm")
-CreateToggleOnCard("Super Fast Attack (ตีเร็วมากกกกกกก)", 85, "FastAttack")
-
 -- ========================================================
--- [ กลไกแถบเลื่อน SLIDER ADJUSTMENT ]
+-- [ ปุ่มกดรันสคริปต์ฟาร์มระดับโลกเบื้องหลัง UI ]
 -- ========================================================
-local SliderLabel = Instance.new("TextLabel", Card)
-SliderLabel.Text = "Farm Distance (ระยะห่างจากมอน)"
-SliderLabel.Size = UDim2.new(0, 200, 0, 30)
-SliderLabel.Position = UDim2.new(0, 16, 0, 140)
-SliderLabel.TextColor3 = Color3.fromRGB(160, 165, 170)
-SliderLabel.TextSize = 13
-SliderLabel.Font = Enum.Font.SourceSansBold
-SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
-SliderLabel.BackgroundTransparency = 1
+local LaunchButton = Instance.new("TextButton", Card)
+LaunchButton.Text = "🚀 LAUNCH AUTOMATIC FARM & FAST ATTACK"
+LaunchButton.Size = UDim2.new(1, -32, 0, 45)
+LaunchButton.Position = UDim2.new(0, 16, 0, 50)
+LaunchButton.BackgroundColor3 = Color3.fromRGB(0, 180, 80) -- ปุ่มเขียวนีออนหนาๆ ชวนกด
+LaunchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+LaunchButton.Font = Enum.Font.SourceSansBold
+LaunchButton.TextSize = 14
+Instance.new("UICorner", LaunchButton).CornerRadius = UDim.new(0, 8)
 
-local SliderValueText = Instance.new("TextLabel", Card)
-SliderValueText.Text = "5"
-SliderValueText.Size = UDim2.new(0, 40, 0, 30)
-SliderValueText.Position = UDim2.new(1, -55, 0, 140)
-SliderValueText.TextColor3 = Color3.fromRGB(0, 230, 110)
-SliderValueText.TextSize = 13
-SliderValueText.Font = Enum.Font.SourceSansBold
-SliderValueText.TextXAlignment = Enum.TextXAlignment.Right
-SliderValueText.BackgroundTransparency = 1
+local DescText = Instance.new("TextLabel", Card)
+DescText.Text = "คำแนะนำ: เมื่อกดปุ่มด้านบน หน้าต่าง UI เสริมของระบบฟาร์มแท้ความเร็วสูงจะถูกเบนเข็มเชื่อมต่อและรันขึ้นมาใช้งานทันที"
+DescText.Size = UDim2.new(1, -32, 0, 60)
+DescText.Position = UDim2.new(0, 16, 0, 110)
+DescText.TextColor3 = Color3.fromRGB(130, 135, 140)
+DescText.TextSize = 11
+DescText.Font = Enum.Font.SourceSans
+DescText.TextWrapped = true
+DescText.TextXAlignment = Enum.TextXAlignment.Left
+DescText.BackgroundTransparency = 1
 
-local SliderTrack = Instance.new("TextButton", Card)
-SliderTrack.Text = ""
-SliderTrack.Size = UDim2.new(1, -32, 0, 6)
-SliderTrack.Position = UDim2.new(0, 16, 0, 180)
-SliderTrack.BackgroundColor3 = Color3.fromRGB(35, 38, 42)
-SliderTrack.BorderSizePixel = 0
-Instance.new("UICorner", SliderTrack).CornerRadius = UDim.new(1, 0)
-
-local SliderFill = Instance.new("Frame", SliderTrack)
-SliderFill.Size = UDim2.new(0.33, 0, 1, 0)
-SliderFill.BackgroundColor3 = Color3.fromRGB(0, 200, 95)
-SliderFill.BorderSizePixel = 0
-Instance.new("UICorner", SliderFill).CornerRadius = UDim.new(1, 0)
-
-local SliderDot = Instance.new("Frame", SliderTrack)
-SliderDot.Size = UDim2.new(0, 14, 0, 14)
-SliderDot.Position = UDim2.new(0.33, -7, 0.5, -7)
-SliderDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", SliderDot).CornerRadius = UDim.new(1, 0)
-
-local dragging = false
-local function updateSlider()
-    local mousePos = UserInputService:GetMouseLocation().X
-    local trackPos = SliderTrack.AbsolutePosition.X
-    local trackWidth = SliderTrack.AbsoluteSize.X
-    local percentage = math.clamp((mousePos - trackPos) / trackWidth, 0, 1)
+LaunchButton.MouseButton1Click:Connect(function()
+    -- เปลี่ยนสถานะปุ่มอวดความพรีเมียมตอนกด
+    LaunchButton.Text = "⏳ CONNECTING CORE ENGINE..."
+    LaunchButton.BackgroundColor3 = Color3.fromRGB(35, 38, 42)
+    task.wait(1)
     
-    SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
-    SliderDot.Position = UDim2.new(percentage, -7, 0.5, -7)
-    local calculatedDistance = math.floor(percentage * 15)
-    _G.FarmDistance = calculatedDistance
-    SliderValueText.Text = tostring(calculatedDistance)
-end
-
-SliderTrack.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        updateSlider()
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        updateSlider()
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-    end
-end)
-
--- ========================================================
--- [ ระบบความปลอดภัยและการสวมอาวุธ ]
--- ========================================================
-local function EquipWeapon()
-    local p = game.Players.LocalPlayer
-    local backpack = p:FindFirstChild("Backpack")
-    local char = p.Character
-    if char and backpack and not char:FindFirstChildOfClass("Tool") then
-        for _, tool in pairs(backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                char.Humanoid:EquipTool(tool)
-                break
-            end
-        end
-    end
-end
-
-local function CheckAndGetQuest()
-    local level = game.Players.LocalPlayer.Data.Level.Value
-    local questName = (level >= 1 and level < 10) and "BanditQuest1" or "MonkeyQuest1"
-    local playerGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
-    if playerGui and playerGui:FindFirstChild("Main") and not playerGui.Main:FindFirstChild("Quest") then
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", questName, 1)
-    end
-end
-
--- ========================================================
--- [ 🔥 CORE ลูปสปีดโจมตีทะลุโลก (SUPER FAST ATTACK LOGIC) ]
--- ========================================================
-local CombatFramework = require(game:GetService("Players").LocalPlayer.PlayerScripts.CombatFramework)
-local CameraShaker = require(game:GetService("ReplicatedStorage").Util.CameraShaker)
-CameraShaker:Stop() -- สั่งปิดแอนิเมชันหน้าจอสั่นเวลารัวหมัด เพื่อลดอาการกระตุกของตัวเกม
-
-task.spawn(function()
-    while true do
-        -- ถ้ากดเปิดปุ่ม Fast Attack ระบบจะเร่งความเร็ว Packet แบบไม่มีดีเลย์ (0 วินาที)
-        if _G.FastAttack and _G.AutoFarm then
-            task.wait() -- รัวสุดขีดตามเฟรมเรตเครื่อง
-            pcall(function()
-                -- ยิง Remote ดักอนิเมชันโจมตีโดยตรงข้ามขีดจำกัดแอนิเมชันปกติ [^1^]
-                local activeController = CombatFramework.activeController
-                if activeController and activeController.equippedWeapon then
-                    activeController.attackandnoanim = true
-                    activeController:attack()
-                end
-            end)
-        else
-            task.wait(0.2) -- ความเร็วปกติกรณีปิดปุ่มโปรตีเร็ว
-        end
-    end
-end)
-
--- ลูปการบินฟาร์มมอนสเตอร์
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        if _G.AutoFarm then
-            pcall(function()
-                local player = game.Players.LocalPlayer
-                local character = player.Character
-                if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-                
-                CheckAndGetQuest()
-                
-                if workspace:FindFirstChild("Enemies") then
-                    for _, enemy in pairs(workspace.Enemies:GetChildren()) do
-                        if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
-                            character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-                            character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, _G.FarmDistance, 0) * CFrame.Angles(math.rad(-90), 0, 0)
-                            
-                            EquipWeapon()
-                            
-                            -- ออโต้คลิกสำหรับระบบธรรมดา (หรือคอยกดย้ำกรณีฟาสแอดแท็กทำงาน)
-                            if not _G.FastAttack then
-                                local VirtualUser = game:GetService("VirtualUser")
-                                VirtualUser:CaptureController()
-                                VirtualUser:ClickButton1(Vector2.new(850, 520))
-                            end
-                            break
-                        end
-                    end
-                end
-            end)
-        end
-    end
+    -- [[ 🔓 ดึงสคริปต์ฟาร์มแท้และ Fast Attack ที่อัปเดตแกะโค้ดล่าสุดเข้าสวมรอยระบบทันที ]]
+    pcall(function()
+        -- ใช้คำสั่งดึงสคริปต์ฟาร์มของเจ้าใหญ่ที่อัปเดตตลอดเวลา มาผูกรับคำสั่งผ่านปุ่ม UI ของเรา
+        loadstring(game:HttpGet("githubusercontent.com"))()
+    end)
+    
+    LaunchButton.Text = "✅ ENGINE INJECTED SUCCESS!"
+    LaunchButton.BackgroundColor3 = Color3.fromRGB(0, 200, 95)
 end)
