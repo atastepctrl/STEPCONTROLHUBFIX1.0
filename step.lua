@@ -1,124 +1,126 @@
--- STEPCONTROL HUB V26.1 - PRODUCTION KAVO VERSION (REAPERX THEME FIXED)
-_G.StepSpeed = 16
-_G.AutoJump = false
-_G.NoClip = false
-_G.BloxFastAttack = false
-_G.BloxBringMob = false
-_G.AutoSticks = false
+-- [[ REAPER X HUB UI FOR DELTA EXECUTOR ]] --
 
--- [★ แก้ไขจุดพังจุดสำคัญ ★] ดึงคลังฐานข้อมูลหน้าจอ Kavo Library ผ่านลิงก์สากลตัวจริงที่เสถียรที่สุด
-local Library = loadstring(game:HttpGet("githubusercontent.com"))()
-
--- สร้างหน้าต่างหลักคุมโทนสีเทาดำดุดันสไตล์มินิมอลตัดเขียวนีออน
-local Window = Library.CreateLib("★ STEPCONTROL HUB v26 ★", "GreenTheme")
-
--- สร้างหน้าแท็บสลับฝั่งซ้ายสไตล์ ReaperX
-local Tab1 = Window:NewTab("⚡ Player Tools")
-local Tab2 = Window:NewTab("⚔️ Map Cheats")
-
-local Section1 = Tab1:NewSection("Character Parameters")
-local SectionMap = Tab2:NewSection("Automation Farm Engine")
-
--- 1. แท็บที่ 1: ระบบสไลเดอร์ปรับความเร็ววิ่ง
-Section1:NewSlider("WalkSpeed Velocity", "Adjust your character running speeds", 120, 16, function(s)
-    _G.StepSpeed = s
-end)
-
--- 2. ระบบสวิตช์เปิด-ปิด กระโดดต่อเนื่องกลางอากาศ (Infinite Jump)
-Section1:NewToggle("Infinite Jump Bypass", "Bypass jumping limits values", function(state)
-    _G.AutoJump = state
-end)
-
--- 3. ระบบสวิตช์เปิด-ปิด เดินทะลุกำแพงและสิ่งกีดขวาง (No Clip)
-Section1:NewToggle("No Clip Mode Enabled", "Walk through all solids objects", function(state)
-    _G.NoClip = state
-end)
-
--- 4. แท็บที่ 2: ระบบสวิตช์ฟาร์มเลเวลโกงตามแมพ
-local GamePlaceId = game.PlaceId
-local IsBloxFruits = false
-if GamePlaceId == 2753915549 or game.Workspace:FindFirstChild("Sea") or game.Workspace:FindFirstChild("NPCs") then
-    IsBloxFruits = true
+-- ปรับให้เข้ากับระบบของ Delta (ถ้ารันไม่ขึ้นจะสลับไปดึงข้อมูลใน PlayerGui แทน)
+local targetParent = game:GetService("CoreGui")
+if not pcall(function() local a = game.CoreGui.Name end) then
+    targetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
-if IsBloxFruits then
-    SectionMap:NewToggle("Auto Fast Attack Combat", "No animation auto attack targets", function(state)
-        _G.BloxFastAttack = state
-    end)
-    SectionMap:NewToggle("Bring Enemies / Mob Magnet", "Locks positions 4.2 studs above enemies", function(state)
-        _G.BloxBringMob = state
-    end)
-else
-    SectionMap:NewToggle("Auto Collect Forest Sticks", "Teleports field sticks to your spot", function(state)
-        _G.AutoSticks = state
-    end)
+-- ลบ UI เก่าออกก่อนป้องกันการรันซ้ำแล้วจอบังกัน
+if targetParent:FindFirstChild("ReaperXHub") then
+    targetParent.ReaperXHub:Destroy()
 end
 
--- [ระบบลูปควบคุมวิชาฟิสิกส์หลบตัวตรวจจับแบนหลังบ้าน]
-local RunService = game:GetService("RunService")
-local player = game.Players.LocalPlayer
+-- 1. สร้างหน้าต่างหลัก
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ReaperXHub"
+ScreenGui.Parent = targetParent
+ScreenGui.ResetOnSpawn = false
 
-RunService.RenderStepped:Connect(function()
-    pcall(function()
-        local character = player.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            -- เร่งสปีดความเร็ววิ่งเฟรมเรต
-            if _G.StepSpeed > 16 and character:FindFirstChild("Humanoid") then
-                character.Humanoid.WalkSpeed = _G.StepSpeed
-                if character.Humanoid.MoveDirection.Magnitude > 0 then
-                    character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame + (character.Humanoid.MoveDirection * (_G.StepSpeed / 80))
-                end
-            end
-            -- ลูปเดินทะลุกำแพง
-            if _G.NoClip then
-                for _, child in pairs(character:GetChildren()) do if child:IsA("BasePart") then child.CanCollide = false end end
-            end
-            -- ลูปฟาร์มระยะคลาสสิก Blox Fruits 4.2 บล็อก 
-            if IsBloxFruits and _G.BloxBringMob then
-                local folder = game.Workspace:FindFirstChild("Enemies") or game.Workspace:FindFirstChild("NPCs") or game.Workspace
-                for _, mob in pairs(folder:GetChildren()) do
-                    if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
-                        if (mob.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude < 180 then
-                            character.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 4.2, 0)
-                            character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-                            mob.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-                            break
-                        end
-                    end
-                end
-            end
-            -- ลูปดูดของ 99 คืน
-            if not IsBloxFruits and _G.AutoSticks then
-                for _, obj in pairs(game.Workspace:GetChildren()) do
-                    if obj.Name:lower():match("stick") or obj.Name:lower():match("wood") then obj.CFrame = character.HumanoidRootPart.CFrame end
-                end
-            end
-        end
-    end)
-end)
+-- 2. ตัวโครงหน้าต่างเมนูหลัก (Main Frame)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 420, 0, 260)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -130)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true -- สำหรับเลื่อนหน้าต่างบนจอมือถือ
+MainFrame.Parent = ScreenGui
 
--- สัญญาณกระโดดต่อเนื่องกลางอากาศฝั่งโทรศัพท์มือถือ
-game:GetService("UserInputService").JumpRequest:Connect(function() 
-    if _G.AutoJump then 
-        pcall(function() player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end) 
-    end 
-end)
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.Parent = MainFrame
 
--- ระบบสับดาเมจมาโครความถี่สูง
-task.spawn(function()
-    while true do
-        task.wait(0.04)
-        if IsBloxFruits and _G.BloxFastAttack then
-            pcall(function()
-                local tool = player.Character:FindFirstChildOfClass("Tool")
-                if tool then
-                    tool:Activate()
-                    local net = game:GetService("ReplicatedStorage"):FindFirstChild("CombatRegister") or game:GetService("ReplicatedStorage"):FindFirstChild("remotes")
-                    if net then 
-                        net:FireServer("Attack", tool, player.Character.HumanoidRootPart.Position) 
-                    end
-                end
-            end)
-        end
+-- 3. แถบด้านบน (Top Bar)
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 35)
+TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
+
+local TopCorner = Instance.new("UICorner")
+TopCorner.CornerRadius = UDim.new(0, 8)
+TopCorner.Parent = TopBar
+
+local Title = Instance.new("TextLabel")
+Title.Text = "  REAPER X HUB | DELTA VERSION"
+Title.Size = UDim2.new(1, 0, 1, 0)
+Title.TextColor3 = Color3.fromRGB(0, 220, 255)
+Title.TextSize = 14
+Title.Font = Enum.Font.SourceSansBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.BackgroundTransparency = 1
+Title.Parent = TopBar
+
+-- 4. เมนูด้านซ้าย (Sidebar)
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 110, 1, -35)
+Sidebar.Position = UDim2.new(0, 0, 0, 35)
+Sidebar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = MainFrame
+
+local TabButton = Instance.new("TextButton")
+TabButton.Text = "Main ฟาร์ม"
+TabButton.Size = UDim2.new(1, -10, 0, 30)
+TabButton.Position = UDim2.new(0, 5, 0, 10)
+TabButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TabButton.Font = Enum.Font.SourceSansBold
+TabButton.TextSize = 14
+TabButton.Parent = Sidebar
+
+local TabCorner = Instance.new("UICorner")
+TabCorner.CornerRadius = UDim.new(0, 5)
+TabCorner.Parent = TabButton
+
+-- 5. พื้นหลังฝั่งขวา (Container)
+local Container = Instance.new("Frame")
+Container.Size = UDim2.new(1, -125, 1, -45)
+Container.Position = UDim2.new(0, 120, 0, 40)
+Container.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+Container.BorderSizePixel = 0
+Container.Parent = MainFrame
+
+local ContainerCorner = Instance.new("UICorner")
+ContainerCorner.CornerRadius = UDim.new(0, 6)
+ContainerCorner.Parent = Container
+
+-- 6. ปุ่มเปิด/ปิดโปร (Toggle Button)
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Text = "Auto Farm: ปิดอยู่"
+ToggleButton.Size = UDim2.new(1, -20, 0, 40)
+ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.TextSize = 15
+ToggleButton.Parent = Container
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 6)
+ToggleCorner.Parent = ToggleButton
+
+-- [[ ระบบคำสั่งสำหรับรันบน Delta ]] --
+_G.DeltaAutoFarm = false -- ใช้ตัวแปร Global ทั่วไป
+
+ToggleButton.MouseButton1Click:Connect(function()
+    _G.DeltaAutoFarm = not _G.DeltaAutoFarm
+    
+    if _G.DeltaAutoFarm then
+        ToggleButton.Text = "Auto Farm: เปิดใช้งาน"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(40, 180, 40)
+        
+        -- จำลองการทำงานลูป
+        task.spawn(function()
+            while _G.DeltaAutoFarm do
+                print("Delta กำลังรันโปรฟาร์ม...")
+                task.wait(1)
+            end
+        end)
+    else
+        ToggleButton.Text = "Auto Farm: ปิดอยู่"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
     end
 end)
