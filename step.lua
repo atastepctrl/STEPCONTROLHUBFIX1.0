@@ -3,7 +3,7 @@
 -- ========================================================
 -- [ 1. ระบบล็อกไอดีผู้สร้าง (WHITELIST SYSTEM) ]
 -- ========================================================
-local CreatorName = "ชื่อไอดีของคุณตรงนี้" -- << เปลี่ยนเป็นชื่อ Username ในเกมของคุณเอง
+local CreatorName = "StepcontrolAOTR" -- << เปลี่ยนเป็นชื่อ Username ในเกมของคุณเอง
 
 if game.Players.LocalPlayer.Name ~= CreatorName then
     game.Players.LocalPlayer:Kick("❌ STEPCONTROL HUB: ขออภัย ไอดีของคุณไม่ได้รับอนุญาตให้ใช้สคริปต์นี้!")
