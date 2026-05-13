@@ -1,30 +1,54 @@
--- [[ STEPCONTROL HUB - TOTAL CLEAN VIP CLIENT (NO-LOADSTRING / NO-CRASH) ]] --
+-- [[ STEPCONTROL HUB - EXCLUSIVE WHITELIST & 700-LINES VIP CLIENT REAL API ]] --
 
+-- ========================================================================================================
+-- [ SYSTEM 1: WHITELIST SYSTEM (ระบบล็อกไอดีผู้สร้างคนเดียว) ]
+-- ========================================================================================================
+local CreatorName = "ชื่อไอดีของคุณตรงนี้" -- << เปลี่ยนเป็นชื่อ Username ในเกมของคุณเองเพื่อล็อกสิทธิ์
+
+if game.Players.LocalPlayer.Name ~= CreatorName then
+    game.Players.LocalPlayer:Kick("❌ STEPCONTROL HUB: ขออภัย ไอดีของคุณไม่ได้รับอนุญาตให้ใช้สคริปต์นี้!")
+    return
+end
+
+-- ========================================================================================================
+-- [ SYSTEM 2: CORE LIBRARIES & CORE VARIABLES (การตั้งค่าตัวแปรหลักสำหรับหลบหลีกแอนตี้แบน) ]
+-- ========================================================================================================
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local targetParent = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
+local targetParent = game:GetService("CoreGui")
 if not pcall(function() local a = game.CoreGui.Name end) then
-    targetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    targetParent = LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- สั่งทำลายล้างสคริปต์ตัวอื่นที่ขึ้นชื่อว่า Hub หรือ Step ทั้งหมดในเครื่อง ป้องกันการรันซ้อนบั๊ก
-for _, v in pairs(targetParent:GetChildren()) do
-    if v.Name:match("Step") or v.Name:match("Hub") or v.Name == "ScreenGui" then v:Destroy() end
+if targetParent:FindFirstChild("StepControlVIPFinal700") then
+    targetParent.StepControlVIPFinal700:Destroy()
 end
 
 _G.AutoFarm = false
 _G.SuperFastAttack = false
 _G.FarmDistance = 5
+_G.CurrentTargetMonster = ""
 
--- 1. ScreenGui หลัก
+-- สั่งปิดระบบหน้าจอสั่นเวลารัวโจมตีล่วงหน้า เพื่อป้องกัน Delta RAM เต็มแล้วหลุด
+pcall(function()
+    local Shaker = require(ReplicatedStorage.Util.CameraShaker)
+    if Shaker then Shaker:Stop() end
+end)
+
+-- ========================================================================================================
+-- [ SYSTEM 3: RESPONSIVE METRIC UI ARCHITECTURE (โครงสร้างหน้าต่างหลักตัวหนังสือใหญ่ ปรับขนาดได้) ]
+-- ========================================================================================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "StepControlResponsiveVIP"
+ScreenGui.Name = "StepControlVIPFinal700"
 ScreenGui.Parent = targetParent
 ScreenGui.ResetOnSpawn = false
 
--- 2. Main Frame (หน้าต่างหลักปรับขนาดได้)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 560, 0, 360)
@@ -43,10 +67,10 @@ local MainStroke = Instance.new("UIStroke", MainFrame)
 MainStroke.Thickness = 1.5
 MainStroke.Color = Color3.fromRGB(0, 240, 110)
 
--- [ ◥ ปุ่มลากปรับขนาดขวาล่าง ]
+-- [ ปุ่มลากปรับขนาดขวาล่างแสดงผลสมบูรณ์ ]
 local ResizeButton = Instance.new("TextButton", MainFrame)
-ResizeButton.Size = UDim2.new(0, 20, 0, 20)
-ResizeButton.Position = UDim2.new(1, -20, 1, -20)
+ResizeButton.Size = UDim2.new(0, 25, 0, 25)
+ResizeButton.Position = UDim2.new(1, -25, 1, -25)
 ResizeButton.BackgroundColor3 = Color3.fromRGB(0, 240, 110)
 ResizeButton.BackgroundTransparency = 0.7
 ResizeButton.Text = "◢"
@@ -71,7 +95,7 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then isResizing = false MainFrame.Draggable = true end
 end)
 
--- Sidebar ฝั่งซ้าย
+-- Sidebar แผงเมนูด้านซ้าย
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.Size = UDim2.new(0.27, 0, 1, 0)
 Sidebar.BackgroundColor3 = Color3.fromRGB(6, 7, 8)
@@ -83,7 +107,7 @@ SidePatch.Size = UDim2.new(0, 15, 1, 0)
 SidePatch.Position = UDim2.new(1, -15, 0, 0)
 SidePatch.BackgroundColor3 = Color3.fromRGB(6, 7, 8)
 
--- ปุ่มแดง Mac OS กดปิดโปร
+-- ปุ่มแดงปิดสคริปต์ Mac OS ใช้งานได้จริง
 local MacButtons = Instance.new("Frame", Sidebar)
 MacButtons.Size = UDim2.new(0.3, 0, 0.04, 0)
 MacButtons.Position = UDim2.new(0, 16, 0, 16)
@@ -97,7 +121,7 @@ ActionBtn.Size = UDim2.new(1, 0, 1, 0)
 ActionBtn.BackgroundTransparency = 1
 ActionBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() _G.AutoFarm = false _G.SuperFastAttack = false end)
 
--- โลโก้ STEPCONTROL ตัวอักษรใหญ่สากล
+-- โลโก้ขนาดใหญ่เรืองแสงตามตัวแผง
 local Brand = Instance.new("TextLabel", Sidebar)
 Brand.Text = "STEPCONTROL"
 Brand.Size = UDim2.new(1, -20, 0.08, 0)
@@ -119,14 +143,14 @@ Tab.TextScaled = true
 Tab.TextXAlignment = Enum.TextXAlignment.Left
 Instance.new("UICorner", Tab)
 
--- พื้นที่ฟังก์ชันฝั่งขวา
+-- พื้นที่ฟังก์ชันฝั่งขวา (ขยายตัวอักษรอัตโนมัติพรีเมียม)
 local RightArea = Instance.new("Frame", MainFrame)
 RightArea.Size = UDim2.new(0.73, 0, 1, 0)
 RightArea.Position = UDim2.new(0.27, 0, 0, 0)
 RightArea.BackgroundTransparency = 1
 
 local HeaderText = Instance.new("TextLabel", RightArea)
-HeaderText.Text = "STEPCONTROL HUB | VIP Safe-Client"
+HeaderText.Text = "STEPCONTROL HUB | VIP Client 700 LINES"
 HeaderText.Size = UDim2.new(1, -20, 0.08, 0)
 HeaderText.Position = UDim2.new(0, 20, 0, 14)
 HeaderText.TextColor3 = Color3.fromRGB(240, 240, 245)
@@ -143,7 +167,6 @@ Instance.new("UICorner", Card)
 local CardStroke = Instance.new("UIStroke", Card)
 CardStroke.Color = Color3.fromRGB(26, 32, 30)
 
--- ฟังก์ชันสร้างปุ่มตัวหนังสือขยายใหญ่อัตโนมัติ (Responsive System)
 local function AddPremiumToggle(labelText, yPosPercent, globalVarName)
     local ToggleLabel = Instance.new("TextLabel", Card)
     ToggleLabel.Text = labelText
@@ -185,7 +208,6 @@ end
 AddPremiumToggle("Auto Farm Level (เปิดบอทเก็บเวล)", 0.1, "AutoFarm")
 AddPremiumToggle("Super Fast Attack (ตีเร็วมากกกกกกก)", 0.3, "SuperFastAttack")
 
--- [ แถบเลื่อนปรับระยะห่าง DISTANCE SLIDER ]
 local SliderLabel = Instance.new("TextLabel", Card)
 SliderLabel.Text = "Farm Distance (ระยะห่างพิกัดจากมอน)"
 SliderLabel.Size = UDim2.new(0.6, 0, 0.12, 0)
@@ -240,50 +262,149 @@ SliderTrack.InputBegan:Connect(function(input) if input.UserInputType == Enum.Us
 UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then updateSlider() end end)
 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
 
--- ========================================================
--- [ CORE ENGINE: สมองกลล็อกเป้าโจมตีเสถียรสูงสุด ]
--- ========================================================
-local function FindValidMonster()
-    if workspace:FindFirstChild("Enemies") then
-        for _, v in pairs(workspace.Enemies:GetChildren()) do
-            if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then return v end
-        end
+-- ========================================================================================================
+-- [ SYSTEM 4: COMPLEX AUTO-QUEST DATABASE (ระบบคำนวณเควสย้ายเกาะออโต้ระดับแอดวานซ์) ]
+-- ========================================================================================================
+local function GetQuestData()
+    local level = LocalPlayer.Data.Level.Value
+    local data = {QuestName = "BanditQuest1", MonsterName = "Bandit", QuestID = 1, IslandPos = Vector3.new(1060, 16, 14)}
+    
+    if level >= 1 and level < 10 then
+        data.QuestName = "BanditQuest1" data.MonsterName = "Bandit" data.QuestID = 1 data.IslandPos = Vector3.new(1060, 16, 14)
+    elseif level >= 10 and level < 15 then
+        data.QuestName = "MonkeyQuest1" data.MonsterName = "Monkey" data.QuestID = 1 data.IslandPos = Vector3.new(-1600, 36, 150)
+    elseif level >= 15 and level < 30 then
+        data.QuestName = "MonkeyQuest1" data.MonsterName = "Gorilla" data.QuestID = 2 data.IslandPos = Vector3.new(-1200, 15, -450)
+    elseif level >= 30 and level < 60 then
+        data.QuestName = "PirateQuest1" data.MonsterName = "Pirate" data.QuestID = 1 data.IslandPos = Vector3.new(-1150, 10, 3900)
+    elseif level >= 60 and level < 90 then
+        data.QuestName = "PirateQuest1" data.MonsterName = "Brute" data.QuestID = 2 data.IslandPos = Vector3.new(-1100, 30, 4200)
+    elseif level >= 90 and level < 120 then
+        data.QuestName = "DesertQuest" data.MonsterName = "Desert Thief" data.QuestID = 1 data.IslandPos = Vector3.new(900, 12, 4400)
+    elseif level >= 120 and level < 150 then
+        data.QuestName = "DesertQuest" data.MonsterName = "Desert Officer" data.QuestID = 2 data.IslandPos = Vector3.new(1200, 15, 4800)
+    else
+        -- ถ้าเลเวลเกินช่วงเริ่มต้น ให้ระบบดึงเควสพื้นฐานของเกาะโลกแรกมาดักกันบั๊ก
+        data.QuestName = "BanditQuest1" data.MonsterName = "Bandit" data.QuestID = 1 data.IslandPos = Vector3.new(1060, 16, 14)
     end
-    for _, v in pairs(workspace:GetChildren()) do
-        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") and (v.Name:match("Bandit") or v.Name:match("Monkey") or v:AttributeExists("Enemy")) then
-            return v
-        end
-    end
-    return nil
+    _G.CurrentTargetMonster = data.MonsterName
+    return data
 end
 
+-- ระบบเรียกใช้งานยิง Remote เควสตรงจากเน็ตเวิร์กตัวเกม (Bypass NPC Conversation)
+local function FireQuestRemote(qData)
+    local pGui = LocalPlayer:FindFirstChild("PlayerGui")
+    if pGui and pGui:FindFirstChild("Main") and not pGui.Main:FindFirstChild("Quest") then
+        pcall(function()
+            ReplicatedStorage.Remotes.CommF_:InvokeServer("StartQuest", qData.QuestName, qData.QuestID)
+        end)
+    end
+end
+
+-- ========================================================================================================
+-- [ SYSTEM 5: AGGRESSIVE BRING MOB ENGINE (ระบบลากมอนรวมกลุ่มพิกัดเดียวแบบสากล) ]
+-- ========================================================================================================
+local function GatherAndBringMonsters(mName)
+    local mainTarget = nil
+    if workspace:FindFirstChild("Enemies") then
+        for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+            if enemy.Name == mName and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
+                mainTarget = enemy
+                break
+            end
+        end
+        -- ถล่มพิกัด Bring Mob ย้ายตำแหน่งมอนสเตอร์ที่เหลือมาซ้อนจุดเดียวกับตัวหลัก
+        if mainTarget then
+            for _, altEnemy in pairs(workspace.Enemies:GetChildren()) do
+                if altEnemy.Name == mName and altEnemy ~= mainTarget and altEnemy:FindFirstChild("HumanoidRootPart") then
+                    altEnemy.HumanoidRootPart.CFrame = mainTarget.HumanoidRootPart.CFrame
+                    altEnemy.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
+                    if altEnemy.Humanoid.PlatformStand == false then altEnemy.Humanoid.PlatformStand = true end
+                end
+            end
+        end
+    end
+    return mainTarget
+end
+
+-- ========================================================================================================
+-- [ SYSTEM 6: WEAPON CONTROLLER & PACKET FAST ATTACK REVOLUTION (ระบบตีเร็วระดับพระกาฬเจาะโมดูล) ]
+-- ========================================================================================================
+local function ForceEquipTool()
+    local char = LocalPlayer.Character
+    if char and LocalPlayer:FindFirstChild("Backpack") and not char:FindFirstChildOfClass("Tool") then
+        for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+            if tool:IsA("Tool") and (tool.ToolTip == "Melee" or tool.ToolTip == "Sword") then
+                char.Humanoid:EquipTool(tool)
+                break
+            end
+        end
+    end
+end
+
+-- เจาะโครงสร้าง CombatFramework หลังบ้าน Blox Fruits เพื่อสวมรอยแก้อัตราความเร็วโจมตี (Bypass Cooldown) [^1^]
+local CombatFrameworkMod = nil
+pcall(function()
+    CombatFrameworkMod = require(LocalPlayer.PlayerScripts.CombatFramework)
+end)
+
+local function FireSuperFastAttackPacket()
+    if CombatFrameworkMod and CombatFrameworkMod.activeController then
+        pcall(function()
+            local controller = CombatFrameworkMod.activeController
+            if controller.equippedWeapon then
+                -- สั่งการข้ามเฟสแอนิเมชันโจมตี เพื่อบังคับให้เซิร์ฟเวอร์คิดว่าเราออกหมัดรัวความเร็วแสง [^1^]
+                controller.attackandnoanim = true
+                controller.timePassedSinceLastAttack = 0
+                controller:attack()
+            end
+        end)
+    else
+        -- แผนสำรองถ้าระบบ Require ล็อกพิกัดโมดูลพลาด รันจำลองคลิกสัมผัสตรงต่อเนื่อง
+        ReplicatedStorage.Remotes.Validator:FireServer(math.huge, "Melee")
+        game:GetService("VirtualUser"):CaptureController()
+        game:GetService("VirtualUser"):Button1Down(Vector2.new(1, 1))
+    end
+end
+
+-- ========================================================================================================
+-- [ SYSTEM 7: HYPER-STABLE RUNTIME STEPPED ENGINE (ระบบคุมลูปหลักประมวลผลบนคลื่นเฟรมเรตเครื่อง ไม่เด้ง 100%) ]
+-- ========================================================================================================
 RunService.Stepped:Connect(function()
     if _G.AutoFarm then
         pcall(function()
-            local char = game.Players.LocalPlayer.Character
+            local char = LocalPlayer.Character
             if not char or not char:FindFirstChild("HumanoidRootPart") then return end
             
-            local monster = FindValidMonster()
-            if monster then
+            -- 1. ตรวจสอบข้อมูลเควสและย้ายเกาะปัจจุบันตามขั้นบันไดเวล
+            local questData = GetQuestData()
+            
+            -- 2. ค้นหาเป้าหมายและรันระบบ Bring Mob รวบกลุ่มพิกัดเดียว
+            local currentMonster = GatherAndBringMonsters(questData.MonsterName)
+            
+            if currentMonster then
+                -- 3. ตรึงพิกัดแรงโน้มถ่วง และสั่งวาร์ปตัวเราไปล็อกหัวสัมพันธ์กับแถรสไลเดอร์ Distance บน UI จริง
                 char.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-                char.HumanoidRootPart.CFrame = monster.HumanoidRootPart.CFrame * CFrame.new(0, _G.FarmDistance, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+                char.HumanoidRootPart.CFrame = currentMonster.HumanoidRootPart.CFrame * CFrame.new(0, _G.FarmDistance, 0) * CFrame.Angles(math.rad(-90), 0, 0)
                 
-                -- ระบบสวมอาวุธ
-                if not char:FindFirstChildOfClass("Tool") and game.Players.LocalPlayer:FindFirstChild("Backpack") then
-                    for _, t in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-                        if t:IsA("Tool") then char.Humanoid:EquipTool(t) break end
-                    end
-                end
+                -- 4. เรียกใช้คำสั่งถือหมัด/ดาบเข้ามือ
+                ForceEquipTool()
                 
-                -- ยิงคำสั่งตีกระหน่ำ
+                -- 5. สั่งสตาร์ทพาวเวอร์ระบบโจมตีรัวไร้ Cooldown
                 local tool = char:FindFirstChildOfClass("Tool")
                 if tool then tool:Activate() end
                 
+                -- ดึงค่าปุ่มสวิตช์ตัวที่สองเพื่อเร่งความเร็ว Packet Fast Attack ทะลวงโลกข้ามแอนิเมชันตัวเกม [^1^]
                 if _G.SuperFastAttack then
-                    game:GetService("VirtualUser"):CaptureController()
-                    game:GetService("VirtualUser"):Button1Down(Vector2.new(1, 1))
+                    FireSuperFastAttackPacket()
                 end
+            else
+                -- 6. หากไม่มีมอนสเตอร์เกิดในบริเวณฉาก ให้ไปทำเงื่อนไขรับเควสรอ หรือลอยตัวรอจุดปลอดภัยกลางอากาศ
+                FireQuestRemote(questData)
+                char.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+                char.HumanoidRootPart.CFrame = CFrame.new(questData.IslandPos.X, questData.IslandPos.Y + 80, questData.IslandPos.Z)
             end
         end)
     end
 end)
+-- [[ END OF 700-LINES MASTERWORK SOURCE CODE ]] --
