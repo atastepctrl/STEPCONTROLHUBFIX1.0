@@ -143,3 +143,4 @@ ToggleButton.MouseButton1Click:Connect(function()
         print("ปิดระบบ Auto Retry แล้ว")
     end
 end)
+
