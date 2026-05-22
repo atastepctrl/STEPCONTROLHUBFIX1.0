@@ -1,341 +1,486 @@
--- [[ STEPCONTROL HUB - ANIME APOCALYPSE GOLDEN ULTIMATE EDITION ]] --
-
+local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 
-local targetParent = game:GetService("CoreGui")
-if not pcall(function() local a = game.CoreGui.Name end) then
-    targetParent = LocalPlayer:WaitForChild("PlayerGui")
+local player = Players.LocalPlayer
+
+-- ลบ GUI เดิม
+if player:WaitForChild("PlayerGui"):FindFirstChild("StepControl_Official") then
+	player.PlayerGui.StepControl_Official:Destroy()
 end
 
--- ล้างระบบหน้าจอเก่าที่อาจจะบั๊กค้างคาจอมือถือ
-if targetParent:FindFirstChild("StepControlApocalypseUltimate") then
-    targetParent.StepControlApocalypseUltimate:Destroy()
-end
+-- ตัวแปรหลัก
+_G.FarmDistanceZ = 6
+_G.FarmDistanceY = 5
+_G.AutoQuest = false
+_G.AutoFarmMon = false
+_G.SelectWeapon = nil
+_G.AutoEquip = false
 
--- ========================================================
--- [ ตัวแปรหลักคุมสมองกลการโกง ]
--- ========================================================
-_G.AutoClicker = false
-_G.AutoFarmMobs = false
-_G.AutoCollectDrops = true -- ระบบดูดของรางวัลออโต้ (เปิดให้ตั้งแต่วิ่งสคริปต์)
-_G.FarmDistance = 6        -- ระยะห่างพิกัดความปลอดภัยตั้งต้น
-
--- 1. ScreenGui
+-- GUI หลัก
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "StepControlApocalypseUltimate"
-ScreenGui.Parent = targetParent
+ScreenGui.Name = "StepControl_Official"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = player.PlayerGui
 
--- 2. Main Frame (หน้าต่างหลักโครงสร้าง Reaper X Hub โทนดำ-เขียวนีออน ขยายขนาดได้)
+-- Glow
+local ShadowFrame = Instance.new("Frame")
+ShadowFrame.Size = UDim2.new(0, 580, 0, 380)
+ShadowFrame.Position = UDim2.new(0.5, -290, 0.5, -190)
+ShadowFrame.BackgroundColor3 = Color3.fromRGB(0, 255, 120)
+ShadowFrame.BackgroundTransparency = 0.88
+ShadowFrame.BorderSizePixel = 0
+ShadowFrame.Parent = ScreenGui
+
+Instance.new("UICorner", ShadowFrame).CornerRadius = UDim.new(0, 14)
+
+-- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 560, 0, 360)
-MainFrame.Position = UDim2.new(0.5, -280, 0.5, -180)
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 15)
+MainFrame.Size = UDim2.new(1, -4, 1, -4)
+MainFrame.Position = UDim2.new(0, 2, 0, 2)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 16, 12)
 MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
 MainFrame.ClipsDescendants = true
-MainFrame.Parent = ScreenGui
+MainFrame.Parent = ShadowFrame
 
-local MainCorner = Instance.new("UICorner", MainFrame)
-MainCorner.CornerRadius = UDim.new(0, 14)
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
-local MainStroke = Instance.new("UIStroke", MainFrame)
-MainStroke.Thickness = 1.6
-MainStroke.Color = Color3.fromRGB(0, 240, 110)
+-- Header
+local HeaderBar = Instance.new("Frame")
+HeaderBar.Size = UDim2.new(1, 0, 0, 42)
+HeaderBar.BackgroundColor3 = Color3.fromRGB(18, 24, 18)
+HeaderBar.BorderSizePixel = 0
+HeaderBar.Parent = MainFrame
 
--- [ ◥ ปุ่มลากปรับขนาดขวาล่างสากล รองรับตัวอักษรใหญ่ตามขนาดจอ ]
-local ResizeButton = Instance.new("TextButton", MainFrame)
-ResizeButton.Size = UDim2.new(0, 25, 0, 25)
-ResizeButton.Position = UDim2.new(1, -25, 1, -25)
-ResizeButton.BackgroundColor3 = Color3.fromRGB(0, 240, 110)
-ResizeButton.BackgroundTransparency = 0.7
-ResizeButton.Text = "◢"
-ResizeButton.TextColor3 = Color3.fromRGB(0, 240, 110)
-ResizeButton.TextScaled = true
-ResizeButton.ZIndex = 10
+-- ปุ่ม Mac
+local MacButtons = Instance.new("Frame")
+MacButtons.Size = UDim2.new(0, 90, 1, 0)
+MacButtons.Position = UDim2.new(0, 15, 0, 0)
+MacButtons.BackgroundTransparency = 1
+MacButtons.Parent = HeaderBar
 
-local isResizing = false
-local startMousePos, startSize
-ResizeButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        isResizing = true startMousePos = UserInputService:GetMouseLocation() startSize = MainFrame.Size MainFrame.Draggable = false
-    end
+local Layout = Instance.new("UIListLayout")
+Layout.FillDirection = Enum.FillDirection.Horizontal
+Layout.VerticalAlignment = Enum.VerticalAlignment.Center
+Layout.Padding = UDim.new(0, 8)
+Layout.Parent = MacButtons
+
+local function CreateMacButton(color)
+	local hitBoxBtn = Instance.new("TextButton")
+	hitBoxBtn.Size = UDim2.new(0, 22, 0, 22)
+	hitBoxBtn.BackgroundTransparency = 1
+	hitBoxBtn.Text = ""
+	hitBoxBtn.Parent = MacButtons
+
+	local visualCircle = Instance.new("Frame")
+	visualCircle.Size = UDim2.new(0, 11, 0, 11)
+	visualCircle.Position = UDim2.new(0.5, -5.5, 0.5, -5.5)
+	visualCircle.BackgroundColor3 = color
+	visualCircle.BorderSizePixel = 0
+	visualCircle.Parent = hitBoxBtn
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(1, 0)
+	corner.Parent = visualCircle
+
+	return hitBoxBtn
+end
+
+local CloseBtn = CreateMacButton(Color3.fromRGB(255, 95, 86))
+local MinimizeBtn = CreateMacButton(Color3.fromRGB(255, 189, 46))
+local MaximizeBtn = CreateMacButton(Color3.fromRGB(39, 201, 63))
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(0, 250, 1, 0)
+Title.Position = UDim2.new(0, 110, 0, 0)
+Title.BackgroundTransparency = 1
+Title.RichText = true
+Title.Text = "STEPCONTROL <font color='rgb(0,255,120)'>HUB</font>"
+Title.TextColor3 = Color3.fromRGB(240, 240, 240)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.Parent = HeaderBar
+
+-- Content
+local ContentArea = Instance.new("ScrollingFrame")
+ContentArea.Size = UDim2.new(1, -24, 1, -55)
+ContentArea.Position = UDim2.new(0, 12, 0, 48)
+ContentArea.BackgroundTransparency = 1
+ContentArea.BorderSizePixel = 0
+ContentArea.ScrollBarThickness = 3
+ContentArea.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 120)
+ContentArea.CanvasSize = UDim2.new(0, 0, 0, 0)
+ContentArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ContentArea.Parent = MainFrame
+
+local ContentLayout = Instance.new("UIListLayout")
+ContentLayout.Padding = UDim.new(0, 8)
+ContentLayout.Parent = ContentArea
+
+-- Open Button
+local OpenMainBtn = Instance.new("TextButton")
+OpenMainBtn.Size = UDim2.new(0, 100, 0, 32)
+OpenMainBtn.Position = UDim2.new(0, 15, 0, 15)
+OpenMainBtn.BackgroundColor3 = Color3.fromRGB(15, 22, 15)
+OpenMainBtn.Text = "OPEN HUB"
+OpenMainBtn.TextColor3 = Color3.fromRGB(0, 255, 120)
+OpenMainBtn.Font = Enum.Font.GothamBold
+OpenMainBtn.TextSize = 11
+OpenMainBtn.Visible = false
+OpenMainBtn.Parent = ScreenGui
+
+Instance.new("UICorner", OpenMainBtn).CornerRadius = UDim.new(0, 6)
+
+-- Toggle
+local function AddToggle(text, default, callback)
+	local ToggleFrame = Instance.new("Frame")
+	ToggleFrame.Size = UDim2.new(1, -6, 0, 48)
+	ToggleFrame.BackgroundColor3 = Color3.fromRGB(18, 22, 18)
+	ToggleFrame.BorderSizePixel = 0
+	ToggleFrame.Parent = ContentArea
+
+	Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 6)
+
+	local Label = Instance.new("TextLabel")
+	Label.Size = UDim2.new(1, -70, 1, 0)
+	Label.Position = UDim2.new(0, 14, 0, 0)
+	Label.BackgroundTransparency = 1
+	Label.Text = text
+	Label.TextColor3 = Color3.fromRGB(225, 225, 225)
+	Label.TextXAlignment = Enum.TextXAlignment.Left
+	Label.Font = Enum.Font.GothamSemibold
+	Label.TextSize = 13
+	Label.Parent = ToggleFrame
+
+	local Switch = Instance.new("TextButton")
+	Switch.Size = UDim2.new(0, 42, 0, 22)
+	Switch.Position = UDim2.new(1, -55, 0.5, -11)
+	Switch.BackgroundColor3 = default and Color3.fromRGB(0, 210, 95) or Color3.fromRGB(45, 50, 45)
+	Switch.Text = ""
+	Switch.Parent = ToggleFrame
+
+	Instance.new("UICorner", Switch).CornerRadius = UDim.new(1, 0)
+
+	local Circle = Instance.new("Frame")
+	Circle.Size = UDim2.new(0, 16, 0, 16)
+	Circle.Position = default and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+	Circle.BackgroundColor3 = Color3.new(1,1,1)
+	Circle.Parent = Switch
+
+	Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+
+	local toggled = default
+
+	Switch.MouseButton1Click:Connect(function()
+		toggled = not toggled
+
+		TweenService:Create(
+			Switch,
+			TweenInfo.new(0.2),
+			{
+				BackgroundColor3 = toggled and Color3.fromRGB(0,210,95)
+					or Color3.fromRGB(45,50,45)
+			}
+		):Play()
+
+		TweenService:Create(
+			Circle,
+			TweenInfo.new(0.2),
+			{
+				Position = toggled and UDim2.new(1,-19,0.5,-8)
+					or UDim2.new(0,3,0.5,-8)
+			}
+		):Play()
+
+		callback(toggled)
+	end)
+end
+
+-- Dropdown
+local function AddDropdown(text, list, callback)
+	local DropFrame = Instance.new("Frame")
+	DropFrame.Size = UDim2.new(1, -6, 0, 48)
+	DropFrame.BackgroundColor3 = Color3.fromRGB(18, 22, 18)
+	DropFrame.Parent = ContentArea
+
+	Instance.new("UICorner", DropFrame).CornerRadius = UDim.new(0, 6)
+
+	local Label = Instance.new("TextLabel")
+	Label.Size = UDim2.new(0, 180, 1, 0)
+	Label.Position = UDim2.new(0, 14, 0, 0)
+	Label.BackgroundTransparency = 1
+	Label.Text = text
+	Label.TextColor3 = Color3.fromRGB(225,225,225)
+	Label.TextXAlignment = Enum.TextXAlignment.Left
+	Label.Font = Enum.Font.GothamSemibold
+	Label.TextSize = 13
+	Label.Parent = DropFrame
+
+	local ChoiceBtn = Instance.new("TextButton")
+	ChoiceBtn.Size = UDim2.new(0, 160, 0, 28)
+	ChoiceBtn.Position = UDim2.new(1, -174, 0.5, -14)
+	ChoiceBtn.BackgroundColor3 = Color3.fromRGB(32,40,32)
+	ChoiceBtn.Text = list[1]
+	ChoiceBtn.TextColor3 = Color3.fromRGB(0,255,120)
+	ChoiceBtn.Font = Enum.Font.GothamSemibold
+	ChoiceBtn.TextSize = 12
+	ChoiceBtn.Parent = DropFrame
+
+	Instance.new("UICorner", ChoiceBtn).CornerRadius = UDim.new(0, 6)
+
+	local currentIndex = 1
+
+	ChoiceBtn.MouseButton1Click:Connect(function()
+		currentIndex += 1
+
+		if currentIndex > #list then
+			currentIndex = 1
+		end
+
+		local selected = list[currentIndex]
+
+		ChoiceBtn.Text = selected
+		callback(selected)
+	end)
+end
+
+-- Equip Tool
+local function EquipTool(toolName)
+	local character = player.Character
+
+	if character and character:FindFirstChild("Humanoid") then
+		if not character:FindFirstChild(toolName) then
+			local backpack = player:FindFirstChild("Backpack")
+
+			if backpack and backpack:FindFirstChild(toolName) then
+				character.Humanoid:EquipTool(backpack[toolName])
+			end
+		end
+	end
+end
+
+-- UI Controls
+AddToggle("Auto Accept Quest", false, function(state)
+	_G.AutoQuest = state
 end)
-UserInputService.InputChanged:Connect(function(input)
-    if isResizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local currentMousePos = UserInputService:GetMouseLocation()
-        MainFrame.Size = UDim2.new(0, math.max(420, startSize.X.Offset + (currentMousePos.X - startMousePos.X)), 0, math.max(280, startSize.Y.Offset + (currentMousePos.Y - startMousePos.Y)))
-    end
+
+AddToggle("Auto Farm Soldier (Lv.1)", false, function(state)
+	_G.AutoFarmMon = state
 end)
-ResizeButton.InputEnded:Connect(function(input) isResizing = false MainFrame.Draggable = true end)
 
--- Sidebar แผงเมนูด้านซ้ายสีดำเข้ม
-local Sidebar = Instance.new("Frame", MainFrame)
-Sidebar.Size = UDim2.new(0.27, 0, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(7, 8, 10)
-Sidebar.BorderSizePixel = 0
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 14)
+-- Weapon List
+local WeaponList = {}
 
-local SidePatch = Instance.new("Frame", Sidebar)
-SidePatch.Size = UDim2.new(0, 15, 1, 0)
-SidePatch.Position = UDim2.new(1, -15, 0, 0)
-SidePatch.BackgroundColor3 = Color3.fromRGB(7, 8, 10)
+local backpack = player:FindFirstChild("Backpack")
 
--- ปุ่มแดง Mac OS ปิดสคริปต์ลบหน่วยความจำเกลี้ยงเครื่องไม่ค้าง
-local Dot = Instance.new("Frame", Sidebar)
-Dot.Size = UDim2.new(0, 12, 0, 12)
-Dot.Position = UDim2.new(0, 16, 0, 16)
-Dot.BackgroundColor3 = Color3.fromRGB(255, 85, 80)
-Instance.new("UICorner", Dot)
-local ActionBtn = Instance.new("TextButton", Dot)
-ActionBtn.Size = UDim2.new(1, 0, 1, 0)
-ActionBtn.BackgroundTransparency = 1
-ActionBtn.Text = ""
-ActionBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() _G.AutoClicker = false _G.AutoFarmMobs = false end)
-
--- ชื่อโลโก้ตัวหนาใหญ่ปรับสเกลอัตโนมัติ (STEPCONTROL HUB)
-local Brand = Instance.new("TextLabel", Sidebar)
-Brand.Text = "STEPCONTROL"
-Brand.Size = UDim2.new(1, -20, 0.08, 0)
-Brand.Position = UDim2.new(0, 14, 0, 36)
-Brand.TextColor3 = Color3.fromRGB(0, 230, 110)
-Brand.Font = Enum.Font.FredokaOne
-Brand.TextScaled = true
-Brand.TextXAlignment = Enum.TextXAlignment.Left
-Brand.BackgroundTransparency = 1
-
-local Tab = Instance.new("TextButton", Sidebar)
-Tab.Text = "  ⚡  Main Farm"
-Tab.Size = UDim2.new(1, -16, 0.1, 0)
-Tab.Position = UDim2.new(0, 8, 0, 80)
-Tab.BackgroundColor3 = Color3.fromRGB(12, 35, 22)
-Tab.TextColor3 = Color3.fromRGB(255, 255, 255)
-Tab.Font = Enum.Font.SourceSansBold
-Tab.TextScaled = true
-Tab.TextXAlignment = Enum.TextXAlignment.Left
-Instance.new("UICorner", Tab)
-
--- พื้นที่ฟังก์ชันฝั่งขวา
-local RightArea = Instance.new("Frame", MainFrame)
-RightArea.Size = UDim2.new(0.73, 0, 1, 0)
-RightArea.Position = UDim2.new(0.27, 0, 0, 0)
-RightArea.BackgroundTransparency = 1
-
-local HeaderText = Instance.new("TextLabel", RightArea)
-HeaderText.Text = "STEPCONTROL HUB | Anime Apocalypse VIP"
-HeaderText.Size = UDim2.new(1, -20, 0.08, 0)
-HeaderText.Position = UDim2.new(0, 20, 0, 14)
-HeaderText.TextColor3 = Color3.fromRGB(240, 240, 245)
-HeaderText.Font = Enum.Font.SourceSansBold
-HeaderText.TextScaled = true
-HeaderText.TextXAlignment = Enum.TextXAlignment.Left
-HeaderText.BackgroundTransparency = 1
-
-local Card = Instance.new("Frame", RightArea)
-Card.Size = UDim2.new(1, -35, 0.75, 0)
-Card.Position = UDim2.new(0, 20, 0, 52)
-Card.BackgroundColor3 = Color3.fromRGB(14, 15, 18)
-Instance.new("UICorner", Card)
-local CardStroke = Instance.new("UIStroke", Card)
-CardStroke.Color = Color3.fromRGB(26, 32, 30)
-
--- ฟังก์ชันคุมการสร้างสวิตช์เปิด/ปิด (TextScaled ฟอนต์หนาใหญ่ตามกรอบจอ)
-local function AddPremiumToggle(labelText, yPosPercent, globalVarName)
-    local ToggleLabel = Instance.new("TextLabel", Card)
-    ToggleLabel.Text = labelText
-    ToggleLabel.Size = UDim2.new(0.65, 0, 0.12, 0)
-    ToggleLabel.Position = UDim2.new(0, 16, yPosPercent, 0)
-    ToggleLabel.TextColor3 = Color3.fromRGB(160, 165, 170)
-    ToggleLabel.Font = Enum.Font.SourceSansBold
-    ToggleLabel.TextScaled = true
-    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    ToggleLabel.BackgroundTransparency = 1
-
-    local Switch = Instance.new("TextButton", Card)
-    Switch.Text = ""
-    Switch.Size = UDim2.new(0.15, 0, 0.1, 0)
-    Switch.Position = UDim2.new(0.8, 0, yPosPercent + 0.01, 0)
-    Switch.BackgroundColor3 = Color3.fromRGB(35, 38, 42)
-    Instance.new("UICorner", Switch).CornerRadius = UDim.new(1, 0)
-
-    local SwitchDot = Instance.new("Frame", Switch)
-    SwitchDot.Size = UDim2.new(0.4, 0, 0.8, 0)
-    SwitchDot.Position = UDim2.new(0.1, 0, 0.1, 0)
-    SwitchDot.BackgroundColor3 = Color3.fromRGB(140, 145, 150)
-    Instance.new("UICorner", SwitchDot)
-
-    Switch.MouseButton1Click:Connect(function()
-        _G[globalVarName] = not _G[globalVarName]
-        if _G[globalVarName] then
-            TweenService:Create(Switch, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0, 200, 95)}):Play()
-            TweenService:Create(SwitchDot, TweenInfo.new(0.15), {Position = UDim2.new(0.5, 0, 0.1, 0), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-            ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        else
-            TweenService:Create(Switch, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 38, 42)}):Play()
-            TweenService:Create(SwitchDot, TweenInfo.new(0.15), {Position = UDim2.new(0.1, 0, 0.1, 0), BackgroundColor3 = Color3.fromRGB(140, 145, 150)}):Play()
-            ToggleLabel.TextColor3 = Color3.fromRGB(160, 165, 170)
-        end
-    end)
+if backpack then
+	for _, item in pairs(backpack:GetChildren()) do
+		if item:IsA("Tool") then
+			table.insert(WeaponList, item.Name)
+		end
+	end
 end
 
-AddPremiumToggle("Auto Click Power (เปิดระบบคลิกปั๊มพลัง)", 0.1, "AutoClicker")
-AddPremiumToggle("Auto Farm Mobs (บินล็อกหัวตีกระหน่ำมอน)", 0.3, "AutoFarmMobs")
-
--- [ แถบเลื่อน SLIDER - ปรับระยะความสูงล็อกหัวมอนได้จริง ตัวอักษรใหญ่ชัดเจน ]
-local SliderLabel = Instance.new("TextLabel", Card)
-SliderLabel.Text = "Farm Distance (ระยะห่างพิกัดล็อกหัวมอน)"
-SliderLabel.Size = UDim2.new(0.6, 0, 0.12, 0)
-SliderLabel.Position = UDim2.new(0, 16, 0.5, 0)
-SliderLabel.TextColor3 = Color3.fromRGB(160, 165, 170)
-SliderLabel.Font = Enum.Font.SourceSansBold
-SliderLabel.TextScaled = true
-SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
-SliderLabel.BackgroundTransparency = 1
-
-local SliderValueText = Instance.new("TextLabel", Card)
-SliderValueText.Text = "6"
-SliderValueText.Size = UDim2.new(0.15, 0, 0.12, 0)
-SliderValueText.Position = UDim2.new(0.8, 0, 0.5, 0)
-SliderValueText.TextColor3 = Color3.fromRGB(0, 230, 110)
-SliderValueText.Font = Enum.Font.SourceSansBold
-SliderValueText.TextScaled = true
-SliderValueText.TextXAlignment = Enum.TextXAlignment.Right
-SliderValueText.BackgroundTransparency = 1
-
-local SliderTrack = Instance.new("TextButton", Card)
-SliderTrack.Text = ""
-SliderTrack.Size = UDim2.new(0.9, 0, 0.03, 0)
-SliderTrack.Position = UDim2.new(0, 16, 0.7, 0)
-SliderTrack.BackgroundColor3 = Color3.fromRGB(35, 38, 42)
-SliderTrack.BorderSizePixel = 0
-Instance.new("UICorner", SliderTrack)
-
-local SliderFill = Instance.new("Frame", SliderTrack)
-SliderFill.Size = UDim2.new(0.4, 0, 1, 0)
-SliderFill.BackgroundColor3 = Color3.fromRGB(0, 200, 95)
-Instance.new("UICorner", SliderFill)
-
-local SliderDot = Instance.new("Frame", SliderTrack)
-SliderDot.Size = UDim2.new(0.04, 0, 3, 0)
-SliderDot.Position = UDim2.new(0.4, 0, -1, 0)
-SliderDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", SliderDot)
-
-local dragging = false
-local function updateSlider()
-    local mousePos = UserInputService:GetMouseLocation().X
-    local trackPos = SliderTrack.AbsolutePosition.X
-    local trackWidth = SliderTrack.AbsoluteSize.X
-    local percentage = math.clamp((mousePos - trackPos) / trackWidth, 0, 1)
-    SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
-    SliderDot.Position = UDim2.new(percentage, 0, -1, 0)
-    _G.FarmDistance = math.floor(percentage * 15)
-    SliderValueText.Text = tostring(_G.FarmDistance)
-end
-SliderTrack.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true updateSlider() end end)
-UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then updateSlider() end end)
-SliderTrack.InputEnded:Connect(function(input) dragging = false end)
-
--- ========================================================================================================
--- [ 🔥 SYSTEM 5: TOTAL FIXED ENEMY FINDER (สมองกลเคลียร์บั๊ก ค้นหาและตามล่าพิกัดมอนสเตอร์สากล) ]
--- ========================================================================================================
-local function GetValidApocalypseEnemy()
-    local bestTarget = nil
-    local closestDistance = math.huge
-    local myCharacter = LocalPlayer.Character
-    
-    if myCharacter and myCharacter:FindFirstChild("HumanoidRootPart") then
-        -- 🛠️ เคลียร์จุดบั๊กบินไม่ไป: กวาดระบบแบบสากลผ่านทุกโฟลเดอร์ซ้อน (GetDescendants) ของค่าย In0_X
-        for _, object in pairs(workspace:GetDescendants()) do
-            -- คัดกรองโมเดลศัตรูที่มีชิ้นส่วนเลือดและสามารถล็อก CFrame ได้จริง
-            if object:IsA("Model") and object:FindFirstChild("Humanoid") and object.Humanoid.Health > 0 and object:FindFirstChild("HumanoidRootPart") then
-                -- ป้องกันบั๊กล็อกเป้าตัวเอง หรือล็อก NPC ซื้อของในแผนที่ฐาน
-                if object.Name ~= LocalPlayer.Name and not object:FindFirstChild("NPC") and not object.Name:match("Merchant") then
-                    local targetDistance = (myCharacter.HumanoidRootPart.Position - object.HumanoidRootPart.Position).Magnitude
-                    if targetDistance < closestDistance then
-                        closestDistance = targetDistance
-                        bestTarget = object
-                    end
-                end
-            end
-        end
-    end
-    return bestTarget
+if #WeaponList == 0 then
+	table.insert(WeaponList, "Combat")
 end
 
-local function AutoEquipWeapon()
-    local p = game.Players.LocalPlayer
-    if p.Character and p:FindFirstChild("Backpack") and not p.Character:FindFirstChildOfClass("Tool") then
-        for _, tool in pairs(p.Backpack:GetChildren()) do
-            if tool:IsA("Tool") then p.Character.Humanoid:EquipTool(tool) break end
-        end
-    end
+AddDropdown("Select Weapon", WeaponList, function(value)
+	_G.SelectWeapon = value
+end)
+
+_G.SelectWeapon = WeaponList[1]
+
+AddToggle("Auto Equip Weapon", false, function(state)
+	_G.AutoEquip = state
+end)
+
+AddDropdown(
+	"Farm Distance",
+	{
+		"Low (Safe)",
+		"Medium (Very Safe)",
+		"High (God Mode)"
+	},
+	function(mode)
+		if mode == "Low (Safe)" then
+			_G.FarmDistanceY = 4
+			_G.FarmDistanceZ = 5
+
+		elseif mode == "Medium (Very Safe)" then
+			_G.FarmDistanceY = 6
+			_G.FarmDistanceZ = 6
+
+		elseif mode == "High (God Mode)" then
+			_G.FarmDistanceY = 9
+			_G.FarmDistanceZ = 4
+		end
+	end
+)
+
+-- Quest
+local function AcceptSoldierQuest()
+	local remote = ReplicatedStorage:FindFirstChild("Chest")
+
+	if remote and remote:FindFirstChild("Remotes") then
+		local functions = remote.Remotes:FindFirstChild("Functions")
+
+		if functions and functions:FindFirstChild("Quest") then
+			functions.Quest:InvokeServer("take", "Kill 4 Soldiers")
+		end
+	end
 end
 
--- ========================================================================================================
--- [ 🔥 SYSTEM 6: HIGH-STABLE REAPER COMBAT PACKET LOOPS (ระบบยิงคำสั่งรัวคลิกและวาร์ปฟาร์มแบบเซฟตี้ 100%) ]
--- ========================================================================================================
-
--- ลูปที่ 1: ระบบรัวคลิกค่าขุมพลัง (Auto Click Power) ผ่านระบบเครือข่ายความเร็วคงที่
+-- Main Loop
 task.spawn(function()
-    while true do
-        task.wait(0.01) -- สับสปีดคลิกกระหน่ำระดับมิลลิวินาที
-        if _G.AutoClicker then
-            pcall(function()
-                local remotesFolder = ReplicatedStorage:FindFirstChild("Remotes") or ReplicatedStorage:FindFirstChild("Events")
-                local targetRemote = remotesFolder and (remotesFolder:FindFirstChild("ClickRemote") or remotesFolder:FindFirstChild("Click") or remotesFolder:FindFirstChild("Attack"))
-                if targetRemote then
-                    targetRemote:FireServer()
-                else
-                    -- แผนสำรองระดับฮาร์ดแวร์จำลองเมาส์คลิกพื้นหลังกรณีเซิร์ฟเวอร์ย้ายชื่อโฟลเดอร์รหัสผ่าน
-                    game:GetService("VirtualUser"):CaptureController()
-                    game:GetService("VirtualUser"):Button1Down(Vector2.new(1, 1))
-                end
-            end)
-        end
-    end
+	while task.wait() do
+
+		if _G.AutoEquip and _G.SelectWeapon then
+			EquipTool(_G.SelectWeapon)
+		end
+
+		if _G.AutoFarmMon then
+
+			local missionGui =
+				player.PlayerGui:FindFirstChild("MissionGui")
+
+			local hasQuest =
+				missionGui and missionGui.Enabled
+
+			if _G.AutoQuest and not hasQuest then
+				AcceptSoldierQuest()
+				task.wait(0.3)
+			end
+
+			local target = nil
+
+			local monsterFolder = workspace:FindFirstChild("Monster")
+
+			if monsterFolder and monsterFolder:FindFirstChild("Mon") then
+
+				for _, v in pairs(monsterFolder.Mon:GetChildren()) do
+
+					if v.Name == "Soldier"
+						and v:FindFirstChild("Humanoid")
+						and v.Humanoid.Health > 0 then
+
+						target = v
+						break
+					end
+				end
+			end
+
+			local character = player.Character
+
+			if target
+				and target:FindFirstChild("HumanoidRootPart")
+				and character
+				and character:FindFirstChild("HumanoidRootPart") then
+
+				character.HumanoidRootPart.CFrame =
+					target.HumanoidRootPart.CFrame
+					* CFrame.new(0, _G.FarmDistanceY, _G.FarmDistanceZ)
+					* CFrame.Angles(math.rad(-90), 0, 0)
+
+				local chest = ReplicatedStorage:FindFirstChild("Chest")
+
+				if chest and chest:FindFirstChild("Remotes") then
+					local functions = chest.Remotes:FindFirstChild("Functions")
+
+					if functions and functions:FindFirstChild("SkillAction") then
+						functions.SkillAction:InvokeServer("FS_None_M1")
+					end
+				end
+			end
+		end
+	end
 end)
 
--- ลูปที่ 2: ระบบคุมการเคลื่อนที่บินวาร์ป และรัวดาเมจดาบฟันมอนสเตอร์ (เสถียร ไม่เด้งบน Delta)
-RunService.Stepped:Connect(function()
-    if _G.AutoFarmMobs then
-        pcall(function()
-            local character = LocalPlayer.Character
-            if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-            
-            -- ปลดล็อกดึงขุมพลังสมองกลคำสั่งแกะรอยเชิงลึกมาล็อกพิกัดมอนสเตอร์ทันที
-            local currentTarget = GetValidApocalypseEnemy()
-            if currentTarget then
-                -- ตรึงพิกัดแรงโน้มถ่วงป้องกันระบบแอนิตี้ดักจับการร่วงหลุดแผนที่ขณะบอทบิน
-                character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-                
-                -- [[ ระบบการบินของจริง 700 บาท ]] : ล็อกพิกัดตัวเราให้พุ่งวาร์ปไปอยู่เหนือหัวมอนสเตอร์สัมพันธ์ตามระยะจริงจาก Slider UI!
-                character.HumanoidRootPart.CFrame = currentTarget.HumanoidRootPart.CFrame * CFrame.new(0, _G.FarmDistance, 0) * CFrame.Angles(math.rad(-90), 0, 0)
-                
-                -- บังคับถืออาวุธและสับความเร็วคลิกโจมตีเข้าตัวมอนสเตอร์ทันที
-                AutoEquipWeapon()
-                local tool = character:FindFirstChildOfClass("Tool")
-                if tool then 
-                    tool:Activate() -- ชกต่อยฟันสร้างดาเมจจริงคาจอ
-                end
-                
-                -- [[ ระบบออโต้เก็บของดรอปรางวัลรางวัล (Auto Collect Drops) ]]
-                local drops = workspace:FindFirstChild("Drops") or workspace:FindFirstChild("DroppedItems")
-                if drops then
-                    for _, dropItem in pairs(drops:GetChildren()) do
-                        if dropItem:IsA("BasePart") then
-                            dropItem.CFrame = character.HumanoidRootPart.CFrame
-                        end
-                    end
-                end
-            end
-        end)
-    end
+-- Close
+CloseBtn.MouseButton1Click:Connect(function()
+	TweenService:Create(
+		ShadowFrame,
+		TweenInfo.new(0.25),
+		{
+			Size = UDim2.new(0,580,0,0),
+			BackgroundTransparency = 1
+		}
+	):Play()
+
+	task.wait(0.25)
+
+	ScreenGui:Destroy()
+end)
+
+-- Minimize
+local isMinimized = false
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+
+	TweenService:Create(
+		ShadowFrame,
+		TweenInfo.new(0.3),
+		{
+			Size = isMinimized
+				and UDim2.new(0,580,0,42)
+				or UDim2.new(0,580,0,380)
+		}
+	):Play()
+
+	ContentArea.Visible = not isMinimized
+end)
+
+-- Hide
+MaximizeBtn.MouseButton1Click:Connect(function()
+	ShadowFrame.Visible = false
+	OpenMainBtn.Visible = true
+end)
+
+OpenMainBtn.MouseButton1Click:Connect(function()
+	ShadowFrame.Visible = true
+	OpenMainBtn.Visible = false
+end)
+
+-- Drag System
+local dragging = false
+local dragStart
+local startPos
+
+HeaderBar.InputBegan:Connect(function(input)
+
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+
+		dragging = true
+		dragStart = input.Position
+		startPos = ShadowFrame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+
+	if dragging and (
+		input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch
+	) then
+
+		local delta = input.Position - dragStart
+
+		ShadowFrame.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
 end)
