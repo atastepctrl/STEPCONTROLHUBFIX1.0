@@ -1,486 +1,299 @@
-local Players = game:GetService("Players")
+-- =============================================================================
+-- STEPCONTROL HUB - ULTIMATE REAPER STYLE (DARK & YELLOW EDITION)
+-- FULLY FUNCTIONAL TAB SWITCHING & SMOOTH MOBILE INTERACTION
+-- =============================================================================
+
+if game.CoreGui:FindFirstChild("StepControlHub") then
+    game.CoreGui.StepControlHub:Destroy()
+end
+
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenInfoFast = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
-local player = Players.LocalPlayer
-
--- ลบ GUI เดิม
-if player:WaitForChild("PlayerGui"):FindFirstChild("StepControl_Official") then
-	player.PlayerGui.StepControl_Official:Destroy()
-end
-
--- ตัวแปรหลัก
-_G.FarmDistanceZ = 6
-_G.FarmDistanceY = 5
-_G.AutoQuest = false
-_G.AutoFarmMon = false
-_G.SelectWeapon = nil
-_G.AutoEquip = false
-
--- GUI หลัก
+-- สร้างหน้าต่างหลัก
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "StepControl_Official"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = player.PlayerGui
+ScreenGui.Name = "StepControlHub"
+ScreenGui.Parent = game.CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Glow
-local ShadowFrame = Instance.new("Frame")
-ShadowFrame.Size = UDim2.new(0, 580, 0, 380)
-ShadowFrame.Position = UDim2.new(0.5, -290, 0.5, -190)
-ShadowFrame.BackgroundColor3 = Color3.fromRGB(0, 255, 120)
-ShadowFrame.BackgroundTransparency = 0.88
-ShadowFrame.BorderSizePixel = 0
-ShadowFrame.Parent = ScreenGui
-
-Instance.new("UICorner", ShadowFrame).CornerRadius = UDim.new(0, 14)
-
--- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(1, -4, 1, -4)
-MainFrame.Position = UDim2.new(0, 2, 0, 2)
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 16, 12)
-MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
-MainFrame.Parent = ShadowFrame
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(11, 11, 13)
+MainFrame.Position = UDim2.new(0.5, -340, 0.5, -230)
+MainFrame.Size = UDim2.new(0, 680, 0, 460)
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.Parent = MainFrame
 
--- Header
-local HeaderBar = Instance.new("Frame")
-HeaderBar.Size = UDim2.new(1, 0, 0, 42)
-HeaderBar.BackgroundColor3 = Color3.fromRGB(18, 24, 18)
-HeaderBar.BorderSizePixel = 0
-HeaderBar.Parent = MainFrame
+-- ==================== SIDEBAR (แถบซ้ายมือ) ====================
+local SideBar = Instance.new("Frame")
+SideBar.Name = "SideBar"
+SideBar.Parent = MainFrame
+SideBar.BackgroundColor3 = Color3.fromRGB(14, 14, 16)
+SideBar.Size = UDim2.new(0, 160, 1, 0)
+Instance.new("UICorner", SideBar).CornerRadius = UDim.new(0, 8)
 
--- ปุ่ม Mac
-local MacButtons = Instance.new("Frame")
-MacButtons.Size = UDim2.new(0, 90, 1, 0)
-MacButtons.Position = UDim2.new(0, 15, 0, 0)
-MacButtons.BackgroundTransparency = 1
-MacButtons.Parent = HeaderBar
+local Logo = Instance.new("TextLabel")
+Logo.Parent = SideBar
+Logo.Size = UDim2.new(1, 0, 0, 45)
+Logo.BackgroundTransparency = 1
+Logo.Text = "  STEPCONTROL"
+Logo.TextColor3 = Color3.fromRGB(240, 240, 245)
+Logo.TextSize = 14
+Logo.Font = Enum.Font.SourceSansBold
+Logo.TextXAlignment = Enum.TextXAlignment.Left
 
-local Layout = Instance.new("UIListLayout")
-Layout.FillDirection = Enum.FillDirection.Horizontal
-Layout.VerticalAlignment = Enum.VerticalAlignment.Center
-Layout.Padding = UDim.new(0, 8)
-Layout.Parent = MacButtons
+-- ที่เก็บปุ่มและหน้าของแต่ละแท็บ
+local TabButtons = {}
+local TabPages = {}
 
-local function CreateMacButton(color)
-	local hitBoxBtn = Instance.new("TextButton")
-	hitBoxBtn.Size = UDim2.new(0, 22, 0, 22)
-	hitBoxBtn.BackgroundTransparency = 1
-	hitBoxBtn.Text = ""
-	hitBoxBtn.Parent = MacButtons
-
-	local visualCircle = Instance.new("Frame")
-	visualCircle.Size = UDim2.new(0, 11, 0, 11)
-	visualCircle.Position = UDim2.new(0.5, -5.5, 0.5, -5.5)
-	visualCircle.BackgroundColor3 = color
-	visualCircle.BorderSizePixel = 0
-	visualCircle.Parent = hitBoxBtn
-
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(1, 0)
-	corner.Parent = visualCircle
-
-	return hitBoxBtn
+local function CreateCategoryLabel(text, yPos)
+    local Label = Instance.new("TextLabel")
+    Label.Parent = SideBar
+    Label.Position = UDim2.new(0, 12, 0, yPos)
+    Label.Size = UDim2.new(0, 130, 0, 20)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(90, 90, 95)
+    Label.TextSize = 11
+    Label.Font = Enum.Font.SourceSansBold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
 end
 
-local CloseBtn = CreateMacButton(Color3.fromRGB(255, 95, 86))
-local MinimizeBtn = CreateMacButton(Color3.fromRGB(255, 189, 46))
-local MaximizeBtn = CreateMacButton(Color3.fromRGB(39, 201, 63))
+-- ฟังก์ชันสร้างปุ่มแท็บสลับหน้าได้จริง
+local function AddTab(id, text, yPos)
+    -- สร้างหน้าเพจสำหรับแท็บนี้
+    local Page = Instance.new("Frame")
+    Page.Name = id .. "Page"
+    Page.Parent = MainFrame
+    Page.Position = UDim2.new(0, 175, 0, 15)
+    Page.Size = UDim2.new(0, 490, 0, 430)
+    Page.BackgroundTransparency = 1
+    Page.Visible = false
+    TabPages[id] = Page
 
--- Title
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(0, 250, 1, 0)
-Title.Position = UDim2.new(0, 110, 0, 0)
-Title.BackgroundTransparency = 1
-Title.RichText = true
-Title.Text = "STEPCONTROL <font color='rgb(0,255,120)'>HUB</font>"
-Title.TextColor3 = Color3.fromRGB(240, 240, 240)
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
-Title.Parent = HeaderBar
+    -- แบ่งคอลัมน์ซ้ายขวาในแต่ละหน้า
+    local LeftCol = Instance.new("Frame")
+    LeftCol.Name = "LeftCol"
+    LeftCol.Parent = Page
+    LeftCol.Size = UDim2.new(0, 240, 1, 0)
+    LeftCol.BackgroundTransparency = 1
+    
+    local RightCol = Instance.new("Frame")
+    RightCol.Name = "RightCol"
+    RightCol.Parent = Page
+    RightCol.Position = UDim2.new(0, 250, 0, 0)
+    RightCol.Size = UDim2.new(0, 240, 1, 0)
+    RightCol.BackgroundTransparency = 1
 
--- Content
-local ContentArea = Instance.new("ScrollingFrame")
-ContentArea.Size = UDim2.new(1, -24, 1, -55)
-ContentArea.Position = UDim2.new(0, 12, 0, 48)
-ContentArea.BackgroundTransparency = 1
-ContentArea.BorderSizePixel = 0
-ContentArea.ScrollBarThickness = 3
-ContentArea.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 120)
-ContentArea.CanvasSize = UDim2.new(0, 0, 0, 0)
-ContentArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ContentArea.Parent = MainFrame
+    -- สร้างปุ่มกดด้านซ้าย
+    local Btn = Instance.new("TextButton")
+    Btn.Parent = SideBar
+    Btn.Position = UDim2.new(0, 10, 0, yPos)
+    Btn.Size = UDim2.new(0, 140, 0, 32)
+    Btn.Text = "     " .. text
+    Btn.TextSize = 13
+    Btn.Font = Enum.Font.SourceSansBold
+    Btn.TextXAlignment = Enum.TextXAlignment.Left
+    Btn.TextColor3 = Color3.fromRGB(140, 140, 145)
+    Btn.BackgroundTransparency = 1
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+    
+    TabButtons[id] = Btn
 
-local ContentLayout = Instance.new("UIListLayout")
-ContentLayout.Padding = UDim.new(0, 8)
-ContentLayout.Parent = ContentArea
+    Btn.Activated:Connect(function()
+        -- ซ่อนทุกหน้าและล้างสีปุ่ม
+        for k, p in pairs(TabPages) do p.Visible = false end
+        for k, b in pairs(TabButtons) do 
+            TweenService:Create(b, TweenInfoFast, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(140, 140, 145)}):Play()
+        end
+        -- เปิดเฉพาะหน้าเพจที่เลือก + ไฮไลต์สีเหลืองสมูท
+        Page.Visible = true
+        TweenService:Create(Btn, TweenInfoFast, {BackgroundTransparency = 0, BackgroundColor3 = Color3.fromRGB(28, 24, 15), TextColor3 = Color3.fromRGB(255, 204, 0)}):Play()
+    end)
 
--- Open Button
-local OpenMainBtn = Instance.new("TextButton")
-OpenMainBtn.Size = UDim2.new(0, 100, 0, 32)
-OpenMainBtn.Position = UDim2.new(0, 15, 0, 15)
-OpenMainBtn.BackgroundColor3 = Color3.fromRGB(15, 22, 15)
-OpenMainBtn.Text = "OPEN HUB"
-OpenMainBtn.TextColor3 = Color3.fromRGB(0, 255, 120)
-OpenMainBtn.Font = Enum.Font.GothamBold
-OpenMainBtn.TextSize = 11
-OpenMainBtn.Visible = false
-OpenMainBtn.Parent = ScreenGui
-
-Instance.new("UICorner", OpenMainBtn).CornerRadius = UDim.new(0, 6)
-
--- Toggle
-local function AddToggle(text, default, callback)
-	local ToggleFrame = Instance.new("Frame")
-	ToggleFrame.Size = UDim2.new(1, -6, 0, 48)
-	ToggleFrame.BackgroundColor3 = Color3.fromRGB(18, 22, 18)
-	ToggleFrame.BorderSizePixel = 0
-	ToggleFrame.Parent = ContentArea
-
-	Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 6)
-
-	local Label = Instance.new("TextLabel")
-	Label.Size = UDim2.new(1, -70, 1, 0)
-	Label.Position = UDim2.new(0, 14, 0, 0)
-	Label.BackgroundTransparency = 1
-	Label.Text = text
-	Label.TextColor3 = Color3.fromRGB(225, 225, 225)
-	Label.TextXAlignment = Enum.TextXAlignment.Left
-	Label.Font = Enum.Font.GothamSemibold
-	Label.TextSize = 13
-	Label.Parent = ToggleFrame
-
-	local Switch = Instance.new("TextButton")
-	Switch.Size = UDim2.new(0, 42, 0, 22)
-	Switch.Position = UDim2.new(1, -55, 0.5, -11)
-	Switch.BackgroundColor3 = default and Color3.fromRGB(0, 210, 95) or Color3.fromRGB(45, 50, 45)
-	Switch.Text = ""
-	Switch.Parent = ToggleFrame
-
-	Instance.new("UICorner", Switch).CornerRadius = UDim.new(1, 0)
-
-	local Circle = Instance.new("Frame")
-	Circle.Size = UDim2.new(0, 16, 0, 16)
-	Circle.Position = default and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
-	Circle.BackgroundColor3 = Color3.new(1,1,1)
-	Circle.Parent = Switch
-
-	Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
-
-	local toggled = default
-
-	Switch.MouseButton1Click:Connect(function()
-		toggled = not toggled
-
-		TweenService:Create(
-			Switch,
-			TweenInfo.new(0.2),
-			{
-				BackgroundColor3 = toggled and Color3.fromRGB(0,210,95)
-					or Color3.fromRGB(45,50,45)
-			}
-		):Play()
-
-		TweenService:Create(
-			Circle,
-			TweenInfo.new(0.2),
-			{
-				Position = toggled and UDim2.new(1,-19,0.5,-8)
-					or UDim2.new(0,3,0.5,-8)
-			}
-		):Play()
-
-		callback(toggled)
-	end)
+    return LeftCol, RightCol
 end
 
--- Dropdown
-local function AddDropdown(text, list, callback)
-	local DropFrame = Instance.new("Frame")
-	DropFrame.Size = UDim2.new(1, -6, 0, 48)
-	DropFrame.BackgroundColor3 = Color3.fromRGB(18, 22, 18)
-	DropFrame.Parent = ContentArea
+CreateCategoryLabel("General", 55)
+local AJ_Left, AJ_Right = AddTab("AutoJoin", "Auto Join", 75)
 
-	Instance.new("UICorner", DropFrame).CornerRadius = UDim.new(0, 6)
+CreateCategoryLabel("Game Exploit", 115)
+local FS_Left, FS_Right = AddTab("FarmSteal", "Farm & Steal", 135)
 
-	local Label = Instance.new("TextLabel")
-	Label.Size = UDim2.new(0, 180, 1, 0)
-	Label.Position = UDim2.new(0, 14, 0, 0)
-	Label.BackgroundTransparency = 1
-	Label.Text = text
-	Label.TextColor3 = Color3.fromRGB(225,225,225)
-	Label.TextXAlignment = Enum.TextXAlignment.Left
-	Label.Font = Enum.Font.GothamSemibold
-	Label.TextSize = 13
-	Label.Parent = DropFrame
+CreateCategoryLabel("Utilities", 175)
+local UT_Left, UT_Right = AddTab("Utilities", "Utilities", 195)
+local ST_Left, ST_Right = AddTab("Settings", "Settings", 230)
 
-	local ChoiceBtn = Instance.new("TextButton")
-	ChoiceBtn.Size = UDim2.new(0, 160, 0, 28)
-	ChoiceBtn.Position = UDim2.new(1, -174, 0.5, -14)
-	ChoiceBtn.BackgroundColor3 = Color3.fromRGB(32,40,32)
-	ChoiceBtn.Text = list[1]
-	ChoiceBtn.TextColor3 = Color3.fromRGB(0,255,120)
-	ChoiceBtn.Font = Enum.Font.GothamSemibold
-	ChoiceBtn.TextSize = 12
-	ChoiceBtn.Parent = DropFrame
-
-	Instance.new("UICorner", ChoiceBtn).CornerRadius = UDim.new(0, 6)
-
-	local currentIndex = 1
-
-	ChoiceBtn.MouseButton1Click:Connect(function()
-		currentIndex += 1
-
-		if currentIndex > #list then
-			currentIndex = 1
-		end
-
-		local selected = list[currentIndex]
-
-		ChoiceBtn.Text = selected
-		callback(selected)
-	end)
+-- ==================== COMPONENT CREATOR (ฟังก์ชันการ์ดและปุ่ม) ====================
+local function CreateReaperCard(parent, title, subtitle, yPos, height, globalMasterVar)
+    local Card = Instance.new("Frame", parent)
+    Card.Position = UDim2.new(0, 0, 0, yPos)
+    Card.Size = UDim2.new(1, 0, 0, height)
+    Card.BackgroundColor3 = Color3.fromRGB(16, 16, 19)
+    Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 6)
+    
+    local TitleLabel = Instance.new("TextLabel", Card)
+    TitleLabel.Position = UDim2.new(0, 12, 0, 12)
+    TitleLabel.Size = UDim2.new(0, 150, 0, 14)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = title
+    TitleLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
+    TitleLabel.TextSize = 13
+    TitleLabel.Font = Enum.Font.SourceSansBold
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local SubLabel = Instance.new("TextLabel", Card)
+    SubLabel.Position = UDim2.new(0, 12, 0, 26)
+    SubLabel.Size = UDim2.new(0, 150, 0, 12)
+    SubLabel.BackgroundTransparency = 1
+    SubLabel.Text = subtitle
+    SubLabel.TextColor3 = Color3.fromRGB(110, 110, 115)
+    SubLabel.TextSize = 10
+    SubLabel.Font = Enum.Font.SourceSans
+    SubLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local ToggleBtn = Instance.new("TextButton", Card)
+    ToggleBtn.Position = UDim2.new(1, -38, 0, 14)
+    ToggleBtn.Size = UDim2.new(0, 26, 0, 14)
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    ToggleBtn.Text = ""
+    Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
+    
+    local Circle = Instance.new("Frame", ToggleBtn)
+    Circle.Size = UDim2.new(0, 10, 0, 10)
+    Circle.Position = UDim2.new(0, 2, 0.5, -5)
+    Circle.BackgroundColor3 = Color3.fromRGB(180, 180, 185)
+    Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+    
+    _G[globalMasterVar] = false
+    ToggleBtn.Activated:Connect(function()
+        _G[globalMasterVar] = not _G[globalMasterVar]
+        if _G[globalMasterVar] then
+            TweenService:Create(ToggleBtn, TweenInfoFast, {BackgroundColor3 = Color3.fromRGB(255, 204, 0)}):Play()
+            TweenService:Create(Circle, TweenInfoFast, {Position = UDim2.new(1, -12, 0.5, -5), BackgroundColor3 = Color3.fromRGB(15, 15, 17)}):Play()
+        else
+            TweenService:Create(ToggleBtn, TweenInfoFast, {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}):Play()
+            TweenService:Create(Circle, TweenInfoFast, {Position = UDim2.new(0, 2, 0.5, -5), BackgroundColor3 = Color3.fromRGB(180, 180, 185)}):Play()
+        end
+    end)
+    return Card
 end
 
--- Equip Tool
-local function EquipTool(toolName)
-	local character = player.Character
-
-	if character and character:FindFirstChild("Humanoid") then
-		if not character:FindFirstChild(toolName) then
-			local backpack = player:FindFirstChild("Backpack")
-
-			if backpack and backpack:FindFirstChild(toolName) then
-				character.Humanoid:EquipTool(backpack[toolName])
-			end
-		end
-	end
+local function AddCheckbox(card, text, yPos, globalVar)
+    local Label = Instance.new("TextLabel", card)
+    Label.Position = UDim2.new(0, 12, 0, yPos)
+    Label.Size = UDim2.new(0, 150, 0, 20)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(190, 190, 195)
+    Label.TextSize = 12
+    Label.Font = Enum.Font.SourceSans
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local Box = Instance.new("TextButton", card)
+    Box.Position = UDim2.new(1, -26, 0, yPos + 3)
+    Box.Size = UDim2.new(0, 14, 0, 14)
+    Box.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+    Box.Text = ""
+    Box.TextColor3 = Color3.fromRGB(15, 15, 17)
+    Box.TextSize = 11
+    Box.Font = Enum.Font.SourceSansBold
+    Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 3)
+    
+    _G[globalVar] = false
+    Box.Activated:Connect(function()
+        _G[globalVar] = not _G[globalVar]
+        if _G[globalVar] then
+            Box.BackgroundColor3 = Color3.fromRGB(255, 204, 0)
+            Box.Text = "✓"
+        else
+            Box.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+            Box.Text = ""
+        end
+    end)
 end
 
--- UI Controls
-AddToggle("Auto Accept Quest", false, function(state)
-	_G.AutoQuest = state
-end)
+local function AddSlider(card, text, yPos)
+    local Label = Instance.new("TextLabel", card)
+    Label.Position = UDim2.new(0, 12, 0, yPos)
+    Label.Size = UDim2.new(0, 100, 0, 15)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(180, 180, 185)
+    Label.TextSize = 12
+    Label.Font = Enum.Font.SourceSans
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local ValLabel = Instance.new("TextLabel", card)
+    ValLabel.Position = UDim2.new(1, -45, 0, yPos)
+    ValLabel.Size = UDim2.new(0, 35, 0, 15)
+    ValLabel.BackgroundTransparency = 1
+    ValLabel.Text = "10/s"
+    ValLabel.TextColor3 = Color3.fromRGB(130, 130, 135)
+    ValLabel.TextSize = 11
+    ValLabel.Font = Enum.Font.SourceSans
+    ValLabel.TextXAlignment = Enum.TextXAlignment.Right
+    
+    local MainBar = Instance.new("TextButton", card)
+    MainBar.Position = UDim2.new(0, 12, 0, yPos + 18)
+    MainBar.Size = UDim2.new(1, -24, 0, 4)
+    MainBar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    MainBar.Text = ""
+    MainBar.BorderSizePixel = 0
+    
+    local FillBar = Instance.new("Frame", MainBar)
+    FillBar.Size = UDim2.new(0.33, 0, 1, 0)
+    FillBar.BackgroundColor3 = Color3.fromRGB(255, 204, 0)
+    FillBar.BorderSizePixel = 0
+    
+    local Dragging = false
+    MainBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then Dragging = true end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+            Dragging = false 
+        end
+    end)
 
-AddToggle("Auto Farm Soldier (Lv.1)", false, function(state)
-	_G.AutoFarmMon = state
-end)
-
--- Weapon List
-local WeaponList = {}
-
-local backpack = player:FindFirstChild("Backpack")
-
-if backpack then
-	for _, item in pairs(backpack:GetChildren()) do
-		if item:IsA("Tool") then
-			table.insert(WeaponList, item.Name)
-		end
-	end
+    UserInputService.InputChanged:Connect(function(input)
+        if Dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local Percentage = math.clamp((input.Position.X - MainBar.AbsolutePosition.X) / MainBar.AbsoluteSize.X, 0, 1)
+            FillBar.Size = UDim2.new(Percentage, 0, 1, 0)
+            ValLabel.Text = tostring(math.floor(Percentage * 30)) .. "/s"
+        end
+    end)
 end
 
-if #WeaponList == 0 then
-	table.insert(WeaponList, "Combat")
-end
+-- ==================== ประกอบเนื้อหาลงแต่ละหน้าแท็บ ====================
 
-AddDropdown("Select Weapon", WeaponList, function(value)
-	_G.SelectWeapon = value
-end)
+-- หน้าที่ 1: แท็บ Auto Join (คอลัมน์ซ้าย)
+local Card1 = CreateReaperCard(AJ_Left, "Join Settings", "Boost your game's performance", 0, 125, "MasterJoin")
+AddCheckbox(Card1, "Auto Start", 48, "AutoStartVar")
+AddSlider(Card1, "Join Delay", 76)
 
-_G.SelectWeapon = WeaponList[1]
+-- หน้าที่ 2: แท็บ Farm & Steal (แยกคอลัมน์ซ้าย-ขวา)
+local Card2 = CreateReaperCard(FS_Left, "Egg Farm", "Steal An Egg configuration", 0, 110, "MasterSteal")
+AddCheckbox(Card2, "Auto Steal Eggs", 48, "StealEggVar")
+AddCheckbox(Card2, "Teleport To Base", 74, "TeleportBaseVar")
 
-AddToggle("Auto Equip Weapon", false, function(state)
-	_G.AutoEquip = state
-end)
+local Card3 = CreateReaperCard(FS_Right, "Hatch System", "Automatic Hatch Configuration", 0, 110, "MasterHatch")
+AddCheckbox(Card3, "Auto Hatch Normal", 48, "HatchNormalVar")
+AddCheckbox(Card3, "Auto Equip Best", 74, "EquipBestVar")
 
-AddDropdown(
-	"Farm Distance",
-	{
-		"Low (Safe)",
-		"Medium (Very Safe)",
-		"High (God Mode)"
-	},
-	function(mode)
-		if mode == "Low (Safe)" then
-			_G.FarmDistanceY = 4
-			_G.FarmDistanceZ = 5
+-- หน้าที่ 3: แท็บ Utilities
+local Card4 = CreateReaperCard(UT_Left, "Base Upgrades", "Treadmill and Rank Configuration", 0, 110, "MasterUpgrade")
+AddCheckbox(Card4, "Auto Train Speed", 48, "TrainSpeedVar")
+AddCheckbox(Card4, "Auto Rebirth", 74, "RebirthVar")
 
-		elseif mode == "Medium (Very Safe)" then
-			_G.FarmDistanceY = 6
-			_G.FarmDistanceZ = 6
-
-		elseif mode == "High (God Mode)" then
-			_G.FarmDistanceY = 9
-			_G.FarmDistanceZ = 4
-		end
-	end
-)
-
--- Quest
-local function AcceptSoldierQuest()
-	local remote = ReplicatedStorage:FindFirstChild("Chest")
-
-	if remote and remote:FindFirstChild("Remotes") then
-		local functions = remote.Remotes:FindFirstChild("Functions")
-
-		if functions and functions:FindFirstChild("Quest") then
-			functions.Quest:InvokeServer("take", "Kill 4 Soldiers")
-		end
-	end
-end
-
--- Main Loop
-task.spawn(function()
-	while task.wait() do
-
-		if _G.AutoEquip and _G.SelectWeapon then
-			EquipTool(_G.SelectWeapon)
-		end
-
-		if _G.AutoFarmMon then
-
-			local missionGui =
-				player.PlayerGui:FindFirstChild("MissionGui")
-
-			local hasQuest =
-				missionGui and missionGui.Enabled
-
-			if _G.AutoQuest and not hasQuest then
-				AcceptSoldierQuest()
-				task.wait(0.3)
-			end
-
-			local target = nil
-
-			local monsterFolder = workspace:FindFirstChild("Monster")
-
-			if monsterFolder and monsterFolder:FindFirstChild("Mon") then
-
-				for _, v in pairs(monsterFolder.Mon:GetChildren()) do
-
-					if v.Name == "Soldier"
-						and v:FindFirstChild("Humanoid")
-						and v.Humanoid.Health > 0 then
-
-						target = v
-						break
-					end
-				end
-			end
-
-			local character = player.Character
-
-			if target
-				and target:FindFirstChild("HumanoidRootPart")
-				and character
-				and character:FindFirstChild("HumanoidRootPart") then
-
-				character.HumanoidRootPart.CFrame =
-					target.HumanoidRootPart.CFrame
-					* CFrame.new(0, _G.FarmDistanceY, _G.FarmDistanceZ)
-					* CFrame.Angles(math.rad(-90), 0, 0)
-
-				local chest = ReplicatedStorage:FindFirstChild("Chest")
-
-				if chest and chest:FindFirstChild("Remotes") then
-					local functions = chest.Remotes:FindFirstChild("Functions")
-
-					if functions and functions:FindFirstChild("SkillAction") then
-						functions.SkillAction:InvokeServer("FS_None_M1")
-					end
-				end
-			end
-		end
-	end
-end)
-
--- Close
-CloseBtn.MouseButton1Click:Connect(function()
-	TweenService:Create(
-		ShadowFrame,
-		TweenInfo.new(0.25),
-		{
-			Size = UDim2.new(0,580,0,0),
-			BackgroundTransparency = 1
-		}
-	):Play()
-
-	task.wait(0.25)
-
-	ScreenGui:Destroy()
-end)
-
--- Minimize
-local isMinimized = false
-
-MinimizeBtn.MouseButton1Click:Connect(function()
-	isMinimized = not isMinimized
-
-	TweenService:Create(
-		ShadowFrame,
-		TweenInfo.new(0.3),
-		{
-			Size = isMinimized
-				and UDim2.new(0,580,0,42)
-				or UDim2.new(0,580,0,380)
-		}
-	):Play()
-
-	ContentArea.Visible = not isMinimized
-end)
-
--- Hide
-MaximizeBtn.MouseButton1Click:Connect(function()
-	ShadowFrame.Visible = false
-	OpenMainBtn.Visible = true
-end)
-
-OpenMainBtn.MouseButton1Click:Connect(function()
-	ShadowFrame.Visible = true
-	OpenMainBtn.Visible = false
-end)
-
--- Drag System
-local dragging = false
-local dragStart
-local startPos
-
-HeaderBar.InputBegan:Connect(function(input)
-
-	if input.UserInputType == Enum.UserInputType.MouseButton1
-		or input.UserInputType == Enum.UserInputType.Touch then
-
-		dragging = true
-		dragStart = input.Position
-		startPos = ShadowFrame.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-
-	if dragging and (
-		input.UserInputType == Enum.UserInputType.MouseMovement
-		or input.UserInputType == Enum.UserInputType.Touch
-	) then
-
-		local delta = input.Position - dragStart
-
-		ShadowFrame.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-	end
-end)
+-- บังคับเปิดหน้าแรกสุดไว้เป็นค่าเริ่มต้นตอนโหลดสคริปต์
+TabPages["AutoJoin"].Visible = true
+TabButtons["AutoJoin"].BackgroundTransparency = 0
+TabButtons["AutoJoin"].BackgroundColor3 = Color3.fromRGB(28, 24, 15)
+TabButtons["AutoJoin"].TextColor3 = Color3.fromRGB(255, 204, 0)
