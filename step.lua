@@ -152,10 +152,6 @@ local function KeepWeaponEquipped()
 end
 
 local function GetQuestForLevel(lvl)
-   -- FORCE PIRATE STARTER ISLAND FOR LEVELS 1-10
-   if lvl >= 0 and lvl <= 9 then
-   	return {Min=0,Max=9,Quest="MarineQuest1",Level=1,Mob="Bandit [Lv. 5]"}
-   end
    for _,v in ipairs(QuestDB) do
    	if lvl >= v.Min and lvl <= v.Max then return v end
    end
@@ -171,8 +167,6 @@ local S = {
    CurrentMob = "",
    IsTweening = false,
    AttackCombo = 1,
-   QuestAccepted = false,
-   Teleporting = false,
 }
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -218,8 +212,6 @@ FarmTab:CreateToggle({
    		S.TargetCF = nil
    		S.CurrentMob = ""
    		S.IsTweening = false
-   		S.QuestAccepted = false
-   		S.Teleporting = false
    	end
    end,
 })
@@ -252,51 +244,9 @@ local function SetNoclip(on)
    end
 end
 
--- Auto-Quest Accept Function
-local function AcceptQuest(q)
-   if not q or S.QuestAccepted then return end
-   pcall(function()
-   	-- Tween to quest giver position based on level
-   	local questPos = nil
-   	local lvl = Level.Value
-   	if lvl >= 0 and lvl <= 9 then
-   		questPos = V3(-2968.090087890625,39.337005615234375,2319.31103515625) -- Bandit Quest Giver
-   	elseif lvl >= 10 and lvl <= 19 then
-   		questPos = V3(-1499.25,20.979995727539062,88.49000549316406)
-   	elseif lvl >= 20 and lvl <= 29 then
-   		questPos = V3(-1363.18994140625,20.229995727539062,-486.19000244140625)
-   	elseif lvl >= 30 and lvl <= 59 then
-   		questPos = V3(-1182.512939453125,5.600006103515625,3972.157958984375)
-   	else
-   		-- For other levels, use the first spawn point of the mob
-   		local mobData = Sea1Monsters[q.Mob]
-   		if mobData and mobData[2] and mobData[2][1] then
-   			questPos = mobData[2][1]
-   		end
-   	end
-   	
-   	if questPos then
-   		local targetCF = CF(questPos + V3(0,3,0))
-   		local dist = (HRP.Position - targetCF.Position).Magnitude
-   		if dist > 5 then
-   			S.Teleporting = true
-   			local t = math.min(dist / S.Speed, 3)
-   			local tw = TweenService:Create(HRP, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame=targetCF})
-   			tw:Play()
-   			tw.Completed:Wait()
-   			S.Teleporting = false
-   		end
-   		task.wait(0.5)
-   		CommF_:InvokeServer("StartQuest", q.Quest, q.Level)
-   		S.QuestAccepted = true
-   		task.wait(0.5)
-   	end
-   end)
-end
-
 -- Async Farm Director
 task.spawn(function()
-   while task.wait(0.3) do
+   while task.wait(0.4) do
    	if not S.Farm then
    		SetNoclip(false)
    		continue
@@ -305,36 +255,20 @@ task.spawn(function()
    		SetNoclip(true)
    		local q = GetQuestForLevel(Level.Value)
    		if not q then return end
-   		
-   		-- Accept quest if needed
-   		if not S.QuestAccepted then
-   			AcceptQuest(q)
-   			task.wait(0.5)
-   			continue
+   		if S.CurrentMob ~= q.Mob or not S.TargetCF then
+   			S.CurrentMob = q.Mob
+   			CommF_:InvokeServer("StartQuest",q.Quest,q.Level)
+   			local d = Sea1Monsters[q.Mob]
+   			if d and d[2] and d[2][1] then
+   				S.TargetCF = CF(d[2][1] + V3(0,S.Height,0))
+   			end
    		end
-   		
-   		-- Get mob spawn position (above ground for safe hovering)
-   		local mobData = Sea1Monsters[q.Mob]
-   		local mobPos = nil
-   		if mobData and mobData[2] and mobData[2][1] then
-   			mobPos = mobData[2][1]
-   		else
-   			-- Fallback: use quest position
-   			local fallbackPos = HRP.Position
-   			mobPos = fallbackPos
-   		end
-   		
-   		-- Set target to hover above mob spawn
-   		local hoverHeight = S.Height
-   		S.TargetCF = CF(mobPos + V3(0, hoverHeight, 0))
-   		
-   		-- Tween to target if not already there
-   		if S.TargetCF and not S.IsTweening and not S.Teleporting then
+   		if S.TargetCF and not S.IsTweening then
    			local dist = (HRP.Position - S.TargetCF.Position).Magnitude
-   			if dist > 5 then
+   			if dist > 6 then
    				S.IsTweening = true
-   				local t = math.min(dist / S.Speed, 4)
-   				local tw = TweenService:Create(HRP, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame=S.TargetCF})
+   				local t = dist / S.Speed
+   				local tw = TweenService:Create(HRP,TweenInfo.new(t,Enum.EasingStyle.Linear),{CFrame=S.TargetCF})
    				tw:Play()
    				tw.Completed:Wait()
    				S.IsTweening = false
@@ -346,63 +280,44 @@ end)
 
 -- Async Physics Stabilizer & Mob Stack Engine
 task.spawn(function()
-   while task.wait(0.025) do
-   	if not S.Farm or not S.TargetCF or S.IsTweening or S.Teleporting then continue end
+   while task.wait(0.03) do
+   	if not S.Farm or not S.TargetCF or S.IsTweening then continue end
    	pcall(function()
-   		-- Stabilize player
    		HRP.CFrame = S.TargetCF
    		HRP.Velocity = V3(0,0,0)
    		HRP.AssemblyLinearVelocity = V3(0,0,0)
    		HRP.RotVelocity = V3(0,0,0)
    		Humanoid.Sit = false
    		Humanoid.PlatformStand = false
-   		
-   		-- Stack mobs under player
-   		local currentMob = S.CurrentMob
-   		if currentMob and currentMob ~= "" then
-   			for _,e in ipairs(Workspace.Enemies:GetChildren()) do
-   				if e.Name == currentMob and e:FindFirstChild("Humanoid") and e:FindFirstChild("HumanoidRootPart") then
-   					local h = e.HumanoidRootPart
-   					if e.Humanoid.Health > 0 then
-   						-- Stack directly under player
-   						local targetPos = HRP.Position + V3(0, -6, 0)
-   						h.CFrame = CF(targetPos)
-   						h.CanCollide = false
-   						h.Velocity = V3(0,0,0)
-   						h.AssemblyLinearVelocity = V3(0,0,0)
-   						e.Humanoid.WalkSpeed = 0
-   						e.Humanoid.JumpPower = 0
-   						
-   						-- Remove animator to prevent glitching
-   						local anim = e.Humanoid:FindFirstChild("Animator")
-   						if anim then anim:Destroy() end
-   					end
-   				end
+   		for _,e in ipairs(Workspace.Enemies:GetChildren()) do
+   			if e.Name == S.CurrentMob and e:FindFirstChild("Humanoid") and e:FindFirstChild("HumanoidRootPart") and e.Humanoid.Health > 0 then
+   				local h = e.HumanoidRootPart
+   				h.CFrame = HRP.CFrame * CF(0,-6,0)
+   				h.CanCollide = false
+   				h.Velocity = V3(0,0,0)
+   				h.AssemblyLinearVelocity = V3(0,0,0)
+   				e.Humanoid.WalkSpeed = 0
+   				e.Humanoid.JumpPower = 0
+   				local anim = e.Humanoid:FindFirstChild("Animator")
+   				if anim then anim:Destroy() end
    			end
    		end
    	end)
    end
 end)
 
--- Async Kill Aura - Fast Attack
+-- Async Kill Aura
 task.spawn(function()
-   while task.wait(0.03) do
-   	if not S.Farm or not S.TargetCF or S.IsTweening or S.Teleporting then continue end
+   while task.wait(0.08) do
+   	if not S.Farm or not S.TargetCF or S.IsTweening then continue end
    	pcall(function()
-   		-- Fast attack loop
-   		local currentMob = S.CurrentMob
-   		if currentMob and currentMob ~= "" then
-   			-- Fire attack every cycle
-   			RegAttack:FireServer(0.5, S.AttackCombo)
-   			S.AttackCombo = S.AttackCombo == 1 and 2 or 1
-   			
-   			-- Hit all mobs in area
-   			for _,e in ipairs(Workspace.Enemies:GetChildren()) do
-   				if e.Name == currentMob and e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 then
-   					local p = e:FindFirstChild("HumanoidRootPart") or e:FindFirstChild("RightLowerLeg") or e:FindFirstChild("RightLowerArm")
-   					if p then
-   						RegHit:FireServer(p, {})
-   					end
+   		RegAttack:FireServer(0.5,S.AttackCombo)
+   		S.AttackCombo = S.AttackCombo == 1 and 2 or 1
+   		for _,e in ipairs(Workspace.Enemies:GetChildren()) do
+   			if e.Name == S.CurrentMob and e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 then
+   				local p = e:FindFirstChild("HumanoidRootPart") or e:FindFirstChild("RightLowerLeg") or e:FindFirstChild("RightLowerArm")
+   				if p then
+   					RegHit:FireServer(p,{})
    				end
    			end
    		end
@@ -429,9 +344,9 @@ task.spawn(function()
    				if en and Points.Value > 0 then
    					local s = stat == "Fruit" and "Demon Fruit" or stat
    					pcall(function()
-   						CommF_:InvokeServer("AddPoint", s, 1)
+   						CommF_:InvokeServer("AddPoint",s,1)
    					end)
-   					task.wait(0.08)
+   					task.wait(0.12)
    				end
    			end
    			task.wait()
@@ -440,41 +355,11 @@ task.spawn(function()
    end)
 end)
 
--- Monster death detection to reset quest acceptance
-task.spawn(function()
-   while task.wait(0.5) do
-   	if not S.Farm then continue end
-   	pcall(function()
-   		local currentMob = S.CurrentMob
-   		if currentMob and currentMob ~= "" then
-   			local alive = false
-   			for _,e in ipairs(Workspace.Enemies:GetChildren()) do
-   				if e.Name == currentMob and e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 then
-   					alive = true
-   					break
-   				end
-   			end
-   			if not alive then
-   				S.QuestAccepted = false
-   				S.CurrentMob = ""
-   				task.wait(0.5)
-   			end
-   		end
-   	end)
-   end
-end)
-
--- Character added event
 LocalPlayer.CharacterAdded:Connect(function(c)
    Character = c
    Humanoid = c:WaitForChild("Humanoid")
    HRP = c:WaitForChild("HumanoidRootPart")
    if S.Farm then SetNoclip(true) end
-   S.QuestAccepted = false
-   S.CurrentMob = ""
-   S.TargetCF = nil
-   S.IsTweening = false
-   S.Teleporting = false
 end)
 
 Rayfield:Notify({Title="Premium Hub",Content="Architecture loaded. Enable Auto Farm to begin.",Duration=6})
