@@ -1,76 +1,51 @@
 -- PREMIUM HUB | BLOX FRUITS
--- WORKING 100% - แค่เปลี่ยนชื่อ NPC/Monster ตามที่คุณหาได้
+-- FULL AUTO FARM - ใช้ Remote จากเกมจริง
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- ✅ รอ Character
+-- Character
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local HRP = Character:WaitForChild("HumanoidRootPart")
 
--- ✅ รอ Data
+-- Data
 local Data = LocalPlayer:WaitForChild("Data")
 local Level = Data:WaitForChild("Level")
 local Points = Data:WaitForChild("Points")
 
--- ✅ หา Remote Events
-local CommF_ = nil
-local RegAttack = nil
-local RegHit = nil
-
-for i = 1, 30 do
-    pcall(function()
-        local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
-        if Remotes then
-            CommF_ = Remotes:FindFirstChild("CommF_")
-        end
-        
-        local Modules = ReplicatedStorage:FindFirstChild("Modules")
-        if Modules then
-            local Net = Modules:FindFirstChild("Net")
-            if Net then
-                RegAttack = Net:FindFirstChild("RE/RegisterAttack")
-                RegHit = Net:FindFirstChild("RE/RegisterHit")
-            end
-        end
-    end)
-    
-    if CommF_ and RegAttack and RegHit then
-        print("✅ Found all remote events!")
-        break
-    end
-    task.wait(0.5)
-end
+-- Remote Events (จาก Remote Spy)
+local CommF_ = ReplicatedStorage:FindFirstChild("Remotes"):FindFirstChild("CommF_")
+local RegAttack = ReplicatedStorage:FindFirstChild("Modules"):FindFirstChild("Net"):FindFirstChild("RE/RegisterAttack")
+local RegHit = ReplicatedStorage:FindFirstChild("Modules"):FindFirstChild("Net"):FindFirstChild("RE/RegisterHit")
+local EquipEvent = LocalPlayer:FindFirstChild("Backpack"):FindFirstChild("Combat"):FindFirstChild("EquipEvent")
 
 local V3 = Vector3.new
 local CF = CFrame.new
 
--- ⚙️ ตั้งค่าตามที่คุณหาได้ (แก้ไขตรงนี้!)
+-- CONFIG
 local CONFIG = {
-    -- เกาะเริ่มต้น (Level 1-9)
     [1] = {
-        NPC = "Bandit Quest Giver",  -- ชื่อ NPC รับเควส
-        Mob = "Bandit",               -- ชื่อมอนสเตอร์
-        Quest = "MarineQuest1",
+        NPC = "Bandit Quest Giver",
+        Mob = "Bandit",
+        Quest = "BanditQuest1",
         Level = 1,
         MinLevel = 0,
         MaxLevel = 9,
         Spawns = {
             V3(-2966.090087890625, 39.337005615234375, 2319.31103515625),
             V3(-2857.823974609375, 41.86199951171875, 2122.800048828125),
+            V3(-2965.823974609375, 41.86199951171875, 2170.800048828125),
         }
     },
-    -- เกาะป่า (Level 10-29)
     [2] = {
-        NPC = "Adventurer",           -- ชื่อ NPC รับเควส (คุณบอกมา)
-        Mob = "Monkey",               -- ชื่อมอนสเตอร์ (Level 10-19)
+        NPC = "Adventurer",
+        Mob = "Monkey",
         Quest = "JungleQuest",
         Level = 1,
         MinLevel = 10,
@@ -78,57 +53,53 @@ local CONFIG = {
         Spawns = {
             V3(-1292.6700439453125, 10.899993896484375, -4.850006103515625),
             V3(-1202.5, 10.899993896484375, 278.8699951171875),
+            V3(-1743.530029296875, 20.979995727539062, -91.27000427246094),
         }
     },
-    -- เกาะป่า (Level 20-29)
     [3] = {
-        NPC = "Adventurer",           -- ชื่อ NPC รับเควส
-        Mob = "Gorilla",              -- ชื่อมอนสเตอร์ (Level 20-29)
+        NPC = "Adventurer",
+        Mob = "Gorilla",
         Quest = "JungleQuest",
         Level = 2,
         MinLevel = 20,
         MaxLevel = 29,
         Spawns = {
             V3(-1249.18994140625, 8.229995727539062, -456.19000244140625),
+            V3(-1249.18994140625, 8.229995727539062, -549.6799926757812),
             V3(-1363.18994140625, 20.229995727539062, -486.19000244140625),
         }
     },
 }
 
--- 🔍 ฟังก์ชันหา Config ตาม Level
 local function GetConfig(level)
     for _, config in pairs(CONFIG) do
         if level >= config.MinLevel and level <= config.MaxLevel then
             return config
         end
     end
-    return CONFIG[1] -- ค่าเริ่มต้น
+    return CONFIG[1]
 end
 
--- ฟังก์ชันหา NPC
+local function TeleportTo(pos)
+    if not HRP then return end
+    pcall(function()
+        HRP.CFrame = CF(pos)
+        HRP.Velocity = V3(0,0,0)
+        HRP.AssemblyLinearVelocity = V3(0,0,0)
+    end)
+end
+
 local function FindNPC(npcName)
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("Model") and obj.Name == npcName then
-            local hrp = obj:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                return hrp
-            end
+            return obj
         end
     end
     return nil
 end
 
--- ⚔️ Weapon System
+-- Weapon System
 local SelectedWeapon = nil
-
-local function GetWeaponType(Tool)
-    if not Tool or not Tool:IsA("Tool") then return nil end
-    local attr = Tool:GetAttribute("WeaponType")
-    if typeof(attr) == "string" and attr ~= "" then return attr end
-    local typeVal = Tool:FindFirstChild("Type")
-    if typeVal and typeVal:IsA("StringValue") then return typeVal.Value end
-    return nil
-end
 
 local function ScanWeapons()
     local list = {}
@@ -137,41 +108,38 @@ local function ScanWeapons()
     local bp = LocalPlayer:FindFirstChildOfClass("Backpack")
     if bp then
         for _,v in ipairs(bp:GetChildren()) do
-            if v:IsA("Tool") then
-                local wt = GetWeaponType(v)
-                if wt and not seen[v.Name] then
-                    seen[v.Name] = true
-                    table.insert(list, {Name=v.Name, Type=wt})
-                end
+            if v:IsA("Tool") and not seen[v.Name] then
+                seen[v.Name] = true
+                table.insert(list, v.Name)
             end
         end
     end
     
     if Character then
         for _,v in ipairs(Character:GetChildren()) do
-            if v:IsA("Tool") then
-                local wt = GetWeaponType(v)
-                if wt and not seen[v.Name] then
-                    seen[v.Name] = true
-                    table.insert(list, {Name=v.Name, Type=wt})
-                end
+            if v:IsA("Tool") and not seen[v.Name] then
+                seen[v.Name] = true
+                table.insert(list, v.Name)
             end
         end
     end
     
-    table.sort(list, function(a,b) return a.Name < b.Name end)
-    
-    local names = {}
-    for _,w in ipairs(list) do
-        names[#names+1] = w.Name .. " [" .. w.Type .. "]"
-    end
-    if #names == 0 then names[1] = "None" end
-    return names
+    table.sort(list)
+    if #list == 0 then table.insert(list, "None") end
+    return list
 end
 
 local function EquipWeapon(name)
     if not name or name == "None" then return false end
     if Character and Character:FindFirstChild(name) then return true end
+    
+    if EquipEvent then
+        pcall(function()
+            EquipEvent:FireServer(true)
+            task.wait(0.1)
+        end)
+    end
+    
     local bp = LocalPlayer:FindFirstChildOfClass("Backpack")
     if bp then
         for _,v in ipairs(bp:GetChildren()) do
@@ -194,22 +162,20 @@ local function KeepWeaponEquipped()
     end
 end
 
--- 📊 สถานะ
+-- สถานะ
 local S = {
     Farm = false,
-    Speed = 325,
     Height = 40,
     Stats = {Melee=false,Defense=false,Sword=false,Gun=false,Fruit=false},
-    TargetPos = nil,
     CurrentMob = "",
-    IsMoving = false,
     AttackCombo = 1,
     QuestAccepted = false,
     CurrentSpawnIndex = 1,
     CurrentConfig = nil,
+    Step = 0,
 }
 
--- 🎨 UI
+-- UI
 local Window = Rayfield:CreateWindow({
     Name = "PREMIUM HUB",
     LoadingTitle = "Loading...",
@@ -228,12 +194,7 @@ local function RefreshWeaponList()
     local names = ScanWeapons()
     WepDrop:Refresh(names)
     if #names > 0 then
-        local first = names[1]:match("^(.-) %[")
-        if first then
-            SelectedWeapon = first:gsub("%s+$", "")
-        else
-            SelectedWeapon = names[1]
-        end
+        SelectedWeapon = names[1]
     end
 end
 
@@ -244,12 +205,7 @@ local WepDrop = FarmTab:CreateDropdown({
     CurrentOption = WepNames[1] or "None",
     Flag = "WeaponSelector",
     Callback = function(opt)
-        local name = opt:match("^(.-) %[")
-        if name then
-            SelectedWeapon = name:gsub("%s+$", "")
-        else
-            SelectedWeapon = opt
-        end
+        SelectedWeapon = opt
         EquipWeapon(SelectedWeapon)
     end,
 })
@@ -268,11 +224,13 @@ FarmTab:CreateToggle({
     Callback = function(v)
         S.Farm = v
         if not v then
-            S.TargetPos = nil
             S.CurrentMob = ""
-            S.IsMoving = false
             S.QuestAccepted = false
             S.CurrentConfig = nil
+            S.Step = 0
+        else
+            S.Step = 0
+            print("✅ Auto Farm ENABLED!")
         end
     end,
 })
@@ -284,15 +242,11 @@ StatsTab:CreateToggle({Name="Auto Gun",CurrentValue=false,Flag="Gun",Callback=fu
 StatsTab:CreateToggle({Name="Auto Blox Fruit",CurrentValue=false,Flag="Fruit",Callback=function(v) S.Stats.Fruit=v end})
 
 SettingsTab:CreateSlider({
-    Name="Tween Speed",Range={250,400},Increment=5,CurrentValue=325,Flag="TweenSpeed",
-    Callback=function(v) S.Speed=v end,
-})
-SettingsTab:CreateSlider({
     Name="Farm Height",Range={20,60},Increment=1,CurrentValue=40,Flag="FarmHeight",
     Callback=function(v) S.Height=v end,
 })
 
--- 🛡️ Noclip
+-- Noclip
 local NoclipCon = nil
 local function SetNoclip(on)
     if NoclipCon then NoclipCon:Disconnect() NoclipCon = nil end
@@ -307,9 +261,9 @@ local function SetNoclip(on)
     end
 end
 
--- 🏃 Main Farm Loop
+-- Main Loop
 task.spawn(function()
-    while task.wait(0.15) do
+    while task.wait(0.2) do
         if not S.Farm or not Character or not HRP then
             SetNoclip(false)
             continue
@@ -318,102 +272,110 @@ task.spawn(function()
         pcall(function()
             SetNoclip(true)
             
-            -- หา Config ตาม Level
             local config = GetConfig(Level.Value)
-            if not config then
-                print("❌ No config for level:", Level.Value)
-                return
-            end
+            if not config then return end
             
-            -- ถ้า Config เปลี่ยน ให้รีเซ็ต
             if S.CurrentConfig ~= config then
                 S.CurrentConfig = config
                 S.QuestAccepted = false
                 S.CurrentMob = config.Mob
                 S.CurrentSpawnIndex = 1
-                print("📌 Switched to:", config.Mob, "with NPC:", config.NPC)
+                S.Step = 0
+                print("📌 Switched to:", config.Mob, "Quest:", config.Quest)
             end
             
-            -- 📌 รับเควส
-            if not S.QuestAccepted then
-                if CommF_ then
-                    -- หา NPC และบินไปหา
-                    local npc = FindNPC(config.NPC)
-                    if npc then
-                        local npcPos = npc.Position
-                        local targetCF = CF(npcPos + V3(0, 3, 0))
-                        local dist = (HRP.Position - targetCF.Position).Magnitude
-                        
-                        if dist > 5 then
-                            local t = math.min(dist / S.Speed, 2)
-                            local tw = TweenService:Create(HRP, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame=targetCF})
-                            tw:Play()
-                            tw.Completed:Wait()
-                        end
-                        
+            -- STEP 0: หา NPC และรับเควส
+            if S.Step == 0 then
+                print("🔍 Looking for NPC:", config.NPC)
+                local npc = FindNPC(config.NPC)
+                if npc then
+                    print("✅ Found NPC!")
+                    local npcPart = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("Head")
+                    if npcPart then
+                        TeleportTo(npcPart.Position + V3(0, 3, 0))
                         task.wait(0.5)
                     end
                     
-                    pcall(function()
-                        CommF_:InvokeServer("StartQuest", config.Quest, config.Level)
-                    end)
-                    S.QuestAccepted = true
-                    S.CurrentMob = config.Mob
-                    S.CurrentSpawnIndex = 1
-                    print("✅ Quest accepted:", config.Quest)
+                    if CommF_ then
+                        print("📌 Accepting quest:", config.Quest, config.Level)
+                        pcall(function()
+                            CommF_:InvokeServer("StartQuest", config.Quest, config.Level)
+                        end)
+                        S.QuestAccepted = true
+                        S.Step = 1
+                        print("✅ Quest accepted!")
+                    end
+                else
+                    print("❌ NPC not found!")
+                    task.wait(0.5)
                 end
-                task.wait(1)
                 return
             end
             
-            -- 📍 หาตำแหน่งมอน
-            local spawns = config.Spawns
-            if not spawns or #spawns == 0 then
-                S.QuestAccepted = false
+            -- STEP 1: บินไปฟาร์ม
+            if S.Step == 1 then
+                local spawns = config.Spawns
+                if not spawns or #spawns == 0 then
+                    S.Step = 0
+                    return
+                end
+                
+                if S.CurrentSpawnIndex > #spawns then
+                    S.CurrentSpawnIndex = 1
+                end
+                
+                local targetPos = spawns[S.CurrentSpawnIndex]
+                if targetPos then
+                    local height = S.Height or 40
+                    TeleportTo(targetPos + V3(0, height, 0))
+                    task.wait(0.2)
+                    S.CurrentSpawnIndex = S.CurrentSpawnIndex + 1
+                    S.Step = 2
+                end
                 return
             end
             
-            if S.CurrentSpawnIndex > #spawns then
-                S.CurrentSpawnIndex = 1
-            end
-            
-            local targetPos = spawns[S.CurrentSpawnIndex]
-            if not targetPos then return end
-            
-            local height = S.Height or 40
-            local targetCF = CF(targetPos + V3(0, height, 0))
-            S.TargetPos = targetPos + V3(0, height, 0)
-            
-            -- 🚀 บินไปที่ตำแหน่ง
-            local dist = (HRP.Position - targetCF.Position).Magnitude
-            if dist > 3 then
-                local t = math.min(dist / S.Speed, 2)
-                local tw = TweenService:Create(HRP, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame=targetCF})
-                tw:Play()
-                tw.Completed:Wait()
-                S.CurrentSpawnIndex = S.CurrentSpawnIndex + 1
-            else
-                S.CurrentSpawnIndex = S.CurrentSpawnIndex + 1
-            end
-            
-            -- 🧊 รักษาตำแหน่ง
-            if S.TargetPos then
-                HRP.CFrame = CF(S.TargetPos)
-                HRP.Velocity = V3(0,0,0)
-                HRP.AssemblyLinearVelocity = V3(0,0,0)
-                if Humanoid then
-                    Humanoid.Sit = false
-                    Humanoid.PlatformStand = false
+            -- STEP 2: ฟาร์ม
+            if S.Step == 2 then
+                if S.CurrentConfig and S.CurrentConfig.Spawns then
+                    local spawns = S.CurrentConfig.Spawns
+                    if spawns and #spawns > 0 then
+                        local idx = S.CurrentSpawnIndex - 1
+                        if idx < 1 then idx = 1 end
+                        if idx > #spawns then idx = #spawns end
+                        local pos = spawns[idx]
+                        if pos then
+                            TeleportTo(pos + V3(0, S.Height, 0))
+                        end
+                    end
+                end
+                
+                -- เช็ค mob ตาย
+                local enemies = workspace:FindFirstChild("Enemies")
+                if enemies then
+                    local alive = false
+                    for _,e in ipairs(enemies:GetChildren()) do
+                        if e.Name == S.CurrentMob and e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 then
+                            alive = true
+                            break
+                        end
+                    end
+                    if not alive then
+                        print("🔄 All mobs dead!")
+                        S.Step = 0
+                        S.QuestAccepted = false
+                        S.CurrentSpawnIndex = 1
+                    end
                 end
             end
         end)
     end
 end)
 
--- ⚔️ Mob Stack & Attack
+-- Attack Loop
 task.spawn(function()
     while task.wait(0.02) do
-        if not S.Farm or not Character or not HRP then continue end
+        if not S.Farm or S.Step ~= 2 then continue end
         
         pcall(function()
             local currentMob = S.CurrentMob
@@ -442,7 +404,6 @@ task.spawn(function()
                 end
             end
             
-            -- 🔥 โจมตี
             if #mobsToAttack > 0 then
                 if RegAttack then
                     pcall(function()
@@ -466,7 +427,7 @@ task.spawn(function()
     end
 end)
 
--- 🔄 Auto Equip
+-- Auto Equip
 task.spawn(function()
     while task.wait(0.3) do
         if S.Farm and SelectedWeapon and SelectedWeapon ~= "None" then
@@ -475,7 +436,7 @@ task.spawn(function()
     end
 end)
 
--- 📊 Auto Stats
+-- Auto Stats
 task.spawn(function()
     while task.wait() do
         if Points.Value > 0 then
@@ -503,40 +464,7 @@ task.spawn(function()
     end
 end)
 
--- 🔍 Check mob death
-task.spawn(function()
-    while task.wait(0.5) do
-        if not S.Farm then continue end
-        
-        pcall(function()
-            local currentMob = S.CurrentMob
-            if currentMob == "" then return end
-            
-            local enemies = workspace:FindFirstChild("Enemies")
-            if not enemies then
-                S.QuestAccepted = false
-                return
-            end
-            
-            local alive = false
-            for _,e in ipairs(enemies:GetChildren()) do
-                if e.Name == currentMob and e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 then
-                    alive = true
-                    break
-                end
-            end
-            
-            if not alive then
-                S.QuestAccepted = false
-                S.CurrentMob = ""
-                S.CurrentSpawnIndex = 1
-                print("🔄 All mobs dead, re-questing...")
-            end
-        end)
-    end
-end)
-
--- 🔄 Character respawn
+-- Character respawn
 LocalPlayer.CharacterAdded:Connect(function(c)
     Character = c
     Humanoid = c:WaitForChild("Humanoid")
@@ -544,14 +472,13 @@ LocalPlayer.CharacterAdded:Connect(function(c)
     if S.Farm then SetNoclip(true) end
     S.QuestAccepted = false
     S.CurrentMob = ""
-    S.TargetPos = nil
-    S.IsMoving = false
-    S.CurrentSpawnIndex = 1
     S.CurrentConfig = nil
+    S.Step = 0
+    S.CurrentSpawnIndex = 1
 end)
 
--- ✅ แจ้งเตือน
+-- Notify
 Rayfield:Notify({Title="✅ Premium Hub",Content="Script Loaded! Enable Auto Farm.",Duration=5})
-print("🔥 Premium Hub loaded successfully!")
-print("📌 Enable Auto Farm to start farming!")
+print("🔥 Premium Hub loaded!")
 print("📌 Current Level:", Level.Value)
+print("📌 Quest:", CONFIG[1].Quest)
