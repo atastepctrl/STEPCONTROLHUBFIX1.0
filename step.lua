@@ -1,5 +1,5 @@
 -- PREMIUM HUB | BLOX FRUITS
--- FULL AUTO FARM - ใช้ Remote จากเกมจริง
+-- FIXED - ตำแหน่งมอนถูกต้อง ไม่วาปไปมา
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -19,17 +19,17 @@ local Data = LocalPlayer:WaitForChild("Data")
 local Level = Data:WaitForChild("Level")
 local Points = Data:WaitForChild("Points")
 
--- Remote Events (จาก Remote Spy)
+-- Remote Events
 local CommF_ = ReplicatedStorage:FindFirstChild("Remotes"):FindFirstChild("CommF_")
 local RegAttack = ReplicatedStorage:FindFirstChild("Modules"):FindFirstChild("Net"):FindFirstChild("RE/RegisterAttack")
 local RegHit = ReplicatedStorage:FindFirstChild("Modules"):FindFirstChild("Net"):FindFirstChild("RE/RegisterHit")
-local EquipEvent = LocalPlayer:FindFirstChild("Backpack"):FindFirstChild("Combat"):FindFirstChild("EquipEvent")
 
 local V3 = Vector3.new
 local CF = CFrame.new
 
--- CONFIG
+-- ⚙️ CONFIG - ตำแหน่งที่ถูกต้อง ไม่สลับเกาะ
 local CONFIG = {
+    -- เกาะโจรสลัด (Pirate Island) - Level 1-9
     [1] = {
         NPC = "Bandit Quest Giver",
         Mob = "Bandit",
@@ -38,11 +38,15 @@ local CONFIG = {
         MinLevel = 0,
         MaxLevel = 9,
         Spawns = {
-            V3(-2966.090087890625, 39.337005615234375, 2319.31103515625),
-            V3(-2857.823974609375, 41.86199951171875, 2122.800048828125),
-            V3(-2965.823974609375, 41.86199951171875, 2170.800048828125),
+            V3(-1182.512939453125, 5.600006103515625, 3972.157958984375),
+            V3(-1289.512939453125, 5.600006103515625, 3940.157958984375),
+            V3(-1140.512939453125, 5.600006103515625, 3902.157958984375),
+            V3(-972.4329833984375, 13.600006103515625, 3939.2470703125),
+            V3(-967.4329833984375, 13.600006103515625, 4034.2470703125),
+            V3(-1269.512939453125, 5.600006103515625, 3857.157958984375),
         }
     },
+    -- เกาะป่า (Jungle) - Level 10-19
     [2] = {
         NPC = "Adventurer",
         Mob = "Monkey",
@@ -54,8 +58,12 @@ local CONFIG = {
             V3(-1292.6700439453125, 10.899993896484375, -4.850006103515625),
             V3(-1202.5, 10.899993896484375, 278.8699951171875),
             V3(-1743.530029296875, 20.979995727539062, -91.27000427246094),
+            V3(-1489.25, 20.979995727539062, 88.49000549316406),
+            V3(-1579.218994140625, 20.979995727539062, 377.6000061035156),
+            V3(-1801.0799560546875, 20.979995727539062, 111.29000854492188),
         }
     },
+    -- เกาะป่า (Jungle) - Level 20-29
     [3] = {
         NPC = "Adventurer",
         Mob = "Gorilla",
@@ -67,6 +75,7 @@ local CONFIG = {
             V3(-1249.18994140625, 8.229995727539062, -456.19000244140625),
             V3(-1249.18994140625, 8.229995727539062, -549.6799926757812),
             V3(-1363.18994140625, 20.229995727539062, -486.19000244140625),
+            V3(-1186.6190185546875, 11.067001342773438, -650.2750244140625),
         }
     },
 }
@@ -132,13 +141,6 @@ end
 local function EquipWeapon(name)
     if not name or name == "None" then return false end
     if Character and Character:FindFirstChild(name) then return true end
-    
-    if EquipEvent then
-        pcall(function()
-            EquipEvent:FireServer(true)
-            task.wait(0.1)
-        end)
-    end
     
     local bp = LocalPlayer:FindFirstChildOfClass("Backpack")
     if bp then
@@ -281,7 +283,7 @@ task.spawn(function()
                 S.CurrentMob = config.Mob
                 S.CurrentSpawnIndex = 1
                 S.Step = 0
-                print("📌 Switched to:", config.Mob, "Quest:", config.Quest)
+                print("📌 Switched to:", config.Mob, "Level:", Level.Value)
             end
             
             -- STEP 0: หา NPC และรับเควส
@@ -335,18 +337,17 @@ task.spawn(function()
                 return
             end
             
-            -- STEP 2: ฟาร์ม
+            -- STEP 2: ฟาร์ม (รักษาตำแหน่ง)
             if S.Step == 2 then
-                if S.CurrentConfig and S.CurrentConfig.Spawns then
-                    local spawns = S.CurrentConfig.Spawns
-                    if spawns and #spawns > 0 then
-                        local idx = S.CurrentSpawnIndex - 1
-                        if idx < 1 then idx = 1 end
-                        if idx > #spawns then idx = #spawns end
-                        local pos = spawns[idx]
-                        if pos then
-                            TeleportTo(pos + V3(0, S.Height, 0))
-                        end
+                -- รักษาตำแหน่งให้อยู่ที่ spawn ปัจจุบัน
+                local spawns = S.CurrentConfig.Spawns
+                if spawns and #spawns > 0 then
+                    local idx = S.CurrentSpawnIndex - 1
+                    if idx < 1 then idx = 1 end
+                    if idx > #spawns then idx = #spawns end
+                    local pos = spawns[idx]
+                    if pos then
+                        TeleportTo(pos + V3(0, S.Height, 0))
                     end
                 end
                 
@@ -361,7 +362,7 @@ task.spawn(function()
                         end
                     end
                     if not alive then
-                        print("🔄 All mobs dead!")
+                        print("🔄 All mobs dead! Re-questing...")
                         S.Step = 0
                         S.QuestAccepted = false
                         S.CurrentSpawnIndex = 1
@@ -481,4 +482,3 @@ end)
 Rayfield:Notify({Title="✅ Premium Hub",Content="Script Loaded! Enable Auto Farm.",Duration=5})
 print("🔥 Premium Hub loaded!")
 print("📌 Current Level:", Level.Value)
-print("📌 Quest:", CONFIG[1].Quest)
