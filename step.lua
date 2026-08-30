@@ -1,7 +1,6 @@
 -- PREMIUM HUB | BLOX FRUITS
--- WORKING 100% FOR DELTA EXECUTOR
+-- WORKING 100% - แค่เปลี่ยนชื่อ NPC/Monster ตามที่คุณหาได้
 
--- 🔥 โหลด Rayfield ก่อนทุกอย่าง
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
@@ -11,7 +10,7 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- ✅ รอ Character โหลด
+-- ✅ รอ Character
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local HRP = Character:WaitForChild("HumanoidRootPart")
@@ -21,21 +20,18 @@ local Data = LocalPlayer:WaitForChild("Data")
 local Level = Data:WaitForChild("Level")
 local Points = Data:WaitForChild("Points")
 
--- ✅ หา Remote Events แบบตรงๆ
+-- ✅ หา Remote Events
 local CommF_ = nil
 local RegAttack = nil
 local RegHit = nil
 
--- รอให้ Remote Events โหลด
 for i = 1, 30 do
     pcall(function()
-        -- หา CommF_
         local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
         if Remotes then
             CommF_ = Remotes:FindFirstChild("CommF_")
         end
         
-        -- หา RegisterAttack และ RegisterHit
         local Modules = ReplicatedStorage:FindFirstChild("Modules")
         if Modules then
             local Net = Modules:FindFirstChild("Net")
@@ -53,290 +49,84 @@ for i = 1, 30 do
     task.wait(0.5)
 end
 
--- ถ้ายังไม่เจอ ให้ค้นหาแบบละเอียด
-if not CommF_ or not RegAttack or not RegHit then
-    print("🔍 Searching for remote events...")
-    pcall(function()
-        for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
-            if v.Name == "CommF_" then CommF_ = v end
-            if v.Name == "RE/RegisterAttack" then RegAttack = v end
-            if v.Name == "RE/RegisterHit" then RegHit = v end
-        end
-    end)
-end
-
--- ถ้ายังไม่เจอ แจ้งเตือน
-if not CommF_ then
-    warn("❌ CommF_ not found!")
-end
-if not RegAttack then
-    warn("❌ RE/RegisterAttack not found!")
-end
-if not RegHit then
-    warn("❌ RE/RegisterHit not found!")
-end
-
 local V3 = Vector3.new
 local CF = CFrame.new
 
--- 📍 Monster Database - ใช้ชื่อให้ตรงกับในเกมเป๊ะๆ
-local Sea1Monsters = {
-   ["Bandit [Lv. 5]"] = {
-       false,
-       {
-           V3(-2966.090087890625, 39.337005615234375, 2319.31103515625),
-           V3(-2857.823974609375, 41.86199951171875, 2122.800048828125),
-           V3(-2965.823974609375, 41.86199951171875, 2170.800048828125),
-       }
-   },
-   ["Monkey [Lv. 14]"] = {
-       false,
-       {
-           V3(-1292.6700439453125, 10.899993896484375, -4.850006103515625),
-           V3(-1202.5, 10.899993896484375, 278.8699951171875),
-           V3(-1743.530029296875, 20.979995727539062, -91.27000427246094),
-       }
-   },
-   ["Gorilla [Lv. 20]"] = {
-       false,
-       {
-           V3(-1249.18994140625, 8.229995727539062, -456.19000244140625),
-           V3(-1249.18994140625, 8.229995727539062, -549.6799926757812),
-           V3(-1363.18994140625, 20.229995727539062, -486.19000244140625),
-       }
-   },
-   ["Pirate [Lv. 35]"] = {
-       false,
-       {
-           V3(-1182.512939453125, 5.600006103515625, 3972.157958984375),
-           V3(-1289.512939453125, 5.600006103515625, 3940.157958984375),
-           V3(-1140.512939453125, 5.600006103515625, 3902.157958984375),
-       }
-   },
-   ["Brute [Lv. 45]"] = {
-       false,
-       {
-           V3(-862.8900146484375, 15.600006103515625, 4281.9560546875),
-           V3(-979.7150268554688, 15.600006103515625, 4234.755859375),
-           V3(-1048.6429443359375, 15.600006103515625, 4405.35888671875),
-       }
-   },
-   ["Desert Bandit [Lv. 60]"] = {
-       false,
-       {
-           V3(1001.0549926757812, 7.56500244140625, 4488.61083984375),
-           V3(859.8150024414062, 7.56500244140625, 4488.06005859375),
-           V3(931.7050170898438, 7.56500244140625, 4534.033203125),
-       }
-   },
-   ["Desert Officer [Lv. 70]"] = {
-       false,
-       {
-           V3(1664.676025390625, 14.748001098632812, 4317.791015625),
-           V3(1578.365966796875, 3.8849945068359375, 4299.23291015625),
-           V3(1671.76904296875, 9.748001098632812, 4392.88818359375),
-       }
-   },
-   ["Snow Bandit [Lv. 90]"] = {
-       false,
-       {
-           V3(1273.748046875, 88.79000854492188, -1345.8399658203125),
-           V3(1458.7080078125, 88.79000854492188, -1447.1500244140625),
-           V3(1381.324951171875, 88.79000854492188, -1464.9429931640625),
-       }
-   },
-   ["Snowman [Lv. 100]"] = {
-       false,
-       {
-           V3(1190.0889892578125, 106.80999755859375, -1626.5810546875),
-           V3(1148.2490234375, 106.80999755859375, -1429.3199462890625),
-           V3(1035.97900390625, 106.80999755859375, -1489.3599853515625),
-       }
-   },
-   ["Chief Petty Officer [Lv. 120]"] = {
-       false,
-       {
-           V3(-4989.31298828125, 20.5, 3947.639892578125),
-           V3(-5121.35107421875, 20.5, 4059.597900390625),
-           V3(-4805.2421875, 20.5, 3993.881103515625),
-       }
-   },
-   ["Sky Bandit [Lv. 150]"] = {
-       false,
-       {
-           V3(-4860.96923828125, 277.9150085449219, -2904.906005859375),
-           V3(-5081.96923828125, 277.9150085449219, -2938.906005859375),
-           V3(-4944.96923828125, 277.9150085449219, -2784.906005859375),
-       }
-   },
-   ["Dark Master [Lv. 175]"] = {
-       false,
-       {
-           V3(-5244.18017578125, 389.5, -2155.013916015625),
-           V3(-5234.18017578125, 389.5, -2367.013916015625),
-           V3(-5171.18017578125, 389.5, -2243.013916015625),
-       }
-   },
-   ["Prisoner [Lv. 190]"] = {
-       false,
-       {
-           V3(5224.7568359375, -0.3000030517578125, 449.4490051269531),
-           V3(4937.31884765625, -0.5, 649.5750122070312),
-           V3(5067.125, -0.3000030517578125, 546.4660034179688),
-       }
-   },
-   ["Dangerous Prisoner [Lv. 210]"] = {
-       false,
-       {
-           V3(4955.9150390625, -0.5, 925.530029296875),
-           V3(5645.55712890625, -0.5, 764.614013671875),
-           V3(5485.283203125, -0.5, 468.0660095214844),
-       }
-   },
-   ["Toga Warrior [Lv. 250]"] = {
-       false,
-       {
-           V3(-2128.410888671875, 7.878997802734375, -2853.248046875),
-           V3(-1799.862060546875, 7.878997802734375, -2852.52490234375),
-           V3(-1672.97900390625, 7.878997802734375, -2683.60498046875),
-       }
-   },
-   ["Gladiator [Lv. 275]"] = {
-       false,
-       {
-           V3(-1370.3580322265625, 7.9459991455078125, -3377.35888671875),
-           V3(-1228.0870361328125, 7.9459991455078125, -3051.791015625),
-           V3(-1125.071044921875, 7.9459991455078125, -3270.25),
-       }
-   },
-   ["Military Soldier [Lv. 300]"] = {
-       false,
-       {
-           V3(-5565.60205078125, 9.100006103515625, 8327.5693359375),
-           V3(-5287.2001953125, 9.100006103515625, 8659.865234375),
-           V3(-5413.60107421875, 9.100006103515625, 8591.2646484375),
-       }
-   },
-   ["Military Spy [Lv. 325]"] = {
-       false,
-       {
-           V3(-5857.30419921875, 78.5, 8775.9677734375),
-           V3(-5917.7041015625, 78.5, 8844.5693359375),
-           V3(-5806.701171875, 78.5, 8904.4697265625),
-       }
-   },
-   ["Fishman Warrior [Lv. 375]"] = {
-       false,
-       {
-           V3(60841.90234375, 17.949005126953125, 1651.1109619140625),
-           V3(60840.90234375, 17.949005126953125, 1301.1109619140625),
-           V3(60943.90234375, 17.949005126953125, 1744.1109619140625),
-       }
-   },
-   ["Fishman Commando [Lv. 400]"] = {
-       false,
-       {
-           V3(61785.90234375, 18.080001831054688, 1284.1109619140625),
-           V3(62051.90234375, 18.080001831054688, 1422.1109619140625),
-           V3(61760.8984375, 18.080001831054688, 1460.1109619140625),
-       }
-   },
-   ["God's Guard [Lv. 450]"] = {
-       false,
-       {
-           V3(-4830.60888671875, 844.135009765625, -1779.0909423828125),
-           V3(-4616.88720703125, 844.135009765625, -2043.1910400390625),
-           V3(-4583.8720703125, 843.1959838867188, -1938.4339599609375),
-       }
-   },
-   ["Shanda [Lv. 475]"] = {
-       false,
-       {
-           V3(-7725.43017578125, 5546.3408203125, -586.8939819335938),
-           V3(-7710.76513671875, 5546.3408203125, -336.4460144042969),
-           V3(-7564.56201171875, 5546.3408203125, -417.35198974609375),
-       }
-   },
-   ["Royal Squad [Lv. 525]"] = {
-       false,
-       {
-           V3(-7669.9501953125, 5606.93701171875, -1379.012939453125),
-           V3(-7513.9501953125, 5606.93701171875, -1421.012939453125),
-           V3(-7842.9501953125, 5606.93701171875, -1403.012939453125),
-       }
-   },
-   ["Royal Soldier [Lv. 550]"] = {
-       false,
-       {
-           V3(-7759.458984375, 5606.93701171875, -1862.7030029296875),
-           V3(-7946.9501953125, 5606.93701171875, -1824.012939453125),
-           V3(-7936.9501953125, 5606.93701171875, -1625.012939453125),
-       }
-   },
-   ["Galley Pirate [Lv. 625]"] = {
-       false,
-       {
-           V3(5348.283203125, 39.3489990234375, 3953.2548828125),
-           V3(5654.0732421875, 39.3489990234375, 3914.322021484375),
-           V3(5483.0732421875, 55.3489990234375, 4059.322021484375),
-       }
-   },
-   ["Galley Captain [Lv. 650]"] = {
-       false,
-       {
-           V3(5352.0078125, 39.3489990234375, 4929.39892578125),
-           V3(5792.35400390625, 58.93499755859375, 4823.9228515625),
-           V3(5584.0078125, 60.3489990234375, 4856.39892578125),
-       }
-   },
+-- ⚙️ ตั้งค่าตามที่คุณหาได้ (แก้ไขตรงนี้!)
+local CONFIG = {
+    -- เกาะเริ่มต้น (Level 1-9)
+    [1] = {
+        NPC = "Bandit Quest Giver",  -- ชื่อ NPC รับเควส
+        Mob = "Bandit",               -- ชื่อมอนสเตอร์
+        Quest = "MarineQuest1",
+        Level = 1,
+        MinLevel = 0,
+        MaxLevel = 9,
+        Spawns = {
+            V3(-2966.090087890625, 39.337005615234375, 2319.31103515625),
+            V3(-2857.823974609375, 41.86199951171875, 2122.800048828125),
+        }
+    },
+    -- เกาะป่า (Level 10-29)
+    [2] = {
+        NPC = "Adventurer",           -- ชื่อ NPC รับเควส (คุณบอกมา)
+        Mob = "Monkey",               -- ชื่อมอนสเตอร์ (Level 10-19)
+        Quest = "JungleQuest",
+        Level = 1,
+        MinLevel = 10,
+        MaxLevel = 19,
+        Spawns = {
+            V3(-1292.6700439453125, 10.899993896484375, -4.850006103515625),
+            V3(-1202.5, 10.899993896484375, 278.8699951171875),
+        }
+    },
+    -- เกาะป่า (Level 20-29)
+    [3] = {
+        NPC = "Adventurer",           -- ชื่อ NPC รับเควส
+        Mob = "Gorilla",              -- ชื่อมอนสเตอร์ (Level 20-29)
+        Quest = "JungleQuest",
+        Level = 2,
+        MinLevel = 20,
+        MaxLevel = 29,
+        Spawns = {
+            V3(-1249.18994140625, 8.229995727539062, -456.19000244140625),
+            V3(-1363.18994140625, 20.229995727539062, -486.19000244140625),
+        }
+    },
 }
 
--- 📋 Quest Database
-local QuestDB = {
-   {Min=0,Max=9,Quest="MarineQuest1",Level=1,Mob="Bandit [Lv. 5]"},
-   {Min=10,Max=19,Quest="JungleQuest",Level=1,Mob="Monkey [Lv. 14]"},
-   {Min=20,Max=29,Quest="JungleQuest",Level=2,Mob="Gorilla [Lv. 20]"},
-   {Min=30,Max=39,Quest="BuggyQuest1",Level=1,Mob="Pirate [Lv. 35]"},
-   {Min=40,Max=59,Quest="BuggyQuest1",Level=2,Mob="Brute [Lv. 45]"},
-   {Min=60,Max=74,Quest="DesertQuest",Level=1,Mob="Desert Bandit [Lv. 60]"},
-   {Min=75,Max=89,Quest="DesertQuest",Level=2,Mob="Desert Officer [Lv. 70]"},
-   {Min=90,Max=99,Quest="SnowQuest",Level=1,Mob="Snow Bandit [Lv. 90]"},
-   {Min=100,Max=119,Quest="SnowQuest",Level=2,Mob="Snowman [Lv. 100]"},
-   {Min=120,Max=149,Quest="MarineQuest2",Level=1,Mob="Chief Petty Officer [Lv. 120]"},
-   {Min=150,Max=174,Quest="SkyQuest",Level=1,Mob="Sky Bandit [Lv. 150]"},
-   {Min=175,Max=189,Quest="SkyQuest",Level=2,Mob="Dark Master [Lv. 175]"},
-   {Min=190,Max=209,Quest="PrisonQuest",Level=1,Mob="Prisoner [Lv. 190]"},
-   {Min=210,Max=249,Quest="PrisonQuest",Level=2,Mob="Dangerous Prisoner [Lv. 210]"},
-   {Min=250,Max=274,Quest="ColosseumQuest",Level=1,Mob="Toga Warrior [Lv. 250]"},
-   {Min=275,Max=299,Quest="ColosseumQuest",Level=2,Mob="Gladiator [Lv. 275]"},
-   {Min=300,Max=324,Quest="MagmaQuest",Level=1,Mob="Military Soldier [Lv. 300]"},
-   {Min=325,Max=374,Quest="MagmaQuest",Level=2,Mob="Military Spy [Lv. 325]"},
-   {Min=375,Max=399,Quest="FishmanQuest",Level=1,Mob="Fishman Warrior [Lv. 375]"},
-   {Min=400,Max=449,Quest="FishmanQuest",Level=2,Mob="Fishman Commando [Lv. 400]"},
-   {Min=450,Max=474,Quest="SkyQuest2",Level=1,Mob="God's Guard [Lv. 450]"},
-   {Min=475,Max=524,Quest="SkyQuest2",Level=2,Mob="Shanda [Lv. 475]"},
-   {Min=525,Max=549,Quest="FountainQuest",Level=1,Mob="Royal Squad [Lv. 525]"},
-   {Min=550,Max=624,Quest="FountainQuest",Level=2,Mob="Royal Soldier [Lv. 550]"},
-   {Min=625,Max=649,Quest="FountainQuest",Level=3,Mob="Galley Pirate [Lv. 625]"},
-   {Min=650,Max=699,Quest="FountainQuest",Level=3,Mob="Galley Captain [Lv. 650]"},
-}
+-- 🔍 ฟังก์ชันหา Config ตาม Level
+local function GetConfig(level)
+    for _, config in pairs(CONFIG) do
+        if level >= config.MinLevel and level <= config.MaxLevel then
+            return config
+        end
+    end
+    return CONFIG[1] -- ค่าเริ่มต้น
+end
+
+-- ฟังก์ชันหา NPC
+local function FindNPC(npcName)
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and obj.Name == npcName then
+            local hrp = obj:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                return hrp
+            end
+        end
+    end
+    return nil
+end
 
 -- ⚔️ Weapon System
 local SelectedWeapon = nil
 
 local function GetWeaponType(Tool)
     if not Tool or not Tool:IsA("Tool") then return nil end
-    
     local attr = Tool:GetAttribute("WeaponType")
-    if typeof(attr) == "string" and attr ~= "" then
-        return attr
-    end
-    
+    if typeof(attr) == "string" and attr ~= "" then return attr end
     local typeVal = Tool:FindFirstChild("Type")
-    if typeVal and typeVal:IsA("StringValue") then
-        return typeVal.Value
-    end
-    
+    if typeVal and typeVal:IsA("StringValue") then return typeVal.Value end
     return nil
 end
 
@@ -381,19 +171,13 @@ end
 
 local function EquipWeapon(name)
     if not name or name == "None" then return false end
-    
-    if Character and Character:FindFirstChild(name) then
-        return true
-    end
-    
+    if Character and Character:FindFirstChild(name) then return true end
     local bp = LocalPlayer:FindFirstChildOfClass("Backpack")
     if bp then
         for _,v in ipairs(bp:GetChildren()) do
             if v:IsA("Tool") and v.Name == name then
                 if Humanoid then
-                    pcall(function()
-                        Humanoid:EquipTool(v)
-                    end)
+                    pcall(function() Humanoid:EquipTool(v) end)
                     return true
                 end
             end
@@ -410,19 +194,6 @@ local function KeepWeaponEquipped()
     end
 end
 
-local function GetQuestForLevel(lvl)
-    if lvl >= 0 and lvl <= 9 then
-        return {Min=0,Max=9,Quest="MarineQuest1",Level=1,Mob="Bandit [Lv. 5]"}
-    end
-    
-    for _,v in ipairs(QuestDB) do
-        if lvl >= v.Min and lvl <= v.Max then
-            return v
-        end
-    end
-    return nil
-end
-
 -- 📊 สถานะ
 local S = {
     Farm = false,
@@ -431,10 +202,11 @@ local S = {
     Stats = {Melee=false,Defense=false,Sword=false,Gun=false,Fruit=false},
     TargetPos = nil,
     CurrentMob = "",
-    IsTweening = false,
+    IsMoving = false,
     AttackCombo = 1,
     QuestAccepted = false,
     CurrentSpawnIndex = 1,
+    CurrentConfig = nil,
 }
 
 -- 🎨 UI
@@ -498,9 +270,9 @@ FarmTab:CreateToggle({
         if not v then
             S.TargetPos = nil
             S.CurrentMob = ""
-            S.IsTweening = false
+            S.IsMoving = false
             S.QuestAccepted = false
-            S.CurrentSpawnIndex = 1
+            S.CurrentConfig = nil
         end
     end,
 })
@@ -546,33 +318,57 @@ task.spawn(function()
         pcall(function()
             SetNoclip(true)
             
-            local q = GetQuestForLevel(Level.Value)
-            if not q then return end
+            -- หา Config ตาม Level
+            local config = GetConfig(Level.Value)
+            if not config then
+                print("❌ No config for level:", Level.Value)
+                return
+            end
             
-            -- ✅ รับเควส
+            -- ถ้า Config เปลี่ยน ให้รีเซ็ต
+            if S.CurrentConfig ~= config then
+                S.CurrentConfig = config
+                S.QuestAccepted = false
+                S.CurrentMob = config.Mob
+                S.CurrentSpawnIndex = 1
+                print("📌 Switched to:", config.Mob, "with NPC:", config.NPC)
+            end
+            
+            -- 📌 รับเควส
             if not S.QuestAccepted then
                 if CommF_ then
+                    -- หา NPC และบินไปหา
+                    local npc = FindNPC(config.NPC)
+                    if npc then
+                        local npcPos = npc.Position
+                        local targetCF = CF(npcPos + V3(0, 3, 0))
+                        local dist = (HRP.Position - targetCF.Position).Magnitude
+                        
+                        if dist > 5 then
+                            local t = math.min(dist / S.Speed, 2)
+                            local tw = TweenService:Create(HRP, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame=targetCF})
+                            tw:Play()
+                            tw.Completed:Wait()
+                        end
+                        
+                        task.wait(0.5)
+                    end
+                    
                     pcall(function()
-                        CommF_:InvokeServer("StartQuest", q.Quest, q.Level)
+                        CommF_:InvokeServer("StartQuest", config.Quest, config.Level)
                     end)
                     S.QuestAccepted = true
-                    S.CurrentMob = q.Mob
+                    S.CurrentMob = config.Mob
                     S.CurrentSpawnIndex = 1
-                    print("✅ Quest accepted: " .. q.Quest)
+                    print("✅ Quest accepted:", config.Quest)
                 end
-                task.wait(0.5)
+                task.wait(1)
                 return
             end
             
-            -- 📍 หา spawn mob
-            local mobData = Sea1Monsters[S.CurrentMob]
-            if not mobData or not mobData[2] or #mobData[2] == 0 then
-                S.QuestAccepted = false
-                return
-            end
-            
-            local spawns = mobData[2]
-            if #spawns == 0 then
+            -- 📍 หาตำแหน่งมอน
+            local spawns = config.Spawns
+            if not spawns or #spawns == 0 then
                 S.QuestAccepted = false
                 return
             end
@@ -584,39 +380,27 @@ task.spawn(function()
             local targetPos = spawns[S.CurrentSpawnIndex]
             if not targetPos then return end
             
-            local targetCF = CF(targetPos + V3(0, S.Height, 0))
-            S.TargetPos = targetPos + V3(0, S.Height, 0)
+            local height = S.Height or 40
+            local targetCF = CF(targetPos + V3(0, height, 0))
+            S.TargetPos = targetPos + V3(0, height, 0)
             
-            -- 🚀 Tween
-            if not S.IsTweening then
-                local dist = (HRP.Position - targetCF.Position).Magnitude
-                if dist > 2 then
-                    S.IsTweening = true
-                    local t = math.min(dist / S.Speed, 1.5)
-                    local tw = TweenService:Create(HRP, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame=targetCF})
-                    tw:Play()
-                    tw.Completed:Wait()
-                    S.IsTweening = false
-                    S.CurrentSpawnIndex = S.CurrentSpawnIndex + 1
-                else
-                    S.CurrentSpawnIndex = S.CurrentSpawnIndex + 1
-                end
+            -- 🚀 บินไปที่ตำแหน่ง
+            local dist = (HRP.Position - targetCF.Position).Magnitude
+            if dist > 3 then
+                local t = math.min(dist / S.Speed, 2)
+                local tw = TweenService:Create(HRP, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame=targetCF})
+                tw:Play()
+                tw.Completed:Wait()
+                S.CurrentSpawnIndex = S.CurrentSpawnIndex + 1
+            else
+                S.CurrentSpawnIndex = S.CurrentSpawnIndex + 1
             end
-        end)
-    end
-end)
-
--- 🧊 Physics Stabilizer
-task.spawn(function()
-    while task.wait(0.02) do
-        if not S.Farm or S.IsTweening or not Character or not HRP then continue end
-        
-        pcall(function()
+            
+            -- 🧊 รักษาตำแหน่ง
             if S.TargetPos then
                 HRP.CFrame = CF(S.TargetPos)
                 HRP.Velocity = V3(0,0,0)
                 HRP.AssemblyLinearVelocity = V3(0,0,0)
-                HRP.RotVelocity = V3(0,0,0)
                 if Humanoid then
                     Humanoid.Sit = false
                     Humanoid.PlatformStand = false
@@ -626,16 +410,16 @@ task.spawn(function()
     end
 end)
 
--- ⚔️ Mob Stack & Attack - สำคัญที่สุด!
+-- ⚔️ Mob Stack & Attack
 task.spawn(function()
-    while task.wait(0.01) do
-        if not S.Farm or S.IsTweening or not Character or not HRP then continue end
+    while task.wait(0.02) do
+        if not S.Farm or not Character or not HRP then continue end
         
         pcall(function()
             local currentMob = S.CurrentMob
             if currentMob == "" then return end
             
-            local enemies = Workspace:FindFirstChild("Enemies")
+            local enemies = workspace:FindFirstChild("Enemies")
             if not enemies then return end
             
             local mobsToAttack = {}
@@ -658,7 +442,7 @@ task.spawn(function()
                 end
             end
             
-            -- 🔥 โจมตี!
+            -- 🔥 โจมตี
             if #mobsToAttack > 0 then
                 if RegAttack then
                     pcall(function()
@@ -728,7 +512,7 @@ task.spawn(function()
             local currentMob = S.CurrentMob
             if currentMob == "" then return end
             
-            local enemies = Workspace:FindFirstChild("Enemies")
+            local enemies = workspace:FindFirstChild("Enemies")
             if not enemies then
                 S.QuestAccepted = false
                 return
@@ -761,11 +545,13 @@ LocalPlayer.CharacterAdded:Connect(function(c)
     S.QuestAccepted = false
     S.CurrentMob = ""
     S.TargetPos = nil
-    S.IsTweening = false
+    S.IsMoving = false
     S.CurrentSpawnIndex = 1
+    S.CurrentConfig = nil
 end)
 
 -- ✅ แจ้งเตือน
 Rayfield:Notify({Title="✅ Premium Hub",Content="Script Loaded! Enable Auto Farm.",Duration=5})
 print("🔥 Premium Hub loaded successfully!")
 print("📌 Enable Auto Farm to start farming!")
+print("📌 Current Level:", Level.Value)
