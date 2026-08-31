@@ -1,5 +1,5 @@
--- AUTO FARM BLOX FRUITS - FIXED 100%
--- แก้ทุกอย่างที่ทำให้ไม่ตี
+-- AUTO FARM BLOX FRUITS - FIXED
+-- ไม่ล็อคมอน ให้มอนเคลื่อนไหวได้ แล้วตีตอนมันอยู่ใกล้
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -19,18 +19,16 @@ local Data = LocalPlayer:WaitForChild("Data")
 local Level = Data:WaitForChild("Level")
 local Points = Data:WaitForChild("Points")
 
--- ✅ Remote Events (หาแบบละเอียด)
+-- Remote Events
 local CommF_ = nil
 local RegAttack = nil
 local RegHit = nil
 
--- หา CommF_
 local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
 if Remotes then
     CommF_ = Remotes:FindFirstChild("CommF_")
 end
 
--- หา RegAttack และ RegHit
 local Modules = ReplicatedStorage:FindFirstChild("Modules")
 if Modules then
     local Net = Modules:FindFirstChild("Net")
@@ -40,7 +38,6 @@ if Modules then
     end
 end
 
--- ถ้าไม่เจอ ให้ค้นหาทั้งหมด
 if not CommF_ or not RegAttack or not RegHit then
     for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
         if v.Name == "CommF_" then CommF_ = v end
@@ -49,20 +46,15 @@ if not CommF_ or not RegAttack or not RegHit then
     end
 end
 
-print("✅ CommF_:", CommF_ and "Found" or "Not Found")
-print("✅ RegAttack:", RegAttack and "Found" or "Not Found")
-print("✅ RegHit:", RegHit and "Found" or "Not Found")
-
 local V3 = Vector3.new
 local CF = CFrame.new
 
 -- ====== DATA ======
--- ✅ ใช้ชื่อมอนให้ตรงกับในเกม (จาก Screenshot เห็น "Bandit [Lv. 5]")
-local MOB = "Bandit"  -- หรือ "Bandit [Lv. 5]" แล้วแต่ว่าอันไหนตรง
+local MOB = "Bandit"
+local FARM_HEIGHT = 18
 
--- จุดหลัก
 local NPC_POSITION = V3(1058.9923095703125, 12.710777282714844, 1551.7332763671875) + V3(0, 3, 0)
-local FARM_POSITION = V3(1341.8013916015625, 14.971686363220215, 1568.908935546875) + V3(0, 30, 0)
+local FARM_POSITION = V3(1341.8013916015625, 14.971686363220215, 1568.908935546875) + V3(0, FARM_HEIGHT, 0)
 
 local QuestData = {
     QuestName = "BanditQuest1",
@@ -158,35 +150,23 @@ local function LockPosition()
 end
 
 local function AcceptQuest()
-    if not CommF_ then 
-        print("❌ CommF_ not found!")
-        return 
-    end
+    if not CommF_ then return end
     pcall(function()
-        local result = CommF_:InvokeServer("StartQuest", QuestData.QuestName, QuestData.QuestLevel)
-        print("✅ รับเควส:", QuestData.QuestName, "Result:", result)
+        CommF_:InvokeServer("StartQuest", QuestData.QuestName, QuestData.QuestLevel)
     end)
 end
 
--- ✅ แก้ Attack ให้ตีได้ทุกตัว
+-- ✅ ATTACK LOOP - ไม่ล็อคมอน ให้มอนเคลื่อนไหวได้
 local function AttackLoop()
-    if not RegAttack or not RegHit then 
-        print("❌ RegAttack or RegHit not found!")
-        return 
-    end
+    if not RegAttack or not RegHit then return end
     
     local enemies = Workspace:FindFirstChild("Enemies")
-    if not enemies then 
-        return 
-    end
+    if not enemies then return end
     
     local mobs = {}
     
-    -- ✅ หามอนแบบละเอียด (เผื่อชื่อมี [Lv.])
     for _, e in ipairs(enemies:GetChildren()) do
-        local name = e.Name
-        -- ตรวจสอบทั้งชื่อตรงและชื่อที่มี [Lv.]
-        if name == MOB or name:find(MOB) then
+        if e.Name == MOB or e.Name:find(MOB) then
             if e:FindFirstChild("Humanoid") and e:FindFirstChild("HumanoidRootPart") then
                 local humanoid = e.Humanoid
                 if humanoid.Health > 0 then
@@ -196,20 +176,19 @@ local function AttackLoop()
         end
     end
     
-    if #mobs == 0 then 
-        return 
-    end
+    if #mobs == 0 then return end
     
-    -- ✅ รวมมอนที่จุดเดียว
-    local centerPos = HRP.Position + V3(0, -30, 0)
+    -- ✅ ดึงมอนมาใกล้ๆ แต่ไม่ล็อค (ปล่อยให้ขยับได้)
+    local centerPos = HRP.Position + V3(0, -FARM_HEIGHT, 0)
     
     for i, e in ipairs(mobs) do
         local part = e.HumanoidRootPart
         local humanoid = e.Humanoid
         
+        -- กระจายรอบๆ
         local angle = (i - 1) * (2 * math.pi / math.min(#mobs, 8))
-        local offsetX = math.cos(angle) * 1.5
-        local offsetZ = math.sin(angle) * 1.5
+        local offsetX = math.cos(angle) * 2
+        local offsetZ = math.sin(angle) * 2
         
         local targetPos = centerPos + V3(offsetX, 0, offsetZ)
         
@@ -217,24 +196,25 @@ local function AttackLoop()
             part.CFrame = CF(targetPos)
             part.Velocity = V3(0, 0, 0)
             part.AssemblyLinearVelocity = V3(0, 0, 0)
-            humanoid.WalkSpeed = 0
-            humanoid.JumpPower = 0
+            -- ✅ ไม่ล็อคความเร็ว ให้มอนขยับได้
+            -- humanoid.WalkSpeed = 0  <-- ยกเลิก
+            -- humanoid.JumpPower = 0  <-- ยกเลิก
         end)
     end
     
-    -- ✅ Fast Attack
+    -- ✅ Attack ตามปกติ
     pcall(function()
-        -- Attack 20 รอบ (เร็วขึ้น)
-        for i = 1, 20 do
+        -- Attack 30 รอบ
+        for i = 1, 30 do
             RegAttack:FireServer(0.5, AttackCombo)
             AttackCombo = AttackCombo == 1 and 2 or 1
         end
         
-        -- Hit ทุกตัว 10 รอบ
+        -- Hit ทุกตัว 20 รอบ
         for _, e in ipairs(mobs) do
             local part = e:FindFirstChild("HumanoidRootPart")
             if part then
-                for i = 1, 10 do
+                for i = 1, 20 do
                     RegHit:FireServer(part, {})
                 end
             end
@@ -247,8 +227,7 @@ local function CheckMobs()
     if not enemies then return true end
     
     for _, e in ipairs(enemies:GetChildren()) do
-        local name = e.Name
-        if name == MOB or name:find(MOB) then
+        if e.Name == MOB or e.Name:find(MOB) then
             if e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 then
                 return false
             end
@@ -267,7 +246,6 @@ local Window = Rayfield:CreateWindow({
 
 local FarmTab = Window:CreateTab("Farm")
 
--- Weapon Dropdown
 local WepNames = ScanWeapons()
 local WepDrop = FarmTab:CreateDropdown({
     Name = "Weapon Selector",
@@ -297,15 +275,12 @@ FarmTab:CreateToggle({
         if v then
             QuestDone = false
             print("✅ เริ่มฟาร์ม!")
-            print("📍 มอน:", MOB)
-            print("📍 เควส:", QuestData.QuestName)
         else
             print("⏹ หยุดฟาร์ม")
         end
     end,
 })
 
--- Auto Stats
 FarmTab:CreateToggle({
     Name = "Auto Melee",
     CurrentValue = false,
@@ -341,6 +316,18 @@ FarmTab:CreateToggle({
     Callback = function(v) AutoFruit = v end,
 })
 
+FarmTab:CreateSlider({
+    Name = "Farm Height",
+    Range = {10, 40},
+    Increment = 1,
+    CurrentValue = FARM_HEIGHT,
+    Flag = "Height",
+    Callback = function(v)
+        FARM_HEIGHT = v
+        FARM_POSITION = V3(1341.8013916015625, 14.971686363220215, 1568.908935546875) + V3(0, FARM_HEIGHT, 0)
+    end,
+})
+
 -- ====== NOCLIP ======
 local NoclipCon = nil
 local function SetNoclip(on)
@@ -371,25 +358,19 @@ task.spawn(function()
         pcall(function()
             SetNoclip(true)
             
-            -- รับเควส
             if not QuestDone then
-                print("📍 บินไปรับเควส...")
                 Teleport(NPC_POSITION)
                 task.wait(0.5)
                 AcceptQuest()
                 QuestDone = true
-                print("✅ รับเควสแล้ว! บินไปฟาร์ม...")
                 Teleport(FARM_POSITION)
                 task.wait(0.3)
                 return
             end
             
-            -- อยู่ที่จุดฟาร์ม
             LockPosition()
             
-            -- เช็คมอนตาย
             if CheckMobs() then
-                print("🔄 มอนตายหมด ไปรับเควสใหม่...")
                 QuestDone = false
                 Teleport(NPC_POSITION)
                 task.wait(0.5)
@@ -400,15 +381,15 @@ task.spawn(function()
     end
 end)
 
--- ✅ Attack Loop (เร็วมาก)
+-- Attack Loop
 task.spawn(function()
-    while task.wait(0.001) do  -- เร็วขึ้นอีก
+    while task.wait(0.001) do
         if not Farming or not QuestDone then continue end
         pcall(AttackLoop)
     end
 end)
 
--- Lock Position Loop
+-- Lock Position
 task.spawn(function()
     while task.wait(0.01) do
         if not Farming or not QuestDone then continue end
@@ -466,7 +447,6 @@ LocalPlayer.CharacterAdded:Connect(function(c)
     QuestDone = false
 end)
 
--- Notify
 Rayfield:Notify({
     Title = "✅ AUTO FARM",
     Content = "เปิด Auto Farm เพื่อเริ่มฟาร์ม!",
@@ -474,6 +454,4 @@ Rayfield:Notify({
 })
 
 print("🔥 AUTO FARM LOADED!")
-print("📍 มอน:", MOB)
-print("📍 เควส:", QuestData.QuestName)
-print("⚡ FAST ATTACK: ทุก 0.001 วินาที")
+print("📍 ไม่ล็อคมอน ให้มอนเคลื่อนไหวได้")
