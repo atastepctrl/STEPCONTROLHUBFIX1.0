@@ -1,5 +1,5 @@
--- AUTO FARM BLOX FRUITS - FIXED
--- แก้ปัญหามอนทับกัน และตัวละครกระโดด
+-- AUTO FARM BLOX FRUITS - แก้ให้บินเหนือพื้น มอนรวมกันที่พื้น
+-- FAST ATTACK จากข้างบน
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -113,8 +113,8 @@ local Farming = false
 local QuestDone = false
 local AttackCombo = 1
 local SpawnIndex = 1
-local FarmHeight = 30
-local StuckCounter = 0
+local FarmHeight = 25  -- ความสูงเหนือพื้น (ให้อยู่เหนือมอน)
+local CurrentPos = nil
 
 -- Teleport
 local function Teleport(pos)
@@ -135,7 +135,7 @@ local function AcceptQuest()
     end)
 end
 
--- โจมตี (แก้ให้ตีได้ทุกตัว)
+-- ✅ รวมมอนไว้ที่พื้นจุดเดียว และโจมตี
 local function Attack()
     if not RegAttack or not RegHit then return end
     
@@ -156,20 +156,19 @@ local function Attack()
     
     if #mobs == 0 then return end
     
-    -- จัดเรียงมอนไม่ให้ทับกัน (กระจายกัน)
-    local spreadRadius = 3
-    local startAngle = 0
+    -- ✅ รวมมอนไว้ที่พื้นจุดเดียว (ใต้เท้าผู้เล่น)
+    local centerPos = HRP.Position + V3(0, -FarmHeight, 0)  -- อยู่ที่พื้น
     
     for i, e in ipairs(mobs) do
         local part = e.HumanoidRootPart
         local humanoid = e.Humanoid
         
-        -- คำนวณตำแหน่งแบบวงกลมรอบตัวผู้เล่น
-        local angle = startAngle + (i - 1) * (2 * math.pi / #mobs)
-        local offsetX = math.cos(angle) * spreadRadius
-        local offsetZ = math.sin(angle) * spreadRadius
+        -- กระจายมอนเล็กน้อย (ไม่ให้ทับกันเกินไป)
+        local angle = (i - 1) * (2 * math.pi / #mobs)
+        local offsetX = math.cos(angle) * 1.5
+        local offsetZ = math.sin(angle) * 1.5
         
-        local targetPos = HRP.Position + V3(offsetX, -4, offsetZ)
+        local targetPos = centerPos + V3(offsetX, 0, offsetZ)
         
         pcall(function()
             part.CFrame = CF(targetPos)
@@ -180,18 +179,19 @@ local function Attack()
         end)
     end
     
-    -- โจมตีทุกตัว
+    -- ✅ Fast Attack (ไม่มีดีเลย์)
     pcall(function()
-        -- RE/RegisterAttack
-        RegAttack:FireServer(0.5, AttackCombo)
-        AttackCombo = AttackCombo == 1 and 2 or 1
-        
-        -- RE/RegisterHit ทุกตัว
-        for _, e in ipairs(mobs) do
-            local part = e:FindFirstChild("HumanoidRootPart")
-            if part then
-                RegHit:FireServer(part, {})
+        for i = 1, 3 do  -- ยิงหลายรอบต่อครั้ง
+            RegAttack:FireServer(0.5, AttackCombo)
+            AttackCombo = AttackCombo == 1 and 2 or 1
+            
+            for _, e in ipairs(mobs) do
+                local part = e:FindFirstChild("HumanoidRootPart")
+                if part then
+                    RegHit:FireServer(part, {})
+                end
             end
+            task.wait(0.01)
         end
     end)
 end
@@ -267,9 +267,9 @@ FarmTab:CreateToggle({
 
 FarmTab:CreateSlider({
     Name = "Farm Height",
-    Range = {20, 60},
+    Range = {15, 50},
     Increment = 1,
-    CurrentValue = 30,
+    CurrentValue = 25,
     Flag = "Height",
     Callback = function(v)
         FarmHeight = v
@@ -297,7 +297,7 @@ end
 
 -- Farm Loop
 task.spawn(function()
-    while task.wait(0.3) do
+    while task.wait(0.2) do
         if not Farming then
             SetNoclip(false)
             continue
@@ -306,29 +306,7 @@ task.spawn(function()
         pcall(function()
             SetNoclip(true)
             
-            -- รักษาตำแหน่งผู้เล่นให้นิ่ง
-            if QuestDone and SpawnIndex > 0 then
-                local pos = BanditPositions[SpawnIndex % #BanditPositions + 1]
-                if pos then
-                    local targetPos = pos + V3(0, FarmHeight, 0)
-                    local dist = (HRP.Position - targetPos).Magnitude
-                    
-                    if dist > 5 then
-                        Teleport(targetPos)
-                    else
-                        -- ถ้าอยู่ใกล้แล้ว รักษาตำแหน่งให้นิ่ง
-                        HRP.CFrame = CF(targetPos)
-                        HRP.Velocity = V3(0, 0, 0)
-                        HRP.AssemblyLinearVelocity = V3(0, 0, 0)
-                        if Humanoid then
-                            Humanoid.Sit = false
-                            Humanoid.PlatformStand = true
-                        end
-                    end
-                end
-            end
-            
-            -- รับเควส
+            -- ✅ รับเควส
             if not QuestDone then
                 Teleport(QuestNPCPosition + V3(0, 3, 0))
                 task.wait(0.5)
@@ -339,30 +317,53 @@ task.spawn(function()
                 return
             end
             
-            -- เช็ค mob ตาย
-            if CheckMobs() then
-                print("🔄 มอนตายหมด รับเควสใหม่")
-                QuestDone = false
-                SpawnIndex = 1
-                StuckCounter = 0
+            -- ✅ บินเหนือพื้น (ไม่ต้องเปลี่ยนบ่อย)
+            local pos = BanditPositions[SpawnIndex]
+            if pos then
+                local targetPos = pos + V3(0, FarmHeight, 0)
+                local dist = (HRP.Position - targetPos).Magnitude
+                
+                if dist > 5 then
+                    Teleport(targetPos)
+                    CurrentPos = targetPos
+                else
+                    -- รักษาตำแหน่งให้นิ่ง
+                    HRP.CFrame = CF(targetPos)
+                    HRP.Velocity = V3(0, 0, 0)
+                    HRP.AssemblyLinearVelocity = V3(0, 0, 0)
+                    if Humanoid then
+                        Humanoid.Sit = false
+                        Humanoid.PlatformStand = true
+                    end
+                end
             end
             
-            -- เปลี่ยนตำแหน่งฟาร์มช้าๆ
-            StuckCounter = StuckCounter + 1
-            if StuckCounter >= 20 then  -- ทุก 6 วินาที
+            -- ✅ เปลี่ยนตำแหน่งช้าๆ (ทุก 5 วินาที)
+            if not CurrentPos then CurrentPos = HRP.Position end
+            local elapsed = (HRP.Position - CurrentPos).Magnitude
+            if elapsed < 1 then
                 SpawnIndex = SpawnIndex + 1
                 if SpawnIndex > #BanditPositions then
                     SpawnIndex = 1
                 end
-                StuckCounter = 0
+                CurrentPos = nil
+                task.wait(0.5)
+            end
+            
+            -- ✅ เช็ค mob ตาย
+            if CheckMobs() then
+                print("🔄 มอนตายหมด รับเควสใหม่")
+                QuestDone = false
+                SpawnIndex = 1
+                CurrentPos = nil
             end
         end)
     end
 end)
 
--- Attack Loop (เร็วขึ้น)
+-- ✅ Attack Loop (เร็วมาก)
 task.spawn(function()
-    while task.wait(0.02) do
+    while task.wait(0.01) do  -- โจมตีเร็วมาก
         if not Farming or not QuestDone then continue end
         pcall(Attack)
     end
@@ -398,6 +399,7 @@ LocalPlayer.CharacterAdded:Connect(function(c)
     if Farming then SetNoclip(true) end
     QuestDone = false
     SpawnIndex = 1
+    CurrentPos = nil
 end)
 
 -- Notify
