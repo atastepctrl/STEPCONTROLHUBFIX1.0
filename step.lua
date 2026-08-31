@@ -1,5 +1,5 @@
--- AUTO FARM BLOX FRUITS - FIXED ตัวละครไม่ตก
--- ใช้ TweenService + ล็อคตำแหน่งแบบต่อเนื่อง
+-- AUTO FARM BLOX FRUITS - AUTO LEVEL UP
+-- เปลี่ยนเกาะอัตโนมัติตามเลเวล
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -28,31 +28,179 @@ local RegHit = ReplicatedStorage:FindFirstChild("Modules"):FindFirstChild("Net")
 local V3 = Vector3.new
 local CF = CFrame.new
 
--- ====== DATA ======
-local MOB = "Bandit"
-
-local BanditPositions = {
-    V3(1341.8013916015625, 14.971686363220215, 1568.908935546875),
-    V3(1331.8433837890625, 14.971686363220215, 1497.990966796875),
-    V3(1019.77685546875, 14.971871376037598, 1566.628662109375),
-    V3(1232.5172119140625, 14.970709800720215, 1539.788818359375),
-    V3(1123.51806640625, 14.970709800720215, 1665.0887451171875),
-    V3(950.2855834960938, 14.97115421295166, 1625.227294921875),
-    V3(934.4271850585938, 15.017585754394531, 1517.141357421875),
-    V3(1102.04052734375, 14.971070289611816, 1589.462646484375),
-    V3(1219.0181884765625, 14.970709800720215, 1677.4891357421875),
-    V3(1284.3336181640625, 14.970709800720215, 1627.645263671875),
+-- ============================================================
+-- 📌 DATA ALL ISLAND (Level 1 - 700+)
+-- ============================================================
+local IslandData = {
+    -- เกาะเริ่มต้น (Level 1-9)
+    [1] = {
+        Name = "Bandit Island",
+        MinLevel = 0,
+        MaxLevel = 9,
+        NPC = "Bandit Quest Giver",
+        NPCPos = V3(1058.9923095703125, 12.710777282714844, 1551.7332763671875),
+        Mob = "Bandit",
+        Quest = "BanditQuest1",
+        QuestLevel = 1,
+        Spawns = {
+            V3(1341.8013916015625, 14.971686363220215, 1568.908935546875),
+            V3(1331.8433837890625, 14.971686363220215, 1497.990966796875),
+            V3(1019.77685546875, 14.971871376037598, 1566.628662109375),
+            V3(1232.5172119140625, 14.970709800720215, 1539.788818359375),
+            V3(1123.51806640625, 14.970709800720215, 1665.0887451171875),
+            V3(950.2855834960938, 14.97115421295166, 1625.227294921875),
+            V3(934.4271850585938, 15.017585754394531, 1517.141357421875),
+            V3(1102.04052734375, 14.971070289611816, 1589.462646484375),
+            V3(1219.0181884765625, 14.970709800720215, 1677.4891357421875),
+            V3(1284.3336181640625, 14.970709800720215, 1627.645263671875),
+        }
+    },
+    -- เกาะป่า (Level 10-29)
+    [2] = {
+        Name = "Jungle Island",
+        MinLevel = 10,
+        MaxLevel = 19,
+        NPC = "Adventurer",
+        NPCPos = V3(-1292.6700439453125, 10.899993896484375, -4.850006103515625),
+        Mob = "Monkey",
+        Quest = "JungleQuest",
+        QuestLevel = 1,
+        Spawns = {
+            V3(-1292.6700439453125, 10.899993896484375, -4.850006103515625),
+            V3(-1202.5, 10.899993896484375, 278.8699951171875),
+            V3(-1743.530029296875, 20.979995727539062, -91.27000427246094),
+            V3(-1489.25, 20.979995727539062, 88.49000549316406),
+            V3(-1579.218994140625, 20.979995727539062, 377.6000061035156),
+        }
+    },
+    [3] = {
+        Name = "Jungle Island",
+        MinLevel = 20,
+        MaxLevel = 29,
+        NPC = "Adventurer",
+        NPCPos = V3(-1292.6700439453125, 10.899993896484375, -4.850006103515625),
+        Mob = "Gorilla",
+        Quest = "JungleQuest",
+        QuestLevel = 2,
+        Spawns = {
+            V3(-1249.18994140625, 8.229995727539062, -456.19000244140625),
+            V3(-1249.18994140625, 8.229995727539062, -549.6799926757812),
+            V3(-1363.18994140625, 20.229995727539062, -486.19000244140625),
+            V3(-1186.6190185546875, 11.067001342773438, -650.2750244140625),
+        }
+    },
+    -- เกาะโจรสลัด (Level 30-59)
+    [4] = {
+        Name = "Pirate Island",
+        MinLevel = 30,
+        MaxLevel = 39,
+        NPC = "Buggy Quest Giver",
+        NPCPos = V3(-1182.512939453125, 5.600006103515625, 3972.157958984375),
+        Mob = "Pirate",
+        Quest = "BuggyQuest1",
+        QuestLevel = 1,
+        Spawns = {
+            V3(-1182.512939453125, 5.600006103515625, 3972.157958984375),
+            V3(-1289.512939453125, 5.600006103515625, 3940.157958984375),
+            V3(-1140.512939453125, 5.600006103515625, 3902.157958984375),
+            V3(-972.4329833984375, 13.600006103515625, 3939.2470703125),
+        }
+    },
+    [5] = {
+        Name = "Pirate Island",
+        MinLevel = 40,
+        MaxLevel = 59,
+        NPC = "Buggy Quest Giver",
+        NPCPos = V3(-1182.512939453125, 5.600006103515625, 3972.157958984375),
+        Mob = "Brute",
+        Quest = "BuggyQuest1",
+        QuestLevel = 2,
+        Spawns = {
+            V3(-862.8900146484375, 15.600006103515625, 4281.9560546875),
+            V3(-979.7150268554688, 15.600006103515625, 4234.755859375),
+            V3(-1048.6429443359375, 15.600006103515625, 4405.35888671875),
+            V3(-1230.3709716796875, 15.600006103515625, 4331.93701171875),
+        }
+    },
+    -- ทะเลทราย (Level 60-89)
+    [6] = {
+        Name = "Desert Island",
+        MinLevel = 60,
+        MaxLevel = 74,
+        NPC = "Desert Quest Giver",
+        NPCPos = V3(1001.0549926757812, 7.56500244140625, 4488.61083984375),
+        Mob = "Desert Bandit",
+        Quest = "DesertQuest",
+        QuestLevel = 1,
+        Spawns = {
+            V3(1001.0549926757812, 7.56500244140625, 4488.61083984375),
+            V3(859.8150024414062, 7.56500244140625, 4488.06005859375),
+            V3(931.7050170898438, 7.56500244140625, 4534.033203125),
+        }
+    },
+    [7] = {
+        Name = "Desert Island",
+        MinLevel = 75,
+        MaxLevel = 89,
+        NPC = "Desert Quest Giver",
+        NPCPos = V3(1001.0549926757812, 7.56500244140625, 4488.61083984375),
+        Mob = "Desert Officer",
+        Quest = "DesertQuest",
+        QuestLevel = 2,
+        Spawns = {
+            V3(1664.676025390625, 14.748001098632812, 4317.791015625),
+            V3(1578.365966796875, 3.8849945068359375, 4299.23291015625),
+            V3(1671.76904296875, 9.748001098632812, 4392.88818359375),
+        }
+    },
+    -- เกาะหิมะ (Level 90-119)
+    [8] = {
+        Name = "Snow Island",
+        MinLevel = 90,
+        MaxLevel = 99,
+        NPC = "Snow Quest Giver",
+        NPCPos = V3(1273.748046875, 88.79000854492188, -1345.8399658203125),
+        Mob = "Snow Bandit",
+        Quest = "SnowQuest",
+        QuestLevel = 1,
+        Spawns = {
+            V3(1273.748046875, 88.79000854492188, -1345.8399658203125),
+            V3(1458.7080078125, 88.79000854492188, -1447.1500244140625),
+            V3(1381.324951171875, 88.79000854492188, -1464.9429931640625),
+        }
+    },
+    [9] = {
+        Name = "Snow Island",
+        MinLevel = 100,
+        MaxLevel = 119,
+        NPC = "Snow Quest Giver",
+        NPCPos = V3(1273.748046875, 88.79000854492188, -1345.8399658203125),
+        Mob = "Snowman",
+        Quest = "SnowQuest",
+        QuestLevel = 2,
+        Spawns = {
+            V3(1190.0889892578125, 106.80999755859375, -1626.5810546875),
+            V3(1148.2490234375, 106.80999755859375, -1429.3199462890625),
+            V3(1035.97900390625, 106.80999755859375, -1489.3599853515625),
+        }
+    },
 }
 
-local QuestNPC = "Bandit Quest Giver"
-local QuestNPCPosition = V3(1058.9923095703125, 12.710777282714844, 1551.7332763671875)
+-- ============================================================
+-- ฟังก์ชันหา Island ตาม Level
+-- ============================================================
+local function GetIslandByLevel(level)
+    for _, island in pairs(IslandData) do
+        if level >= island.MinLevel and level <= island.MaxLevel then
+            return island
+        end
+    end
+    return IslandData[1] -- ค่าเริ่มต้น
+end
 
-local QuestData = {
-    QuestName = "BanditQuest1",
-    QuestLevel = 1,
-}
-
--- ====== WEAPON SYSTEM ======
+-- ============================================================
+-- WEAPON SYSTEM
+-- ============================================================
 local SelectedWeapon = nil
 
 local function ScanWeapons()
@@ -109,16 +257,18 @@ local function KeepWeaponEquipped()
     end
 end
 
--- ====== FARM SYSTEM ======
+-- ============================================================
+-- FARM SYSTEM
+-- ============================================================
 local Farming = false
 local QuestDone = false
 local AttackCombo = 1
 local SpawnIndex = 1
 local FarmHeight = 30
 local CurrentTarget = nil
-local IsFloating = false
+local CurrentIsland = nil
 
--- ✅ Teleport แบบทันที
+-- Teleport
 local function Teleport(pos)
     if not HRP then return end
     pcall(function()
@@ -129,21 +279,20 @@ local function Teleport(pos)
     end)
 end
 
--- ✅ Tween บินไป
+-- Fly
 local function FlyTo(pos)
     if not HRP then return end
     pcall(function()
         local tween = TweenService:Create(HRP, TweenInfo.new(0.3, Enum.EasingStyle.Linear), {CFrame = CF(pos)})
         tween:Play()
         tween.Completed:Wait()
-        -- ล็อคตำแหน่ง
         HRP.CFrame = CF(pos)
         HRP.Velocity = V3(0, 0, 0)
         HRP.AssemblyLinearVelocity = V3(0, 0, 0)
     end)
 end
 
--- ✅ ล็อคตำแหน่งไม่ให้ตก
+-- Lock Position
 local function LockPosition()
     if not HRP or not CurrentTarget then return end
     pcall(function()
@@ -160,26 +309,27 @@ local function LockPosition()
     end)
 end
 
--- รับเควส
-local function AcceptQuest()
+-- Accept Quest
+local function AcceptQuest(island)
     if not CommF_ then return end
     pcall(function()
-        CommF_:InvokeServer("StartQuest", QuestData.QuestName, QuestData.QuestLevel)
-        print("✅ รับเควส:", QuestData.QuestName)
+        CommF_:InvokeServer("StartQuest", island.Quest, island.QuestLevel)
+        print("✅ รับเควส:", island.Quest, "| มอน:", island.Mob)
     end)
 end
 
--- ✅ รวมมอนที่พื้น + โจมตี
-local function Attack()
-    if not RegAttack or not RegHit then return end
+-- ====== 🔥 ULTRA FAST ATTACK ======
+local function UltraAttack()
+    if not RegAttack or not RegHit or not CurrentIsland then return end
     
     local enemies = Workspace:FindFirstChild("Enemies")
     if not enemies then return end
     
     local mobs = {}
+    local mobName = CurrentIsland.Mob
     
     for _, e in ipairs(enemies:GetChildren()) do
-        if e.Name == MOB and e:FindFirstChild("Humanoid") and e:FindFirstChild("HumanoidRootPart") then
+        if e.Name == mobName and e:FindFirstChild("Humanoid") and e:FindFirstChild("HumanoidRootPart") then
             local humanoid = e.Humanoid
             if humanoid.Health > 0 then
                 table.insert(mobs, e)
@@ -189,7 +339,7 @@ local function Attack()
     
     if #mobs == 0 then return end
     
-    -- รวมมอนที่พื้นใต้เท้า
+    -- รวมมอนที่พื้น
     local centerPos = HRP.Position + V3(0, -FarmHeight, 0)
     
     for i, e in ipairs(mobs) do
@@ -213,32 +363,40 @@ local function Attack()
     
     -- Fast Attack
     pcall(function()
-        RegAttack:FireServer(0.5, AttackCombo)
-        AttackCombo = AttackCombo == 1 and 2 or 1
+        for i = 1, 10 do
+            RegAttack:FireServer(0.5, AttackCombo)
+            AttackCombo = AttackCombo == 1 and 2 or 1
+        end
         
         for _, e in ipairs(mobs) do
             local part = e:FindFirstChild("HumanoidRootPart")
             if part then
-                RegHit:FireServer(part, {})
+                for i = 1, 5 do
+                    RegHit:FireServer(part, {})
+                end
             end
         end
     end)
 end
 
--- เช็ค mob ตาย
+-- Check mobs
 local function CheckMobs()
+    if not CurrentIsland then return true end
     local enemies = Workspace:FindFirstChild("Enemies")
     if not enemies then return true end
     
+    local mobName = CurrentIsland.Mob
     for _, e in ipairs(enemies:GetChildren()) do
-        if e.Name == MOB and e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 then
+        if e.Name == mobName and e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 then
             return false
         end
     end
     return true
 end
 
--- ====== UI ======
+-- ============================================================
+-- UI
+-- ============================================================
 local Window = Rayfield:CreateWindow({
     Name = "AUTO FARM",
     LoadingTitle = "Loading...",
@@ -279,6 +437,7 @@ FarmTab:CreateToggle({
             QuestDone = false
             SpawnIndex = 1
             CurrentTarget = nil
+            CurrentIsland = nil
             print("✅ เริ่มฟาร์ม!")
         else
             print("⏹ หยุดฟาร์ม")
@@ -333,7 +492,9 @@ FarmTab:CreateSlider({
     end,
 })
 
--- ====== NOCLIP ======
+-- ============================================================
+-- NOCLIP
+-- ============================================================
 local NoclipCon = nil
 local function SetNoclip(on)
     if NoclipCon then NoclipCon:Disconnect() NoclipCon = nil end
@@ -350,11 +511,13 @@ local function SetNoclip(on)
     end
 end
 
--- ====== MAIN LOOPS ======
+-- ============================================================
+-- MAIN LOOPS
+-- ============================================================
 
--- ✅ Farm Loop - ใช้ Lock Position
+-- Farm Loop
 task.spawn(function()
-    while task.wait(0.05) do  -- เร็วขึ้นเพื่อล็อคตำแหน่ง
+    while task.wait(0.05) do
         if not Farming then
             SetNoclip(false)
             continue
@@ -363,34 +526,49 @@ task.spawn(function()
         pcall(function()
             SetNoclip(true)
             
+            -- ✅ เช็ค Level และเปลี่ยนเกาะอัตโนมัติ
+            local currentLevel = Level.Value
+            local newIsland = GetIslandByLevel(currentLevel)
+            
+            -- ถ้าเกาะเปลี่ยน ให้รีเซ็ต
+            if CurrentIsland ~= newIsland then
+                CurrentIsland = newIsland
+                QuestDone = false
+                SpawnIndex = 1
+                CurrentTarget = nil
+                print("🏝️ เปลี่ยนเกาะ:", CurrentIsland.Name, "| มอน:", CurrentIsland.Mob, "| Level:", currentLevel)
+            end
+            
+            if not CurrentIsland then return end
+            
             -- รับเควส
             if not QuestDone then
-                Teleport(QuestNPCPosition + V3(0, 3, 0))
+                Teleport(CurrentIsland.NPCPos + V3(0, 3, 0))
                 task.wait(0.5)
-                AcceptQuest()
+                AcceptQuest(CurrentIsland)
                 QuestDone = true
                 SpawnIndex = 1
-                print("✅ รับเควสแล้ว!")
+                print("✅ รับเควสแล้ว! กำลังฟาร์ม", CurrentIsland.Mob)
                 return
             end
             
             -- บินไปฟาร์ม
-            local pos = BanditPositions[SpawnIndex]
+            local spawns = CurrentIsland.Spawns
+            if not spawns or #spawns == 0 then return end
+            
+            local pos = spawns[SpawnIndex]
             if pos then
                 local targetPos = pos + V3(0, FarmHeight, 0)
                 
-                -- ถ้ายังไม่ถึง หรือเปลี่ยนตำแหน่ง
                 if not CurrentTarget or (CurrentTarget - targetPos).Magnitude > 1 then
                     CurrentTarget = targetPos
                     FlyTo(targetPos)
                 end
                 
-                -- ✅ ล็อคตำแหน่งทุกเฟรม (ไม่ให้ตก)
                 LockPosition()
                 
-                -- เปลี่ยนตำแหน่งช้าๆ
                 SpawnIndex = SpawnIndex + 1
-                if SpawnIndex > #BanditPositions then
+                if SpawnIndex > #spawns then
                     SpawnIndex = 1
                 end
                 task.wait(0.5)
@@ -407,15 +585,15 @@ task.spawn(function()
     end
 end)
 
--- ✅ Attack Loop
+-- Ultra Fast Attack Loop
 task.spawn(function()
-    while task.wait(0.01) do
-        if not Farming or not QuestDone then continue end
-        pcall(Attack)
+    while task.wait(0.005) do
+        if not Farming or not QuestDone or not CurrentIsland then continue end
+        pcall(UltraAttack)
     end
 end)
 
--- ✅ Lock Position Loop (ล็อคตลอดเวลาขณะฟาร์ม)
+-- Lock Position Loop
 task.spawn(function()
     while task.wait(0.02) do
         if not Farming or not QuestDone or not CurrentTarget then continue end
@@ -432,7 +610,7 @@ task.spawn(function()
     end
 end)
 
--- ====== AUTO STATS ======
+-- Auto Stats
 local AutoMelee = false
 local AutoDefense = false
 local AutoSword = false
@@ -440,7 +618,7 @@ local AutoGun = false
 local AutoFruit = false
 
 task.spawn(function()
-    while task.wait(0.3) do
+    while task.wait(0.1) do
         if Points.Value <= 0 then continue end
         
         local statsToAdd = {}
@@ -459,7 +637,7 @@ task.spawn(function()
                     CommF_:InvokeServer("AddPoint", statName, 1)
                 end
             end)
-            task.wait(0.05)
+            task.wait(0.02)
         end
     end
 end)
@@ -483,3 +661,5 @@ Rayfield:Notify({
 })
 
 print("🔥 AUTO FARM LOADED!")
+print("⚡ ULTRA FAST ATTACK ENABLED!")
+print("🔄 AUTO LEVEL UP ENABLED!")
