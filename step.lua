@@ -1,5 +1,5 @@
--- AUTO FARM BLOX FRUITS - AUTO LEVEL UP
--- เปลี่ยนเกาะอัตโนมัติตามเลเวล
+-- AUTO FARM BLOX FRUITS - FULL VERSION
+-- รวมทุกระบบที่แก้แล้ว
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -7,7 +7,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
 -- Character
@@ -42,20 +41,9 @@ local IslandData = {
         Mob = "Bandit",
         Quest = "BanditQuest1",
         QuestLevel = 1,
-        Spawns = {
-            V3(1341.8013916015625, 14.971686363220215, 1568.908935546875),
-            V3(1331.8433837890625, 14.971686363220215, 1497.990966796875),
-            V3(1019.77685546875, 14.971871376037598, 1566.628662109375),
-            V3(1232.5172119140625, 14.970709800720215, 1539.788818359375),
-            V3(1123.51806640625, 14.970709800720215, 1665.0887451171875),
-            V3(950.2855834960938, 14.97115421295166, 1625.227294921875),
-            V3(934.4271850585938, 15.017585754394531, 1517.141357421875),
-            V3(1102.04052734375, 14.971070289611816, 1589.462646484375),
-            V3(1219.0181884765625, 14.970709800720215, 1677.4891357421875),
-            V3(1284.3336181640625, 14.970709800720215, 1627.645263671875),
-        }
+        FarmPos = V3(1341.8013916015625, 14.971686363220215, 1568.908935546875) + V3(0, 30, 0),
     },
-    -- เกาะป่า (Level 10-29)
+    -- เกาะป่า (Level 10-19)
     [2] = {
         Name = "Jungle Island",
         MinLevel = 10,
@@ -65,14 +53,9 @@ local IslandData = {
         Mob = "Monkey",
         Quest = "JungleQuest",
         QuestLevel = 1,
-        Spawns = {
-            V3(-1292.6700439453125, 10.899993896484375, -4.850006103515625),
-            V3(-1202.5, 10.899993896484375, 278.8699951171875),
-            V3(-1743.530029296875, 20.979995727539062, -91.27000427246094),
-            V3(-1489.25, 20.979995727539062, 88.49000549316406),
-            V3(-1579.218994140625, 20.979995727539062, 377.6000061035156),
-        }
+        FarmPos = V3(-1292.6700439453125, 10.899993896484375, -4.850006103515625) + V3(0, 30, 0),
     },
+    -- เกาะป่า (Level 20-29)
     [3] = {
         Name = "Jungle Island",
         MinLevel = 20,
@@ -82,14 +65,9 @@ local IslandData = {
         Mob = "Gorilla",
         Quest = "JungleQuest",
         QuestLevel = 2,
-        Spawns = {
-            V3(-1249.18994140625, 8.229995727539062, -456.19000244140625),
-            V3(-1249.18994140625, 8.229995727539062, -549.6799926757812),
-            V3(-1363.18994140625, 20.229995727539062, -486.19000244140625),
-            V3(-1186.6190185546875, 11.067001342773438, -650.2750244140625),
-        }
+        FarmPos = V3(-1249.18994140625, 8.229995727539062, -456.19000244140625) + V3(0, 30, 0),
     },
-    -- เกาะโจรสลัด (Level 30-59)
+    -- เกาะโจรสลัด (Level 30-39)
     [4] = {
         Name = "Pirate Island",
         MinLevel = 30,
@@ -99,13 +77,9 @@ local IslandData = {
         Mob = "Pirate",
         Quest = "BuggyQuest1",
         QuestLevel = 1,
-        Spawns = {
-            V3(-1182.512939453125, 5.600006103515625, 3972.157958984375),
-            V3(-1289.512939453125, 5.600006103515625, 3940.157958984375),
-            V3(-1140.512939453125, 5.600006103515625, 3902.157958984375),
-            V3(-972.4329833984375, 13.600006103515625, 3939.2470703125),
-        }
+        FarmPos = V3(-1182.512939453125, 5.600006103515625, 3972.157958984375) + V3(0, 30, 0),
     },
+    -- เกาะโจรสลัด (Level 40-59)
     [5] = {
         Name = "Pirate Island",
         MinLevel = 40,
@@ -115,14 +89,9 @@ local IslandData = {
         Mob = "Brute",
         Quest = "BuggyQuest1",
         QuestLevel = 2,
-        Spawns = {
-            V3(-862.8900146484375, 15.600006103515625, 4281.9560546875),
-            V3(-979.7150268554688, 15.600006103515625, 4234.755859375),
-            V3(-1048.6429443359375, 15.600006103515625, 4405.35888671875),
-            V3(-1230.3709716796875, 15.600006103515625, 4331.93701171875),
-        }
+        FarmPos = V3(-862.8900146484375, 15.600006103515625, 4281.9560546875) + V3(0, 30, 0),
     },
-    -- ทะเลทราย (Level 60-89)
+    -- ทะเลทราย (Level 60-74)
     [6] = {
         Name = "Desert Island",
         MinLevel = 60,
@@ -132,12 +101,9 @@ local IslandData = {
         Mob = "Desert Bandit",
         Quest = "DesertQuest",
         QuestLevel = 1,
-        Spawns = {
-            V3(1001.0549926757812, 7.56500244140625, 4488.61083984375),
-            V3(859.8150024414062, 7.56500244140625, 4488.06005859375),
-            V3(931.7050170898438, 7.56500244140625, 4534.033203125),
-        }
+        FarmPos = V3(1001.0549926757812, 7.56500244140625, 4488.61083984375) + V3(0, 30, 0),
     },
+    -- ทะเลทราย (Level 75-89)
     [7] = {
         Name = "Desert Island",
         MinLevel = 75,
@@ -147,13 +113,9 @@ local IslandData = {
         Mob = "Desert Officer",
         Quest = "DesertQuest",
         QuestLevel = 2,
-        Spawns = {
-            V3(1664.676025390625, 14.748001098632812, 4317.791015625),
-            V3(1578.365966796875, 3.8849945068359375, 4299.23291015625),
-            V3(1671.76904296875, 9.748001098632812, 4392.88818359375),
-        }
+        FarmPos = V3(1664.676025390625, 14.748001098632812, 4317.791015625) + V3(0, 30, 0),
     },
-    -- เกาะหิมะ (Level 90-119)
+    -- เกาะหิมะ (Level 90-99)
     [8] = {
         Name = "Snow Island",
         MinLevel = 90,
@@ -163,12 +125,9 @@ local IslandData = {
         Mob = "Snow Bandit",
         Quest = "SnowQuest",
         QuestLevel = 1,
-        Spawns = {
-            V3(1273.748046875, 88.79000854492188, -1345.8399658203125),
-            V3(1458.7080078125, 88.79000854492188, -1447.1500244140625),
-            V3(1381.324951171875, 88.79000854492188, -1464.9429931640625),
-        }
+        FarmPos = V3(1273.748046875, 88.79000854492188, -1345.8399658203125) + V3(0, 30, 0),
     },
+    -- เกาะหิมะ (Level 100-119)
     [9] = {
         Name = "Snow Island",
         MinLevel = 100,
@@ -178,24 +137,17 @@ local IslandData = {
         Mob = "Snowman",
         Quest = "SnowQuest",
         QuestLevel = 2,
-        Spawns = {
-            V3(1190.0889892578125, 106.80999755859375, -1626.5810546875),
-            V3(1148.2490234375, 106.80999755859375, -1429.3199462890625),
-            V3(1035.97900390625, 106.80999755859375, -1489.3599853515625),
-        }
+        FarmPos = V3(1190.0889892578125, 106.80999755859375, -1626.5810546875) + V3(0, 30, 0),
     },
 }
 
--- ============================================================
--- ฟังก์ชันหา Island ตาม Level
--- ============================================================
 local function GetIslandByLevel(level)
     for _, island in pairs(IslandData) do
         if level >= island.MinLevel and level <= island.MaxLevel then
             return island
         end
     end
-    return IslandData[1] -- ค่าเริ่มต้น
+    return IslandData[1]
 end
 
 -- ============================================================
@@ -263,10 +215,10 @@ end
 local Farming = false
 local QuestDone = false
 local AttackCombo = 1
-local SpawnIndex = 1
-local FarmHeight = 30
-local CurrentTarget = nil
 local CurrentIsland = nil
+local FarmPos = nil
+local NPCPos = nil
+local MobName = nil
 
 -- Teleport
 local function Teleport(pos)
@@ -279,24 +231,11 @@ local function Teleport(pos)
     end)
 end
 
--- Fly
-local function FlyTo(pos)
-    if not HRP then return end
-    pcall(function()
-        local tween = TweenService:Create(HRP, TweenInfo.new(0.3, Enum.EasingStyle.Linear), {CFrame = CF(pos)})
-        tween:Play()
-        tween.Completed:Wait()
-        HRP.CFrame = CF(pos)
-        HRP.Velocity = V3(0, 0, 0)
-        HRP.AssemblyLinearVelocity = V3(0, 0, 0)
-    end)
-end
-
 -- Lock Position
 local function LockPosition()
-    if not HRP or not CurrentTarget then return end
+    if not HRP or not FarmPos then return end
     pcall(function()
-        HRP.CFrame = CF(CurrentTarget)
+        HRP.CFrame = CF(FarmPos)
         HRP.Velocity = V3(0, 0, 0)
         HRP.AssemblyLinearVelocity = V3(0, 0, 0)
         HRP.RotVelocity = V3(0, 0, 0)
@@ -310,26 +249,25 @@ local function LockPosition()
 end
 
 -- Accept Quest
-local function AcceptQuest(island)
-    if not CommF_ then return end
+local function AcceptQuest()
+    if not CommF_ or not CurrentIsland then return end
     pcall(function()
-        CommF_:InvokeServer("StartQuest", island.Quest, island.QuestLevel)
-        print("✅ รับเควส:", island.Quest, "| มอน:", island.Mob)
+        CommF_:InvokeServer("StartQuest", CurrentIsland.Quest, CurrentIsland.QuestLevel)
+        print("✅ รับเควส:", CurrentIsland.Quest, "| มอน:", CurrentIsland.Mob)
     end)
 end
 
--- ====== 🔥 ULTRA FAST ATTACK ======
-local function UltraAttack()
+-- Farm Loop
+local function FarmLoop()
     if not RegAttack or not RegHit or not CurrentIsland then return end
     
     local enemies = Workspace:FindFirstChild("Enemies")
     if not enemies then return end
     
     local mobs = {}
-    local mobName = CurrentIsland.Mob
     
     for _, e in ipairs(enemies:GetChildren()) do
-        if e.Name == mobName and e:FindFirstChild("Humanoid") and e:FindFirstChild("HumanoidRootPart") then
+        if e.Name == CurrentIsland.Mob and e:FindFirstChild("Humanoid") and e:FindFirstChild("HumanoidRootPart") then
             local humanoid = e.Humanoid
             if humanoid.Health > 0 then
                 table.insert(mobs, e)
@@ -339,8 +277,8 @@ local function UltraAttack()
     
     if #mobs == 0 then return end
     
-    -- รวมมอนที่พื้น
-    local centerPos = HRP.Position + V3(0, -FarmHeight, 0)
+    -- รวมมอนที่จุดเดียว
+    local centerPos = HRP.Position + V3(0, -30, 0)
     
     for i, e in ipairs(mobs) do
         local part = e.HumanoidRootPart
@@ -385,9 +323,8 @@ local function CheckMobs()
     local enemies = Workspace:FindFirstChild("Enemies")
     if not enemies then return true end
     
-    local mobName = CurrentIsland.Mob
     for _, e in ipairs(enemies:GetChildren()) do
-        if e.Name == mobName and e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 then
+        if e.Name == CurrentIsland.Mob and e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 then
             return false
         end
     end
@@ -435,8 +372,6 @@ FarmTab:CreateToggle({
         Farming = v
         if v then
             QuestDone = false
-            SpawnIndex = 1
-            CurrentTarget = nil
             CurrentIsland = nil
             print("✅ เริ่มฟาร์ม!")
         else
@@ -481,17 +416,6 @@ FarmTab:CreateToggle({
     Callback = function(v) AutoFruit = v end,
 })
 
-FarmTab:CreateSlider({
-    Name = "Farm Height",
-    Range = {20, 60},
-    Increment = 1,
-    CurrentValue = 30,
-    Flag = "Height",
-    Callback = function(v)
-        FarmHeight = v
-    end,
-})
-
 -- ============================================================
 -- NOCLIP
 -- ============================================================
@@ -515,7 +439,7 @@ end
 -- MAIN LOOPS
 -- ============================================================
 
--- Farm Loop
+-- Farm Director
 task.spawn(function()
     while task.wait(0.05) do
         if not Farming then
@@ -526,77 +450,60 @@ task.spawn(function()
         pcall(function()
             SetNoclip(true)
             
-            -- ✅ เช็ค Level และเปลี่ยนเกาะอัตโนมัติ
-            local currentLevel = Level.Value
-            local newIsland = GetIslandByLevel(currentLevel)
-            
-            -- ถ้าเกาะเปลี่ยน ให้รีเซ็ต
+            -- เช็ค Level และเปลี่ยนเกาะ
+            local newIsland = GetIslandByLevel(Level.Value)
             if CurrentIsland ~= newIsland then
                 CurrentIsland = newIsland
+                FarmPos = CurrentIsland.FarmPos
+                NPCPos = CurrentIsland.NPCPos + V3(0, 3, 0)
+                MobName = CurrentIsland.Mob
                 QuestDone = false
-                SpawnIndex = 1
-                CurrentTarget = nil
-                print("🏝️ เปลี่ยนเกาะ:", CurrentIsland.Name, "| มอน:", CurrentIsland.Mob, "| Level:", currentLevel)
+                print("🏝️ เปลี่ยนเกาะ:", CurrentIsland.Name, "| มอน:", MobName, "| Level:", Level.Value)
             end
             
             if not CurrentIsland then return end
             
             -- รับเควส
             if not QuestDone then
-                Teleport(CurrentIsland.NPCPos + V3(0, 3, 0))
+                print("📍 บินไปรับเควส...")
+                Teleport(NPCPos)
                 task.wait(0.5)
-                AcceptQuest(CurrentIsland)
+                AcceptQuest()
                 QuestDone = true
-                SpawnIndex = 1
-                print("✅ รับเควสแล้ว! กำลังฟาร์ม", CurrentIsland.Mob)
+                print("✅ รับเควสแล้ว! บินไปฟาร์ม...")
+                Teleport(FarmPos)
+                task.wait(0.3)
                 return
             end
             
-            -- บินไปฟาร์ม
-            local spawns = CurrentIsland.Spawns
-            if not spawns or #spawns == 0 then return end
+            -- อยู่ที่จุดฟาร์ม
+            LockPosition()
             
-            local pos = spawns[SpawnIndex]
-            if pos then
-                local targetPos = pos + V3(0, FarmHeight, 0)
-                
-                if not CurrentTarget or (CurrentTarget - targetPos).Magnitude > 1 then
-                    CurrentTarget = targetPos
-                    FlyTo(targetPos)
-                end
-                
-                LockPosition()
-                
-                SpawnIndex = SpawnIndex + 1
-                if SpawnIndex > #spawns then
-                    SpawnIndex = 1
-                end
+            -- เช็คมอนตาย
+            if CheckMobs() then
+                print("🔄 มอนตายหมด ไปรับเควสใหม่...")
+                QuestDone = false
+                Teleport(NPCPos)
                 task.wait(0.5)
             end
             
-            -- เช็ค mob ตาย
-            if CheckMobs() then
-                print("🔄 มอนตายหมด รับเควสใหม่")
-                QuestDone = false
-                SpawnIndex = 1
-                CurrentTarget = nil
-            end
+            task.wait(0.1)
         end)
     end
 end)
 
--- Ultra Fast Attack Loop
+-- Fast Attack Loop
 task.spawn(function()
-    while task.wait(0.005) do
-        if not Farming or not QuestDone or not CurrentIsland then continue end
-        pcall(UltraAttack)
+    while task.wait(0.002) do
+        if not Farming or not QuestDone then continue end
+        pcall(FarmLoop)
     end
 end)
 
 -- Lock Position Loop
 task.spawn(function()
-    while task.wait(0.02) do
-        if not Farming or not QuestDone or not CurrentTarget then continue end
+    while task.wait(0.01) do
+        if not Farming or not QuestDone then continue end
         pcall(LockPosition)
     end
 end)
@@ -610,7 +517,9 @@ task.spawn(function()
     end
 end)
 
--- Auto Stats
+-- ============================================================
+-- AUTO STATS
+-- ============================================================
 local AutoMelee = false
 local AutoDefense = false
 local AutoSword = false
@@ -618,7 +527,7 @@ local AutoGun = false
 local AutoFruit = false
 
 task.spawn(function()
-    while task.wait(0.1) do
+    while task.wait(0.05) do
         if Points.Value <= 0 then continue end
         
         local statsToAdd = {}
@@ -637,7 +546,7 @@ task.spawn(function()
                     CommF_:InvokeServer("AddPoint", statName, 1)
                 end
             end)
-            task.wait(0.02)
+            task.wait(0.01)
         end
     end
 end)
@@ -649,8 +558,6 @@ LocalPlayer.CharacterAdded:Connect(function(c)
     HRP = c:WaitForChild("HumanoidRootPart")
     if Farming then SetNoclip(true) end
     QuestDone = false
-    SpawnIndex = 1
-    CurrentTarget = nil
 end)
 
 -- Notify
@@ -661,5 +568,5 @@ Rayfield:Notify({
 })
 
 print("🔥 AUTO FARM LOADED!")
-print("⚡ ULTRA FAST ATTACK ENABLED!")
-print("🔄 AUTO LEVEL UP ENABLED!")
+print("📍 เปลี่ยนเกาะอัตโนมัติตาม Level")
+print("⚡ FAST ATTACK: ทุก 0.002 วินาที")
