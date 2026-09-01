@@ -94,23 +94,27 @@ function hoangtuveu()
     -- LOGIC - FAST ATTACK & EQUIP (ไม่มี UI เก่า)
     -- ============================================================
     if false then
-        spawn(function()
-            pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/sucvatthieunang/Trackstat/refs/heads/main/cac")))
-        end)
-    end
-    alert("cac", "Endpoint reached")
-    OldSessionTime = isfile and readfile and isfile('.tdif-' .. game.Players.LocalPlayer.Name) and tonumber(readfile(".tdif-" .. game.Players.LocalPlayer.Name)) or 0
-    repeat
-        task.wait()
-        game.ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam", Config.Team)
-    until game.Players.LocalPlayer.Character
-    alert("team assembled")
-    repeat wait() until game.Players.LocalPlayer.Character
     spawn(function()
-        game:GetService("Players").LocalPlayer.PlayerScripts:WaitForChild('NewIslandLOD', 9999):Destroy()
-        game:GetService("Players")
-        LocalPlayer.PlayerScripts:WaitForChild('IslandLOD', 9999):Destroy()
+        pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/sucvatthieunang/Trackstat/refs/heads/main/cac")))
     end)
+end
+-- alert("cac", "Endpoint reached")  -- ❌ ลบหรือ Comment ทิ้ง
+print("cac", "Endpoint reached")    -- ✅ เปลี่ยนเป็น print
+
+OldSessionTime = isfile and readfile and isfile('.tdif-' .. game.Players.LocalPlayer.Name) and tonumber(readfile(".tdif-" .. game.Players.LocalPlayer.Name)) or 0
+repeat
+    task.wait()
+    game.ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam", Config.Team)
+until game.Players.LocalPlayer.Character
+-- alert("team assembled")            -- ❌ ลบหรือ Comment ทิ้ง
+print("team assembled")              -- ✅ เปลี่ยนเป็น print
+
+repeat wait() until game.Players.LocalPlayer.Character
+spawn(function()
+    game:GetService("Players").LocalPlayer.PlayerScripts:WaitForChild('NewIslandLOD', 9999):Destroy()
+    game:GetService("Players")
+    LocalPlayer.PlayerScripts:WaitForChild('IslandLOD', 9999):Destroy()
+end)
     alert('wait 1', 'ok')
     local J = {'RawConstants', "Utilly", "QuestManager", 'SpawnRegionLoader', 'TweenController', "AttackController", 'CombatController', 'FunctionsHandler', "Hooks", "Debug", "Hop", "Storage"}
     StartTick = tick()
