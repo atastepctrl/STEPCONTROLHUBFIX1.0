@@ -1,6 +1,6 @@
 -- ============================================================
 -- ⚡ STEPCONTROL HUB X KAITUN (COMPLETE SCRIPT)
--- PINK THEME | FULL ENGLISH | ALL FEATURES INTACT
+-- PINK THEME | ULTIMATE UI | ALL FEATURES INTACT
 -- ============================================================
 -- VERSION: 4.0.0
 -- STATUS: ✅ COMPLETE | READY TO RUN
@@ -91,7 +91,7 @@ function hoangtuveu()
     repeat task.wait() until game.CoreGui
 
     -- ============================================================
-    -- UI - PINK THEME (เหมือนตัวอย่าง Haze Piece)
+    -- ULTIMATE UI - PINK THEME (เหมือน Switch Hub)
     -- ============================================================
     local gui = Instance.new('ScreenGui')
     gui.Name = "StepControlHub"
@@ -116,19 +116,58 @@ function hoangtuveu()
     containerLayout.FillDirection = Enum.FillDirection.Vertical
     containerLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
-    local discordLabel = Instance.new("TextLabel")
-    discordLabel.Name = "DiscordLabel"
-    discordLabel.Parent = container
-    discordLabel.LayoutOrder = 1
-    discordLabel.AutomaticSize = Enum.AutomaticSize.XY
-    discordLabel.Size = UDim2.new(0, 0, 0, 0)
-    discordLabel.BackgroundTransparency = 1
-    discordLabel.Text = "💖 STEPCONTROL HUB X KAITUN | v4.0"
-    discordLabel.TextSize = 13
-    discordLabel.Font = Enum.Font.Highway
-    discordLabel.TextColor3 = Color3.fromRGB(255, 100, 150)
-    discordLabel.TextXAlignment = Enum.TextXAlignment.Center
+    -- HEADER - STEPCONTROL HUB X KAITUN
+    local headerFrame = Instance.new("Frame")
+    headerFrame.Name = "HeaderFrame"
+    headerFrame.Parent = container
+    headerFrame.LayoutOrder = 1
+    headerFrame.AutomaticSize = Enum.AutomaticSize.XY
+    headerFrame.Size = UDim2.new(0, 0, 0, 0)
+    headerFrame.BackgroundColor3 = Color3.fromRGB(255, 50, 100)
+    headerFrame.BackgroundTransparency = 0.2
+    headerFrame.BorderSizePixel = 0
 
+    local headerCorner = Instance.new("UICorner")
+    headerCorner.Parent = headerFrame
+    headerCorner.CornerRadius = UDim.new(0, 12)
+
+    local headerPadding = Instance.new("UIPadding", headerFrame)
+    headerPadding.PaddingTop = UDim.new(0, 10)
+    headerPadding.PaddingBottom = UDim.new(0, 10)
+    headerPadding.PaddingLeft = UDim.new(0, 16)
+    headerPadding.PaddingRight = UDim.new(0, 16)
+
+    local headerLayout = Instance.new("UIListLayout", headerFrame)
+    headerLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    headerLayout.Padding = UDim.new(0, 2)
+    headerLayout.FillDirection = Enum.FillDirection.Vertical
+    headerLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Parent = headerFrame
+    titleLabel.LayoutOrder = 1
+    titleLabel.AutomaticSize = Enum.AutomaticSize.XY
+    titleLabel.Size = UDim2.new(0, 0, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = "💖 STEPCONTROL HUB X KAITUN"
+    titleLabel.TextSize = 18
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+    local subTitleLabel = Instance.new("TextLabel")
+    subTitleLabel.Parent = headerFrame
+    subTitleLabel.LayoutOrder = 2
+    subTitleLabel.AutomaticSize = Enum.AutomaticSize.XY
+    subTitleLabel.Size = UDim2.new(0, 0, 0, 0)
+    subTitleLabel.BackgroundTransparency = 1
+    subTitleLabel.Text = "🚀 Ultimate Farming System | v4.0"
+    subTitleLabel.TextSize = 12
+    subTitleLabel.Font = Enum.Font.Gotham
+    subTitleLabel.TextColor3 = Color3.fromRGB(255, 200, 220)
+    subTitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+    -- MAIN FRAME
     local frame = Instance.new("Frame")
     frame.Name = "Frame"
     frame.Parent = container
@@ -157,10 +196,134 @@ function hoangtuveu()
     layout.Padding = UDim.new(0, 4)
     layout.FillDirection = Enum.FillDirection.Vertical
 
+    -- ============================================================
+    -- TIME & INFO SECTION
+    -- ============================================================
+    local infoFrame = Instance.new("Frame")
+    infoFrame.Name = "InfoFrame"
+    infoFrame.Parent = frame
+    infoFrame.LayoutOrder = 1
+    infoFrame.AutomaticSize = Enum.AutomaticSize.XY
+    infoFrame.Size = UDim2.new(0, 0, 0, 0)
+    infoFrame.BackgroundColor3 = Color3.fromRGB(255, 50, 100)
+    infoFrame.BackgroundTransparency = 0.2
+    infoFrame.BorderSizePixel = 0
+
+    local infoCorner = Instance.new("UICorner")
+    infoCorner.Parent = infoFrame
+    infoCorner.CornerRadius = UDim.new(0, 8)
+
+    local infoPadding = Instance.new("UIPadding", infoFrame)
+    infoPadding.PaddingTop = UDim.new(0, 6)
+    infoPadding.PaddingBottom = UDim.new(0, 6)
+    infoPadding.PaddingLeft = UDim.new(0, 10)
+    infoPadding.PaddingRight = UDim.new(0, 10)
+
+    local infoLayout = Instance.new("UIListLayout", infoFrame)
+    infoLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    infoLayout.Padding = UDim.new(0, 2)
+    infoLayout.FillDirection = Enum.FillDirection.Vertical
+
+    local timeLabel = Instance.new("TextLabel")
+    timeLabel.Name = "TimeLabel"
+    timeLabel.Parent = infoFrame
+    timeLabel.LayoutOrder = 1
+    timeLabel.AutomaticSize = Enum.AutomaticSize.XY
+    timeLabel.Size = UDim2.new(0, 0, 0, 0)
+    timeLabel.BackgroundTransparency = 1
+    timeLabel.Text = "⏱ Time: 00 Hr(s), 00 Min(s), 00 Sec(s)"
+    timeLabel.TextSize = 13
+    timeLabel.Font = Enum.Font.Gotham
+    timeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    timeLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+    local playerInfoLabel = Instance.new("TextLabel")
+    playerInfoLabel.Name = "PlayerInfoLabel"
+    playerInfoLabel.Parent = infoFrame
+    playerInfoLabel.LayoutOrder = 2
+    playerInfoLabel.AutomaticSize = Enum.AutomaticSize.XY
+    playerInfoLabel.Size = UDim2.new(0, 0, 0, 0)
+    playerInfoLabel.BackgroundTransparency = 1
+    playerInfoLabel.Text = "👤 Name: Loading... | 🌊 Sea: 1 | 📊 Level: 0"
+    playerInfoLabel.TextSize = 12
+    playerInfoLabel.Font = Enum.Font.Gotham
+    playerInfoLabel.TextColor3 = Color3.fromRGB(255, 200, 220)
+    playerInfoLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+    -- ============================================================
+    -- STATUS SECTION
+    -- ============================================================
+    local statusFrame = Instance.new("Frame")
+    statusFrame.Name = "StatusFrame"
+    statusFrame.Parent = frame
+    statusFrame.LayoutOrder = 2
+    statusFrame.AutomaticSize = Enum.AutomaticSize.XY
+    statusFrame.Size = UDim2.new(0, 0, 0, 0)
+    statusFrame.BackgroundColor3 = Color3.fromRGB(255, 50, 100)
+    statusFrame.BackgroundTransparency = 0.15
+    statusFrame.BorderSizePixel = 0
+
+    local statusCorner = Instance.new("UICorner")
+    statusCorner.Parent = statusFrame
+    statusCorner.CornerRadius = UDim.new(0, 8)
+
+    local statusPadding = Instance.new("UIPadding", statusFrame)
+    statusPadding.PaddingTop = UDim.new(0, 6)
+    statusPadding.PaddingBottom = UDim.new(0, 6)
+    statusPadding.PaddingLeft = UDim.new(0, 10)
+    statusPadding.PaddingRight = UDim.new(0, 10)
+
+    local statusLayout = Instance.new("UIListLayout", statusFrame)
+    statusLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    statusLayout.Padding = UDim.new(0, 2)
+    statusLayout.FillDirection = Enum.FillDirection.Vertical
+
+    local statusLabel = Instance.new("TextLabel")
+    statusLabel.Name = "StatusLabel"
+    statusLabel.Parent = statusFrame
+    statusLabel.LayoutOrder = 1
+    statusLabel.AutomaticSize = Enum.AutomaticSize.XY
+    statusLabel.Size = UDim2.new(0, 0, 0, 0)
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.Text = "🟢 Status: Ready"
+    statusLabel.TextSize = 14
+    statusLabel.Font = Enum.Font.GothamBold
+    statusLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+    statusLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+    local mobLabel = Instance.new("TextLabel")
+    mobLabel.Name = "MobLabel"
+    mobLabel.Parent = statusFrame
+    mobLabel.LayoutOrder = 2
+    mobLabel.AutomaticSize = Enum.AutomaticSize.XY
+    mobLabel.Size = UDim2.new(0, 0, 0, 0)
+    mobLabel.BackgroundTransparency = 1
+    mobLabel.Text = "🎯 Mob: None"
+    mobLabel.TextSize = 12
+    mobLabel.Font = Enum.Font.Gotham
+    mobLabel.TextColor3 = Color3.fromRGB(255, 200, 220)
+    mobLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+    local questLabel = Instance.new("TextLabel")
+    questLabel.Name = "QuestLabel"
+    questLabel.Parent = statusFrame
+    questLabel.LayoutOrder = 3
+    questLabel.AutomaticSize = Enum.AutomaticSize.XY
+    questLabel.Size = UDim2.new(0, 0, 0, 0)
+    questLabel.BackgroundTransparency = 1
+    questLabel.Text = "📋 Quest: None"
+    questLabel.TextSize = 12
+    questLabel.Font = Enum.Font.Gotham
+    questLabel.TextColor3 = Color3.fromRGB(255, 200, 220)
+    questLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+    -- ============================================================
+    -- FEATURES SECTION (เหมือนในรูป)
+    -- ============================================================
     local features = Instance.new("Frame")
     features.Name = "Features"
     features.Parent = frame
-    features.LayoutOrder = 1
+    features.LayoutOrder = 3
     features.AutomaticSize = Enum.AutomaticSize.XY
     features.Size = UDim2.new(0, 0, 0, 0)
     features.BackgroundTransparency = 1
@@ -170,6 +333,7 @@ function hoangtuveu()
     featLayout.Padding = UDim.new(0, 2)
     featLayout.FillDirection = Enum.FillDirection.Vertical
 
+    -- Main Task
     local taskLabel = Instance.new("TextLabel")
     taskLabel.Name = "Task"
     taskLabel.Parent = features
@@ -177,12 +341,13 @@ function hoangtuveu()
     taskLabel.AutomaticSize = Enum.AutomaticSize.XY
     taskLabel.Size = UDim2.new(0, 0, 0, 0)
     taskLabel.BackgroundTransparency = 1
-    taskLabel.Text = "Status :"
-    taskLabel.TextSize = 14
-    taskLabel.Font = Enum.Font.Ubuntu
-    taskLabel.TextColor3 = Color3.fromRGB(255, 200, 220)
+    taskLabel.Text = "📌 Main: Level Farming"
+    taskLabel.TextSize = 13
+    taskLabel.Font = Enum.Font.Gotham
+    taskLabel.TextColor3 = Color3.fromRGB(255, 220, 240)
     taskLabel.TextXAlignment = Enum.TextXAlignment.Left
 
+    -- Sub Task
     local subTaskLabel = Instance.new("TextLabel")
     subTaskLabel.Name = "SubTask"
     subTaskLabel.Parent = features
@@ -190,16 +355,142 @@ function hoangtuveu()
     subTaskLabel.AutomaticSize = Enum.AutomaticSize.XY
     subTaskLabel.Size = UDim2.new(0, 0, 0, 0)
     subTaskLabel.BackgroundTransparency = 1
-    subTaskLabel.Text = "Sub Task :"
-    subTaskLabel.TextSize = 13
-    subTaskLabel.Font = Enum.Font.Ubuntu
-    subTaskLabel.TextColor3 = Color3.fromRGB(255, 180, 200)
-    subTaskLabel.TextTransparency = 0
+    subTaskLabel.Text = "📎 Sub: Idle"
+    subTaskLabel.TextSize = 12
+    subTaskLabel.Font = Enum.Font.Gotham
+    subTaskLabel.TextColor3 = Color3.fromRGB(200, 150, 180)
     subTaskLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- ============================================================
+    -- QUEST STATUS (เหมือนในรูป)
+    -- ============================================================
+    local questStatusFrame = Instance.new("Frame")
+    questStatusFrame.Name = "QuestStatusFrame"
+    questStatusFrame.Parent = frame
+    questStatusFrame.LayoutOrder = 4
+    questStatusFrame.AutomaticSize = Enum.AutomaticSize.XY
+    questStatusFrame.Size = UDim2.new(0, 0, 0, 0)
+    questStatusFrame.BackgroundColor3 = Color3.fromRGB(255, 50, 100)
+    questStatusFrame.BackgroundTransparency = 0.15
+    questStatusFrame.BorderSizePixel = 0
+
+    local questStatusCorner = Instance.new("UICorner")
+    questStatusCorner.Parent = questStatusFrame
+    questStatusCorner.CornerRadius = UDim.new(0, 8)
+
+    local questStatusPadding = Instance.new("UIPadding", questStatusFrame)
+    questStatusPadding.PaddingTop = UDim.new(0, 6)
+    questStatusPadding.PaddingBottom = UDim.new(0, 6)
+    questStatusPadding.PaddingLeft = UDim.new(0, 10)
+    questStatusPadding.PaddingRight = UDim.new(0, 10)
+
+    local questStatusLayout = Instance.new("UIListLayout", questStatusFrame)
+    questStatusLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    questStatusLayout.Padding = UDim.new(0, 2)
+    questStatusLayout.FillDirection = Enum.FillDirection.Vertical
+
+    local questTitleLabel = Instance.new("TextLabel")
+    questTitleLabel.Name = "QuestTitleLabel"
+    questTitleLabel.Parent = questStatusFrame
+    questTitleLabel.LayoutOrder = 1
+    questTitleLabel.AutomaticSize = Enum.AutomaticSize.XY
+    questTitleLabel.Size = UDim2.new(0, 0, 0, 0)
+    questTitleLabel.BackgroundTransparency = 1
+    questTitleLabel.Text = "📋 Quest Status"
+    questTitleLabel.TextSize = 13
+    questTitleLabel.Font = Enum.Font.GothamBold
+    questTitleLabel.TextColor3 = Color3.fromRGB(255, 200, 220)
+    questTitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    W.Instances['QuestStatus'] = questTitleLabel
+
+    -- ============================================================
+    -- INVENTORY STATUS (เหมือนในรูป - Swords, Melees, Guns)
+    -- ============================================================
+    local inventoryFrame = Instance.new("Frame")
+    inventoryFrame.Name = "InventoryFrame"
+    inventoryFrame.Parent = frame
+    inventoryFrame.LayoutOrder = 5
+    inventoryFrame.AutomaticSize = Enum.AutomaticSize.XY
+    inventoryFrame.Size = UDim2.new(0, 0, 0, 0)
+    inventoryFrame.BackgroundColor3 = Color3.fromRGB(255, 50, 100)
+    inventoryFrame.BackgroundTransparency = 0.15
+    inventoryFrame.BorderSizePixel = 0
+
+    local inventoryCorner = Instance.new("UICorner")
+    inventoryCorner.Parent = inventoryFrame
+    inventoryCorner.CornerRadius = UDim.new(0, 8)
+
+    local inventoryPadding = Instance.new("UIPadding", inventoryFrame)
+    inventoryPadding.PaddingTop = UDim.new(0, 6)
+    inventoryPadding.PaddingBottom = UDim.new(0, 6)
+    inventoryPadding.PaddingLeft = UDim.new(0, 10)
+    inventoryPadding.PaddingRight = UDim.new(0, 10)
+
+    local inventoryLayout = Instance.new("UIListLayout", inventoryFrame)
+    inventoryLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    inventoryLayout.Padding = UDim.new(0, 2)
+    inventoryLayout.FillDirection = Enum.FillDirection.Vertical
+
+    local invTitle = Instance.new("TextLabel")
+    invTitle.Parent = inventoryFrame
+    invTitle.LayoutOrder = 1
+    invTitle.AutomaticSize = Enum.AutomaticSize.XY
+    invTitle.Size = UDim2.new(0, 0, 0, 0)
+    invTitle.BackgroundTransparency = 1
+    invTitle.Text = "🎒 Inventory"
+    invTitle.TextSize = 13
+    invTitle.Font = Enum.Font.GothamBold
+    invTitle.TextColor3 = Color3.fromRGB(255, 200, 220)
+    invTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+    local meleeStatusLabel = Instance.new("TextLabel")
+    meleeStatusLabel.Name = "MeleeStatusLabel"
+    meleeStatusLabel.Parent = inventoryFrame
+    meleeStatusLabel.LayoutOrder = 2
+    meleeStatusLabel.AutomaticSize = Enum.AutomaticSize.XY
+    meleeStatusLabel.Size = UDim2.new(0, 0, 0, 0)
+    meleeStatusLabel.BackgroundTransparency = 1
+    meleeStatusLabel.Text = "👊 Melee: None"
+    meleeStatusLabel.TextSize = 12
+    meleeStatusLabel.Font = Enum.Font.Gotham
+    meleeStatusLabel.TextColor3 = Color3.fromRGB(255, 200, 220)
+    meleeStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local swordStatusLabel = Instance.new("TextLabel")
+    swordStatusLabel.Name = "SwordStatusLabel"
+    swordStatusLabel.Parent = inventoryFrame
+    swordStatusLabel.LayoutOrder = 3
+    swordStatusLabel.AutomaticSize = Enum.AutomaticSize.XY
+    swordStatusLabel.Size = UDim2.new(0, 0, 0, 0)
+    swordStatusLabel.BackgroundTransparency = 1
+    swordStatusLabel.Text = "🗡️ Sword: None"
+    swordStatusLabel.TextSize = 12
+    swordStatusLabel.Font = Enum.Font.Gotham
+    swordStatusLabel.TextColor3 = Color3.fromRGB(255, 200, 220)
+    swordStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local gunStatusLabel = Instance.new("TextLabel")
+    gunStatusLabel.Name = "GunStatusLabel"
+    gunStatusLabel.Parent = inventoryFrame
+    gunStatusLabel.LayoutOrder = 4
+    gunStatusLabel.AutomaticSize = Enum.AutomaticSize.XY
+    gunStatusLabel.Size = UDim2.new(0, 0, 0, 0)
+    gunStatusLabel.BackgroundTransparency = 1
+    gunStatusLabel.Text = "🔫 Gun: None"
+    gunStatusLabel.TextSize = 12
+    gunStatusLabel.Font = Enum.Font.Gotham
+    gunStatusLabel.TextColor3 = Color3.fromRGB(255, 200, 220)
+    gunStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 
     W.Instances['Task1'] = taskLabel
     W.Instances['Task2'] = subTaskLabel
     W.Instances['MainTextLabel'] = taskLabel
+    W.Instances['MeleeStatus'] = meleeStatusLabel
+    W.Instances['SwordStatus'] = swordStatusLabel
+    W.Instances['GunStatus'] = gunStatusLabel
+    W.Instances['PlayerInfo'] = playerInfoLabel
+    W.Instances['TimeLabel'] = timeLabel
 
     function SetText(key, text)
         task.spawn(function()
@@ -3481,6 +3772,58 @@ function W.Attack(target) pcall(function() _G.FastAttack = os.time() end) end
     task.spawn(function()
         task.wait(Config.Configuration.AutoHopDelay)
         if not Config.Configuration.AutoHop then Hop('Autohop') end
+    end)
+
+    -- ============================================================
+    -- AUTO REDEEM CODES (FROM REMOTE SPY)
+    -- ============================================================
+    local RedeemCodes = {
+        "SUB2GAMERROBOT_EXP1", "EASTEREXP",
+        "SUB2GAMERROBOT_RESET1", "KITT_RESET",
+        "fudd10_V2", "fudd10",
+        "Bluxxy", "TantaiGaming", "StrawHatMaine",
+        "Sub2Daigrock", "Sub2NoobMaster123", "TheGreatAce",
+        "Sub2OfficialNoobie", "Sub2CaptainMaui", "KittGaming",
+        "MagicBUS", "StarcodeHEO", "JCWK",
+        "Enyu_is_Pro", "Sub2Fer999", "Sub2UncleKizaru",
+        "BIGNEWS", "Chandler",
+    }
+    local RedeemedList = {}
+
+    local function RedeemCode(code)
+        pcall(function()
+            local result = ReplicatedStorage.Remotes.Redeem:InvokeServer(code)
+            if result ~= "Invalid" and result ~= false then
+                table.insert(RedeemedList, code)
+                print("[✅ Auto Redeem] Redeemed: " .. code)
+                SetTask('SubTask', '✅ Redeemed: ' .. code)
+                return true
+            end
+        end)
+        return false
+    end
+
+    task.spawn(function()
+        while task.wait(5) do
+            if _G.KaitunEnabled then
+                pcall(function()
+                    for _, code in ipairs(RedeemCodes) do
+                        local alreadyRedeemed = false
+                        for _, redeemed in ipairs(RedeemedList) do
+                            if redeemed == code then
+                                alreadyRedeemed = true
+                                break
+                            end
+                        end
+                        if not alreadyRedeemed then
+                            SetTask('MainTask', '🎁 Redeeming: ' .. code)
+                            RedeemCode(code)
+                            task.wait(1.5)
+                        end
+                    end
+                end)
+            end
+        end
     end)
 
     -- ============================================================
