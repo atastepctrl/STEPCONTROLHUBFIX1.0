@@ -107,22 +107,31 @@ repeat
     game.ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam", Config.Team)
 until game.Players.LocalPlayer.Character
 -- alert("team assembled")            -- ❌ ลบหรือ Comment ทิ้ง
-print("team assembled")              -- ✅ เปลี่ยนเป็น print
+print("team assembled")
 
 repeat wait() until game.Players.LocalPlayer.Character
 spawn(function()
-    game:GetService("Players").LocalPlayer.PlayerScripts:WaitForChild('NewIslandLOD', 9999):Destroy()
-    game:GetService("Players")
-    LocalPlayer.PlayerScripts:WaitForChild('IslandLOD', 9999):Destroy()
+    pcall(function()
+        local plr = game:GetService("Players").LocalPlayer
+        if plr and plr:FindFirstChild("PlayerScripts") then
+            local scripts = plr.PlayerScripts
+            local lod1 = scripts:FindFirstChild('NewIslandLOD')
+            if lod1 then lod1:Destroy() end
+            local lod2 = scripts:FindFirstChild('IslandLOD')
+            if lod2 then lod2:Destroy() end
+        end
+    end)
 end)
-    alert('wait 1', 'ok')
-    local J = {'RawConstants', "Utilly", "QuestManager", 'SpawnRegionLoader', 'TweenController', "AttackController", 'CombatController', 'FunctionsHandler', "Hooks", "Debug", "Hop", "Storage"}
-    StartTick = tick()
-    repeat
-        task.wait()
-    until SetText
-    alert('load 2')
-    SetText('MainTextLabel', 'Initializing Script...')
+
+print('wait 1', 'ok')
+local J = {'RawConstants', "Utilly", "QuestManager", 'SpawnRegionLoader', 'TweenController', "AttackController", 'CombatController', 'FunctionsHandler', "Hooks", "Debug", "Hop", "Storage"}
+StartTick = tick()
+-- repeat
+--     task.wait()
+-- until SetText
+print('load 2')
+-- SetText('MainTextLabel', 'Initializing Script...')
+print('Initializing Script...')
     local J = "Rua_Hub/Blox_Fruit/Assets/"
     ScriptStorage = {IsInitalized = false, PlayerData = {}, Melees = {}, CurrentMeleeData = {}, Enemies = {}, Tools = {}, Backpack = {}, IgnoreStoreFruits = {}, Connections = {LocalPlayer = {}}, Task = {}, Tracebacks = {}, TaskController = {}, TracebackUpdater = {}, Interface = W, NPCs = {}, Map = {}}
     Players = game.Players
