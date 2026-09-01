@@ -1,5 +1,5 @@
--- AUTO FARM BLOX FRUITS - COMPLETE VERSION
--- ใช้ข้อมูลจาก Remote Spy + Workspace Dump + Player Data
+-- AUTO FARM BLOX FRUITS - STABLE VERSION
+-- แก้ตัวหล่น + วาป + Fast Attack
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -9,30 +9,26 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- ====== CHARACTER ======
+-- Character
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local HRP = Character:WaitForChild("HumanoidRootPart")
 
--- ====== DATA ======
+-- Data
 local Data = LocalPlayer:WaitForChild("Data")
 local Level = Data:WaitForChild("Level")
 local Points = Data:WaitForChild("Points")
 
--- ====== REMOTE EVENTS (จาก Remote Spy) ======
--- CommF_ ใช้รับเควส, AddPoint, SetTeam2
+-- Remote Events
 local CommF_ = ReplicatedStorage:FindFirstChild("Remotes"):FindFirstChild("CommF_")
--- RE/RegisterAttack และ RE/RegisterHit ใช้โจมตี
 local RegAttack = ReplicatedStorage:FindFirstChild("Modules"):FindFirstChild("Net"):FindFirstChild("RE/RegisterAttack")
 local RegHit = ReplicatedStorage:FindFirstChild("Modules"):FindFirstChild("Net"):FindFirstChild("RE/RegisterHit")
--- EquipEvent ใช้เปลี่ยนอาวุธ (จาก Backpack.Combat)
 local EquipEvent = LocalPlayer:FindFirstChild("Backpack"):FindFirstChild("Combat"):FindFirstChild("EquipEvent")
 
 local V3 = Vector3.new
 local CF = CFrame.new
 
--- ====== ข้อมูลจาก Workspace Dump ======
--- จากไฟล์ player.lua เห็นชื่อมอนและตำแหน่ง
+-- ====== ข้อมูลมอน ======
 local MONSTERS = {
     ["Bandit"] = {
         Level = 5,
@@ -44,16 +40,8 @@ local MONSTERS = {
             V3(1341.8013916015625, 14.971686363220215, 1568.908935546875),
             V3(1331.8433837890625, 14.971686363220215, 1497.990966796875),
             V3(1019.77685546875, 14.971871376037598, 1566.628662109375),
-            V3(1232.5172119140625, 14.970709800720215, 1539.788818359375),
-            V3(1123.51806640625, 14.970709800720215, 1665.0887451171875),
-            V3(950.2855834960938, 14.97115421295166, 1625.227294921875),
-            V3(934.4271850585938, 15.017585754394531, 1517.141357421875),
-            V3(1102.04052734375, 14.971070289611816, 1589.462646484375),
-            V3(1219.0181884765625, 14.970709800720215, 1677.4891357421875),
-            V3(1284.3336181640625, 14.970709800720215, 1627.645263671875),
         }
     },
-    -- เพิ่มมอนอื่นๆ ตามข้อมูลที่มี
     ["Monkey"] = {
         Level = 14,
         Quest = "JungleQuest",
@@ -64,8 +52,6 @@ local MONSTERS = {
             V3(-1292.6700439453125, 10.899993896484375, -4.850006103515625),
             V3(-1202.5, 10.899993896484375, 278.8699951171875),
             V3(-1743.530029296875, 20.979995727539062, -91.27000427246094),
-            V3(-1489.25, 20.979995727539062, 88.49000549316406),
-            V3(-1579.218994140625, 20.979995727539062, 377.6000061035156),
         }
     },
     ["Gorilla"] = {
@@ -80,36 +66,22 @@ local MONSTERS = {
             V3(-1363.18994140625, 20.229995727539062, -486.19000244140625),
         }
     },
+    ["Pirate"] = {
+        Level = 35,
+        Quest = "BuggyQuest1",
+        QuestLevel = 1,
+        NPC = "Buggy Quest Giver",
+        NPCPos = V3(-1182.512939453125, 5.600006103515625, 3972.157958984375),
+        Spawns = {
+            V3(-1182.512939453125, 5.600006103515625, 3972.157958984375),
+            V3(-1289.512939453125, 5.600006103515625, 3940.157958984375),
+            V3(-1140.512939453125, 5.600006103515625, 3902.157958984375),
+        }
+    },
 }
 
--- ====== WEAPON SYSTEM (จากข้อมูล) ======
-local SupportedWeaponTypes = {
-    Melee = true,
-    Sword = true,
-    Gun = true,
-    ["Blox Fruit"] = true,
-    ["Demon Fruit"] = true,
-}
-
+-- ====== WEAPON SYSTEM ======
 local SelectedWeapon = nil
-
-local function GetWeaponType(Tool)
-    if not Tool or not Tool:IsA("Tool") then return nil end
-    
-    local attr = Tool:GetAttribute("WeaponType")
-    if typeof(attr) == "string" and SupportedWeaponTypes[attr] then
-        return attr
-    end
-    
-    local typeVal = Tool:FindFirstChild("Type")
-    if typeVal and typeVal:IsA("StringValue") then
-        local val = typeVal.Value
-        if SupportedWeaponTypes[val] then return val end
-        if val == "BloxFruit" or val == "DemonFruit" then return "Blox Fruit" end
-    end
-    
-    return nil
-end
 
 local function ScanWeapons()
     local list = {}
@@ -118,36 +90,25 @@ local function ScanWeapons()
     local bp = LocalPlayer:FindFirstChildOfClass("Backpack")
     if bp then
         for _, v in ipairs(bp:GetChildren()) do
-            if v:IsA("Tool") then
-                local wt = GetWeaponType(v)
-                if wt and not seen[v.Name] then
-                    seen[v.Name] = true
-                    table.insert(list, {Name = v.Name, Type = wt})
-                end
+            if v:IsA("Tool") and not seen[v.Name] then
+                seen[v.Name] = true
+                table.insert(list, v.Name)
             end
         end
     end
     
     if Character then
         for _, v in ipairs(Character:GetChildren()) do
-            if v:IsA("Tool") then
-                local wt = GetWeaponType(v)
-                if wt and not seen[v.Name] then
-                    seen[v.Name] = true
-                    table.insert(list, {Name = v.Name, Type = wt})
-                end
+            if v:IsA("Tool") and not seen[v.Name] then
+                seen[v.Name] = true
+                table.insert(list, v.Name)
             end
         end
     end
     
-    table.sort(list, function(a, b) return a.Name < b.Name end)
-    
-    local names = {}
-    for _, w in ipairs(list) do
-        names[#names + 1] = w.Name .. " [" .. w.Type .. "]"
-    end
-    if #names == 0 then names[1] = "None" end
-    return names
+    table.sort(list)
+    if #list == 0 then table.insert(list, "None") end
+    return list
 end
 
 local function EquipWeapon(name)
@@ -155,10 +116,8 @@ local function EquipWeapon(name)
     if Character and Character:FindFirstChild(name) then return true end
     
     if EquipEvent then
-        pcall(function()
-            EquipEvent:FireServer(true)
-            task.wait(0.1)
-        end)
+        pcall(function() EquipEvent:FireServer(true) end)
+        task.wait(0.1)
     end
     
     local bp = LocalPlayer:FindFirstChildOfClass("Backpack")
@@ -187,9 +146,10 @@ end
 local Farming = false
 local QuestDone = false
 local AttackCombo = 1
-local SpawnIndex = 1
 local FarmHeight = 30
 local CurrentMob = nil
+local CurrentPos = nil
+local IsMoving = false
 
 local function GetMobByLevel(lvl)
     local mobs = {}
@@ -206,12 +166,31 @@ local function GetMobByLevel(lvl)
     return MONSTERS["Bandit"]
 end
 
+-- ✅ Teleport แบบไม่กระตุก
 local function Teleport(pos)
     if not HRP then return end
     pcall(function()
-        HRP.CFrame = CF(pos + V3(0, FarmHeight, 0))
+        HRP.CFrame = CF(pos)
         HRP.Velocity = V3(0, 0, 0)
         HRP.AssemblyLinearVelocity = V3(0, 0, 0)
+        HRP.RotVelocity = V3(0, 0, 0)
+    end)
+end
+
+-- ✅ ล็อคตำแหน่งให้นิ่ง
+local function LockPosition(pos)
+    if not HRP or not pos then return end
+    pcall(function()
+        HRP.CFrame = CF(pos)
+        HRP.Velocity = V3(0, 0, 0)
+        HRP.AssemblyLinearVelocity = V3(0, 0, 0)
+        HRP.RotVelocity = V3(0, 0, 0)
+        if Humanoid then
+            Humanoid.Sit = false
+            Humanoid.PlatformStand = false
+            Humanoid.WalkSpeed = 0
+            Humanoid.JumpPower = 0
+        end
     end)
 end
 
@@ -223,7 +202,7 @@ local function AcceptQuest()
     end)
 end
 
--- ====== ATTACK (จาก Remote Spy) ======
+-- ====== ATTACK ======
 local function AttackLoop()
     if not RegAttack or not RegHit or not CurrentMob then return end
     
@@ -243,23 +222,28 @@ local function AttackLoop()
     
     if #mobs == 0 then return end
     
+    -- รวมมอนใต้เท้า
     local centerPos = HRP.Position + V3(0, -FarmHeight, 0)
     
     for i, e in ipairs(mobs) do
         local part = e.HumanoidRootPart
-        local angle = (i - 1) * (2 * math.pi / #mobs)
+        local humanoid = e.Humanoid
+        
+        local angle = (i - 1) * (2 * math.pi / math.min(#mobs, 6))
         local targetPos = centerPos + V3(math.cos(angle) * 1.5, 0, math.sin(angle) * 1.5)
         local direction = (targetPos - part.Position) * 2
         
         pcall(function()
             part.AssemblyLinearVelocity = direction
             part.Velocity = direction
+            humanoid.WalkSpeed = 0
+            humanoid.JumpPower = 0
         end)
     end
     
-    -- Fast Attack (จาก Remote Spy)
+    -- ✅ Fast Attack
     pcall(function()
-        for i = 1, 10 do
+        for i = 1, 15 do
             RegAttack:FireServer(0.5, AttackCombo)
             AttackCombo = AttackCombo == 1 and 2 or 1
         end
@@ -267,7 +251,7 @@ local function AttackLoop()
         for _, e in ipairs(mobs) do
             local part = e:FindFirstChild("HumanoidRootPart")
             if part then
-                for i = 1, 5 do
+                for i = 1, 8 do
                     RegHit:FireServer(part, {})
                 end
             end
@@ -290,7 +274,7 @@ end
 
 -- ====== UI ======
 local Window = Rayfield:CreateWindow({
-    Name = "PREMIUM HUB",
+    Name = "AUTO FARM",
     LoadingTitle = "Loading...",
     Theme = "Default",
     DisableRayfieldPrompts = true,
@@ -298,7 +282,6 @@ local Window = Rayfield:CreateWindow({
 
 local FarmTab = Window:CreateTab("Farm")
 
--- Weapon Dropdown
 local WepNames = ScanWeapons()
 local WepDrop = FarmTab:CreateDropdown({
     Name = "Weapon Selector",
@@ -332,8 +315,8 @@ FarmTab:CreateToggle({
         Farming = v
         if v then
             QuestDone = false
-            SpawnIndex = 1
             CurrentMob = nil
+            CurrentPos = nil
             print("✅ เริ่มฟาร์ม!")
         else
             print("⏹ หยุดฟาร์ม")
@@ -341,7 +324,6 @@ FarmTab:CreateToggle({
     end,
 })
 
--- Auto Stats
 FarmTab:CreateToggle({
     Name = "Auto Melee",
     CurrentValue = false,
@@ -379,7 +361,7 @@ FarmTab:CreateToggle({
 
 FarmTab:CreateSlider({
     Name = "Farm Height",
-    Range = {20, 60},
+    Range = {20, 50},
     Increment = 1,
     CurrentValue = 30,
     Flag = "Height",
@@ -409,7 +391,7 @@ end
 
 -- Farm Director
 task.spawn(function()
-    while task.wait(0.1) do
+    while task.wait(0.15) do
         if not Farming then
             SetNoclip(false)
             continue
@@ -418,57 +400,69 @@ task.spawn(function()
         pcall(function()
             SetNoclip(true)
             
+            -- เลือกมอนตาม Level
             local newMob = GetMobByLevel(Level.Value)
             if CurrentMob ~= newMob then
                 CurrentMob = newMob
                 QuestDone = false
-                SpawnIndex = 1
-                print("🎯 เปลี่ยนเป็น:", CurrentMob.Name, "Level:", Level.Value)
+                CurrentPos = nil
+                print("🎯 เปลี่ยนเป็น:", CurrentMob.Name)
             end
             
             if not CurrentMob then return end
             
+            -- รับเควส
             if not QuestDone then
-                Teleport(CurrentMob.NPCPos)
+                local npcPos = CurrentMob.NPCPos + V3(0, 3, 0)
+                Teleport(npcPos)
+                CurrentPos = npcPos
                 task.wait(0.5)
                 AcceptQuest()
                 QuestDone = true
                 print("✅ รับเควสแล้ว!")
-                Teleport(CurrentMob.Spawns[1])
+                -- บินไปฟาร์ม
+                local spawnPos = CurrentMob.Spawns[1] + V3(0, FarmHeight, 0)
+                Teleport(spawnPos)
+                CurrentPos = spawnPos
                 task.wait(0.3)
                 return
             end
             
-            local spawns = CurrentMob.Spawns
-            if not spawns or #spawns == 0 then return end
-            
-            local pos = spawns[SpawnIndex]
-            if pos then
-                Teleport(pos)
-                SpawnIndex = SpawnIndex + 1
-                if SpawnIndex > #spawns then
-                    SpawnIndex = 1
-                end
+            -- ✅ อยู่ที่จุดฟาร์ม (ล็อคตำแหน่ง)
+            if CurrentPos then
+                LockPosition(CurrentPos)
             end
             
+            -- ✅ เช็คมอนตาย
             if CheckMobs() then
                 print("🔄 มอนตายหมด รับเควสใหม่")
                 QuestDone = false
-                SpawnIndex = 1
-                Teleport(CurrentMob.NPCPos)
+                local npcPos = CurrentMob.NPCPos + V3(0, 3, 0)
+                Teleport(npcPos)
+                CurrentPos = npcPos
                 task.wait(0.5)
             end
             
-            task.wait(0.2)
+            task.wait(0.1)
         end)
     end
 end)
 
--- Attack Loop
+-- ✅ Attack Loop (เร็ว)
 task.spawn(function()
-    while task.wait(0.005) do
+    while task.wait(0.003) do
         if not Farming or not QuestDone or not CurrentMob then continue end
         pcall(AttackLoop)
+    end
+end)
+
+-- ✅ Lock Position Loop (กันตก)
+task.spawn(function()
+    while task.wait(0.01) do
+        if not Farming or not QuestDone or not CurrentPos then continue end
+        pcall(function()
+            LockPosition(CurrentPos)
+        end)
     end
 end)
 
@@ -520,15 +514,16 @@ LocalPlayer.CharacterAdded:Connect(function(c)
     HRP = c:WaitForChild("HumanoidRootPart")
     if Farming then SetNoclip(true) end
     QuestDone = false
-    SpawnIndex = 1
     CurrentMob = nil
+    CurrentPos = nil
 end)
 
 Rayfield:Notify({
-    Title = "✅ PREMIUM HUB",
+    Title = "✅ AUTO FARM",
     Content = "เปิด Auto Farm เพื่อเริ่มฟาร์ม!",
     Duration = 5,
 })
 
-print("🔥 PREMIUM HUB LOADED!")
-print("📌 ใช้ข้อมูลจาก Remote Spy + Workspace Dump!")
+print("🔥 AUTO FARM LOADED!")
+print("✅ ตัวละครจะไม่ตกเพราะ Lock Position")
+print("⚡ Fast Attack ทุก 0.003 วินาที")
