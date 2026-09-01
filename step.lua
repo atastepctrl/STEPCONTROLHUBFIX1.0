@@ -4024,3 +4024,832 @@ function W.Attack(target) pcall(function() _G.FastAttack = os.time() end) end
 end
 
 hoangtuveu()
+
+--//========================================================\\--
+--//              STEPCONTROL HUB X KAITUN                  \\--
+--//                 ULTIMATE PREMIUM UI                    \\--
+--//========================================================\\--
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+--========================================================--
+-- CONFIG
+--========================================================--
+
+local GUI_NAME = "STEPCONTROL_HUB_X_KAITUN"
+
+local Theme = {
+    Background = Color3.fromRGB(7, 4, 9),
+    Header = Color3.fromRGB(16, 7, 17),
+
+    Panel = Color3.fromRGB(23, 9, 24),
+    PanelHover = Color3.fromRGB(30, 11, 31),
+
+    Pink = Color3.fromRGB(255, 65, 155),
+    PinkLight = Color3.fromRGB(255, 125, 195),
+    PinkDark = Color3.fromRGB(175, 30, 96),
+
+    White = Color3.fromRGB(248, 241, 247),
+    Gray = Color3.fromRGB(173, 151, 168),
+
+    Green = Color3.fromRGB(130, 230, 140),
+    Red = Color3.fromRGB(245, 75, 105),
+
+    Border = Color3.fromRGB(91, 27, 65),
+}
+
+local TweenFast = TweenInfo.new(0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+local TweenNormal = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+local TweenOpen = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+local TweenPulse = TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+
+--========================================================--
+-- REMOVE OLD
+--========================================================--
+
+local Old = PlayerGui:FindFirstChild(GUI_NAME)
+if Old then Old:Destroy() end
+
+--========================================================--
+-- HELPERS
+--========================================================--
+
+local function New(Class, Properties, Parent)
+    local Object = Instance.new(Class)
+    for Property, Value in pairs(Properties or {}) do
+        Object[Property] = Value
+    end
+    Object.Parent = Parent
+    return Object
+end
+
+local function Corner(Object, Radius)
+    local C = Instance.new("UICorner")
+    C.CornerRadius = UDim.new(0, Radius)
+    C.Parent = Object
+    return C
+end
+
+local function Stroke(Object, Color, Thickness, Transparency)
+    local S = Instance.new("UIStroke")
+    S.Color = Color or Theme.Border
+    S.Thickness = Thickness or 1
+    S.Transparency = Transparency or 0
+    S.Parent = Object
+    return S
+end
+
+--========================================================--
+-- SCREEN GUI
+--========================================================--
+
+local Gui = New("ScreenGui", {
+    Name = GUI_NAME,
+    ResetOnSpawn = false,
+    IgnoreGuiInset = true,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+    DisplayOrder = 100,
+}, PlayerGui)
+
+--========================================================--
+-- OPEN BUTTON (PULSING GLOW)
+--========================================================--
+
+local OpenButton = New("TextButton", {
+    Name = "OpenButton",
+    AnchorPoint = Vector2.new(0, 0.5),
+    Position = UDim2.new(0, 18, 0.5, 0),
+    Size = UDim2.fromOffset(55, 55),
+    BackgroundColor3 = Theme.Panel,
+    BorderSizePixel = 0,
+    Text = "S",
+    TextColor3 = Theme.PinkLight,
+    Font = Enum.Font.GothamBlack,
+    TextSize = 23,
+    AutoButtonColor = false,
+    Visible = false,
+    ZIndex = 50,
+}, Gui)
+
+Corner(OpenButton, 16)
+local OpenStroke = Stroke(OpenButton, Theme.Pink, 1.4, 0.15)
+local OpenGlow = Stroke(OpenButton, Theme.Pink, 2, 0.65)
+
+-- Pulse Animation
+TweenService:Create(OpenGlow, TweenPulse, {Transparency = 0.15}):Play()
+
+--========================================================--
+-- MAIN WINDOW
+--========================================================--
+
+local Main = New("Frame", {
+    Name = "Main",
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
+    Size = UDim2.fromScale(0.88, 0.84),
+    BackgroundColor3 = Theme.Background,
+    BorderSizePixel = 0,
+    ClipsDescendants = true,
+    ZIndex = 10,
+}, Gui)
+
+Corner(Main, 15)
+Stroke(Main, Theme.Border, 1.2, 0.05)
+
+-- Background Glow
+local BgGlow = New("Frame", {
+    Size = UDim2.fromScale(1, 1),
+    BackgroundColor3 = Theme.Pink,
+    BackgroundTransparency = 0.98,
+    ZIndex = 1,
+}, Main)
+Corner(BgGlow, 15)
+
+--========================================================--
+-- HEADER
+--========================================================--
+
+local Header = New("Frame", {
+    Name = "Header",
+    Size = UDim2.new(1, 0, 0, 65),
+    BackgroundColor3 = Theme.Header,
+    BorderSizePixel = 0,
+    ZIndex = 20,
+}, Main)
+
+-- Pink accent
+local HeaderAccent = New("Frame", {
+    Position = UDim2.new(0, 17, 1, -3),
+    Size = UDim2.new(1, -34, 0, 3),
+    BackgroundColor3 = Theme.Pink,
+    BorderSizePixel = 0,
+    ZIndex = 25,
+}, Header)
+Corner(HeaderAccent, 3)
+
+--========================================================--
+-- TITLE (CLICK TO TOGGLE)
+--========================================================--
+
+local Title = New("TextLabel", {
+    Position = UDim2.new(0, 21, 0, 7),
+    Size = UDim2.new(0.7, 0, 0, 28),
+    BackgroundTransparency = 1,
+    Text = "STEPCONTROL HUB X KAITUN",
+    TextColor3 = Theme.White,
+    Font = Enum.Font.GothamBlack,
+    TextSize = 18,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 25,
+}, Header)
+
+local Subtitle = New("TextLabel", {
+    Position = UDim2.new(0, 22, 0, 36),
+    Size = UDim2.new(0.7, 0, 0, 18),
+    BackgroundTransparency = 1,
+    Text = "⚡ CLICK TITLE TO TOGGLE FARM",
+    TextColor3 = Theme.PinkLight,
+    Font = Enum.Font.GothamMedium,
+    TextSize = 9,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 25,
+}, Header)
+
+--========================================================--
+-- WINDOW BUTTON
+--========================================================--
+
+local function WindowButton(Text, X, Background)
+    local Button = New("TextButton", {
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, X, 0.5, 0),
+        Size = UDim2.fromOffset(31, 31),
+        BackgroundColor3 = Background,
+        BorderSizePixel = 0,
+        Text = Text,
+        TextColor3 = Theme.White,
+        Font = Enum.Font.GothamBold,
+        TextSize = 15,
+        AutoButtonColor = false,
+        ZIndex = 30,
+    }, Header)
+    Corner(Button, 10)
+    return Button
+end
+
+local Minimize = WindowButton("—", -54, Color3.fromRGB(48, 25, 52))
+local Close = WindowButton("×", -16, Color3.fromRGB(61, 22, 39))
+
+--========================================================--
+-- CONTENT
+--========================================================--
+
+local Scroll = New("ScrollingFrame", {
+    Name = "Content",
+    Position = UDim2.new(0, 8, 0, 72),
+    Size = UDim2.new(1, -16, 1, -80),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 4,
+    ScrollBarImageColor3 = Theme.Pink,
+    ScrollBarImageTransparency = 0.1,
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    ScrollingDirection = Enum.ScrollingDirection.Y,
+    ElasticBehavior = Enum.ElasticBehavior.Always,
+    ZIndex = 15,
+}, Main)
+
+local Columns = New("Frame", {
+    Name = "Columns",
+    Size = UDim2.new(1, 0, 0, 0),
+    AutomaticSize = Enum.AutomaticSize.Y,
+    BackgroundTransparency = 1,
+    ZIndex = 15,
+}, Scroll)
+
+local ColumnLayout = New("UIListLayout", {
+    FillDirection = Enum.FillDirection.Horizontal,
+    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+    VerticalAlignment = Enum.VerticalAlignment.Top,
+    Padding = UDim.new(0, 12),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+}, Columns)
+
+local Left = New("Frame", {
+    Name = "Left",
+    Size = UDim2.new(0.48, 0, 0, 0),
+    AutomaticSize = Enum.AutomaticSize.Y,
+    BackgroundTransparency = 1,
+    ZIndex = 15,
+}, Columns)
+
+local Right = New("Frame", {
+    Name = "Right",
+    Size = UDim2.new(0.48, 0, 0, 0),
+    AutomaticSize = Enum.AutomaticSize.Y,
+    BackgroundTransparency = 1,
+    ZIndex = 15,
+}, Columns)
+
+for _, Column in ipairs({Left, Right}) do
+    New("UIListLayout", {
+        Padding = UDim.new(0, 10),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    }, Column)
+end
+
+--========================================================--
+-- SECTION
+--========================================================--
+
+local SectionIndex = 0
+local AllSections = {}
+
+local function Section(Parent, SectionName)
+    SectionIndex += 1
+    local Frame = New("Frame", {
+        Name = "Section_" .. SectionIndex,
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = Theme.Panel,
+        BorderSizePixel = 0,
+        ZIndex = 18,
+    }, Parent)
+    Corner(Frame, 9)
+    Stroke(Frame, Theme.Border, 1, 0.2)
+
+    local Accent = New("Frame", {
+        Position = UDim2.new(0, 11, 0, 11),
+        Size = UDim2.fromOffset(3, 18),
+        BackgroundColor3 = Theme.Pink,
+        BorderSizePixel = 0,
+        ZIndex = 20,
+    }, Frame)
+    Corner(Accent, 2)
+
+    local Label = New("TextLabel", {
+        Position = UDim2.new(0, 22, 0, 8),
+        Size = UDim2.new(1, -32, 0, 24),
+        BackgroundTransparency = 1,
+        Text = string.upper(SectionName),
+        TextColor3 = Theme.PinkLight,
+        Font = Enum.Font.GothamBold,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 20,
+    }, Frame)
+
+    local Content = New("Frame", {
+        Name = "Content",
+        Position = UDim2.new(0, 12, 0, 37),
+        Size = UDim2.new(1, -24, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundTransparency = 1,
+        ZIndex = 20,
+    }, Frame)
+
+    New("UIListLayout", {
+        Padding = UDim.new(0, 2),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    }, Content)
+
+    table.insert(AllSections, {Frame = Frame, Content = Content, Name = SectionName})
+    return Content
+end
+
+--========================================================--
+-- INFO ROW
+--========================================================--
+
+local function InfoRow(Parent, Name, Value)
+    local Row = New("Frame", {
+        Size = UDim2.new(1, 0, 0, 29),
+        BackgroundTransparency = 1,
+        ZIndex = 22,
+    }, Parent)
+
+    local NameLabel = New("TextLabel", {
+        Size = UDim2.new(0.52, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text = Name,
+        TextColor3 = Theme.Gray,
+        Font = Enum.Font.GothamMedium,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 23,
+    }, Row)
+
+    local ValueLabel = New("TextLabel", {
+        Position = UDim2.new(0.52, 0, 0, 0),
+        Size = UDim2.new(0.48, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text = Value,
+        TextColor3 = Theme.White,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Right,
+        ZIndex = 23,
+    }, Row)
+
+    return ValueLabel
+end
+
+--========================================================--
+-- STATUS ROW
+--========================================================--
+
+local function StatusRow(Parent, Name, Owned)
+    local Row = New("Frame", {
+        Size = UDim2.new(1, 0, 0, 30),
+        BackgroundTransparency = 1,
+        ZIndex = 22,
+    }, Parent)
+
+    local Icon = New("TextLabel", {
+        Size = UDim2.fromOffset(28, 30),
+        BackgroundTransparency = 1,
+        Text = Owned and "✓" or "×",
+        TextColor3 = Owned and Theme.Green or Theme.Red,
+        Font = Enum.Font.GothamBold,
+        TextSize = 19,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        ZIndex = 24,
+    }, Row)
+
+    local Label = New("TextLabel", {
+        Position = UDim2.new(0, 35, 0, 0),
+        Size = UDim2.new(1, -35, 1, 0),
+        BackgroundTransparency = 1,
+        Text = Name,
+        TextColor3 = Theme.White,
+        Font = Enum.Font.GothamMedium,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 24,
+    }, Row)
+
+    local Hover = New("TextButton", {
+        Size = UDim2.fromScale(1, 1),
+        BackgroundColor3 = Theme.PanelHover,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Text = "",
+        AutoButtonColor = false,
+        ZIndex = 23,
+    }, Row)
+    Corner(Hover, 6)
+
+    Hover.MouseEnter:Connect(function()
+        TweenService:Create(Hover, TweenFast, {BackgroundTransparency = 0.55}):Play()
+    end)
+    Hover.MouseLeave:Connect(function()
+        TweenService:Create(Hover, TweenFast, {BackgroundTransparency = 1}):Play()
+    end)
+
+    return {Row = Row, Icon = Icon, Label = Label}
+end
+
+--========================================================--
+-- BUILD UI - DATA REFERENCES
+--========================================================--
+
+-- LEFT SIDE
+local Time = Section(Left, "Time")
+local PlayTimeLabel = InfoRow(Time, "Play Time", "00h 00m 00s")
+
+local Status = Section(Left, "Status")
+local NameLabel = InfoRow(Status, "Name", Player.Name)
+local WorldLabel = InfoRow(Status, "World", "1")
+local FruitLabel = InfoRow(Status, "Fruit", "—")
+local AwakenLabel = InfoRow(Status, "Awaken", "—")
+
+local Quest = Section(Left, "Quest")
+local QuestRows = {}
+for _, name in ipairs({"Quest Barillo", "Quest Don Swan", "Quest Death Step", "Quest Sharkman Karate", "Quest Dragon Talon"}) do
+    QuestRows[name] = StatusRow(Quest, name, false)
+end
+
+local Melee = Section(Left, "Melee")
+local MeleeRows = {}
+for _, name in ipairs({"Superhuman", "Death Step", "Sharkman Karate", "Electric Claw", "Dragon Talon", "Godhuman"}) do
+    MeleeRows[name] = StatusRow(Melee, name, false)
+end
+
+local Information = Section(Left, "Information")
+local BoneLabel = InfoRow(Information, "Bone", "0")
+local EctoplasmLabel = InfoRow(Information, "Ectoplasm", "0")
+local EliteHunterLabel = InfoRow(Information, "Elite Hunter", "0")
+
+-- RIGHT SIDE
+local Farming = Section(Right, "Farming")
+local AutoFarmLabel = InfoRow(Farming, "Auto Farm", "Disabled")
+local FarmStatusLabel = InfoRow(Farming, "Status", "Idle")
+
+local Sword = Section(Right, "Sword")
+local SwordRows = {}
+for _, name in ipairs({"Saber", "Bisento", "Soul Cane", "Rengoku", "Yama", "Koko", "Spikey Trident", "Buddy Sword", "Canvander", "Tushita", "Hallow Scythe", "Midnight Blade", "Shizu", "Salish", "Oroshi", "Dark Dagger", "True Triple Katana", "Cursed Dual Katana"}) do
+    SwordRows[name] = StatusRow(Sword, name, false)
+end
+
+local Gun = Section(Right, "Gun")
+local GunRows = {}
+for _, name in ipairs({"Soul Guitar", "Kabucha", "Acidum Rifle"}) do
+    GunRows[name] = StatusRow(Gun, name, false)
+end
+
+--========================================================--
+-- RESPONSIVE
+--========================================================--
+
+local function UpdateResponsive()
+    local Camera = workspace.CurrentCamera
+    if not Camera then return end
+    local Width = Camera.ViewportSize.X
+
+    if Width <= 600 then
+        Main.Size = UDim2.fromScale(0.95, 0.92)
+        Header.Size = UDim2.new(1, 0, 0, 58)
+        Title.TextSize = 14
+        Subtitle.TextSize = 8
+        ColumnLayout.FillDirection = Enum.FillDirection.Vertical
+        Left.Size = UDim2.new(1, 0, 0, 0)
+        Right.Size = UDim2.new(1, 0, 0, 0)
+    elseif Width <= 900 then
+        Main.Size = UDim2.fromScale(0.94, 0.88)
+        Title.TextSize = 16
+        ColumnLayout.FillDirection = Enum.FillDirection.Horizontal
+        Left.Size = UDim2.new(0.48, 0, 0, 0)
+        Right.Size = UDim2.new(0.48, 0, 0, 0)
+    else
+        Main.Size = UDim2.fromScale(0.88, 0.84)
+        Title.TextSize = 18
+        ColumnLayout.FillDirection = Enum.FillDirection.Horizontal
+        Left.Size = UDim2.new(0.48, 0, 0, 0)
+        Right.Size = UDim2.new(0.48, 0, 0, 0)
+    end
+end
+
+UpdateResponsive()
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(UpdateResponsive)
+
+--========================================================--
+-- DRAG SYSTEM
+--========================================================--
+
+local Dragging = false
+local DragStart
+local StartPosition
+
+Header.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        Dragging = true
+        DragStart = Input.Position
+        StartPosition = Main.Position
+    end
+end)
+
+Header.InputEnded:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        Dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+    if not Dragging then return end
+    if Input.UserInputType ~= Enum.UserInputType.MouseMovement and Input.UserInputType ~= Enum.UserInputType.Touch then return end
+    local Delta = Input.Position - DragStart
+    Main.Position = UDim2.new(
+        StartPosition.X.Scale, StartPosition.X.Offset + Delta.X,
+        StartPosition.Y.Scale, StartPosition.Y.Offset + Delta.Y
+    )
+end)
+
+--========================================================--
+-- MINIMIZE
+--========================================================--
+
+local Minimized = false
+local FullSize = Main.Size
+
+Minimize.MouseEnter:Connect(function()
+    TweenService:Create(Minimize, TweenFast, {BackgroundColor3 = Theme.Pink}):Play()
+end)
+
+Minimize.MouseLeave:Connect(function()
+    TweenService:Create(Minimize, TweenFast, {BackgroundColor3 = Color3.fromRGB(48, 25, 52)}):Play()
+end)
+
+Minimize.MouseButton1Click:Connect(function()
+    if Minimized then return end
+    Minimized = true
+    Scroll.Visible = false
+    TweenService:Create(Main, TweenNormal, {
+        Size = UDim2.new(FullSize.X.Scale, FullSize.X.Offset, 0, 65)
+    }):Play()
+end)
+
+--========================================================--
+-- CLOSE
+--========================================================--
+
+Close.MouseEnter:Connect(function()
+    TweenService:Create(Close, TweenFast, {BackgroundColor3 = Theme.Red}):Play()
+end)
+
+Close.MouseLeave:Connect(function()
+    TweenService:Create(Close, TweenFast, {BackgroundColor3 = Color3.fromRGB(61, 22, 39)}):Play()
+end)
+
+Close.MouseButton1Click:Connect(function()
+    TweenService:Create(Main, TweenNormal, {Size = UDim2.fromScale(0, 0)}):Play()
+    task.wait(0.3)
+    Main.Visible = false
+    OpenButton.Visible = true
+    OpenButton.Size = UDim2.fromOffset(0, 0)
+    TweenService:Create(OpenButton, TweenNormal, {Size = UDim2.fromOffset(55, 55)}):Play()
+end)
+
+--========================================================--
+-- OPEN
+--========================================================--
+
+OpenButton.MouseEnter:Connect(function()
+    TweenService:Create(OpenButton, TweenFast, {BackgroundColor3 = Theme.PanelHover}):Play()
+    TweenService:Create(OpenGlow, TweenFast, {Transparency = 0.15}):Play()
+end)
+
+OpenButton.MouseLeave:Connect(function()
+    TweenService:Create(OpenButton, TweenFast, {BackgroundColor3 = Theme.Panel}):Play()
+    TweenService:Create(OpenGlow, TweenFast, {Transparency = 0.65}):Play()
+end)
+
+OpenButton.MouseButton1Click:Connect(function()
+    OpenButton.Visible = false
+    Main.Visible = true
+    if Minimized then
+        Minimized = false
+        Scroll.Visible = true
+    end
+    Main.Size = UDim2.fromScale(0, 0)
+    TweenService:Create(Main, TweenOpen, {Size = FullSize}):Play()
+end)
+
+--========================================================--
+-- INITIAL OPEN
+--========================================================--
+
+Main.Size = UDim2.fromScale(0, 0)
+task.wait(0.1)
+TweenService:Create(Main, TweenOpen, {Size = FullSize}):Play()
+
+--========================================================--
+-- REAL-TIME UPDATE SYSTEM
+--========================================================--
+
+-- ตัวแปรสถานะ
+local FarmingStatus = "🟢 Ready"
+local StartTime = os.time()
+local AutoFarmEnabled = false
+
+-- Helper Functions
+local function CheckItem(itemName)
+    local bp = Player:FindFirstChild("Backpack")
+    if bp and bp:FindFirstChild(itemName) then return true end
+    local char = Player.Character
+    if char and char:FindFirstChild(itemName) then return true end
+    return false
+end
+
+local function GetCurrentFruit()
+    local data = Player:FindFirstChild("Data")
+    if data and data:FindFirstChild("DevilFruit") then
+        return data.DevilFruit.Value or "—"
+    end
+    return "—"
+end
+
+local function GetSeaIndex()
+    local placeId = game.PlaceId
+    if placeId == 2753915549 then return "1"
+    elseif placeId == 4442272183 then return "2"
+    elseif placeId == 7449423635 then return "3"
+    end
+    return "1"
+end
+
+-- ฟังก์ชันอัปเดต UI
+local function UpdateUI()
+    pcall(function()
+        -- 1. Update Time
+        if PlayTimeLabel then
+            local elapsed = os.time() - StartTime
+            local h = math.floor(elapsed / 3600)
+            local m = math.floor((elapsed % 3600) / 60)
+            local s = elapsed % 60
+            PlayTimeLabel.Text = string.format("%02dh %02dm %02ds", h, m, s)
+        end
+
+        -- 2. Update World
+        if WorldLabel then
+            WorldLabel.Text = GetSeaIndex()
+        end
+
+        -- 3. Update Fruit
+        if FruitLabel then
+            FruitLabel.Text = GetCurrentFruit()
+        end
+
+        -- 4. Update Quest Status
+        if ScriptStorage and ScriptStorage.Backpack then
+            if QuestRows["Quest Don Swan"] then
+                local owned = Storage and Storage:Get("SwanDefeated") or false
+                QuestRows["Quest Don Swan"].Icon.Text = owned and "✓" or "×"
+                QuestRows["Quest Don Swan"].Icon.TextColor3 = owned and Theme.Green or Theme.Red
+            end
+            if QuestRows["Quest Death Step"] then
+                local owned = CheckItem("Death Step")
+                QuestRows["Quest Death Step"].Icon.Text = owned and "✓" or "×"
+                QuestRows["Quest Death Step"].Icon.TextColor3 = owned and Theme.Green or Theme.Red
+            end
+            if QuestRows["Quest Sharkman Karate"] then
+                local owned = CheckItem("Sharkman Karate")
+                QuestRows["Quest Sharkman Karate"].Icon.Text = owned and "✓" or "×"
+                QuestRows["Quest Sharkman Karate"].Icon.TextColor3 = owned and Theme.Green or Theme.Red
+            end
+            if QuestRows["Quest Dragon Talon"] then
+                local owned = CheckItem("Dragon Talon")
+                QuestRows["Quest Dragon Talon"].Icon.Text = owned and "✓" or "×"
+                QuestRows["Quest Dragon Talon"].Icon.TextColor3 = owned and Theme.Green or Theme.Red
+            end
+            if QuestRows["Quest Barillo"] then
+                local owned = CheckItem("Warrior Helmet")
+                QuestRows["Quest Barillo"].Icon.Text = owned and "✓" or "×"
+                QuestRows["Quest Barillo"].Icon.TextColor3 = owned and Theme.Green or Theme.Red
+            end
+        end
+
+        -- 5. Update Melee Status
+        if ScriptStorage and ScriptStorage.Backpack then
+            for name, row in pairs(MeleeRows) do
+                local owned = CheckItem(name)
+                row.Icon.Text = owned and "✓" or "×"
+                row.Icon.TextColor3 = owned and Theme.Green or Theme.Red
+            end
+        end
+
+        -- 6. Update Sword Status
+        if ScriptStorage and ScriptStorage.Backpack then
+            for name, row in pairs(SwordRows) do
+                local owned = CheckItem(name)
+                row.Icon.Text = owned and "✓" or "×"
+                row.Icon.TextColor3 = owned and Theme.Green or Theme.Red
+            end
+        end
+
+        -- 7. Update Gun Status
+        if ScriptStorage and ScriptStorage.Backpack then
+            for name, row in pairs(GunRows) do
+                local owned = false
+                if name == "Soul Guitar" then
+                    owned = CheckItem("Skull Guitar")
+                else
+                    owned = CheckItem(name)
+                end
+                row.Icon.Text = owned and "✓" or "×"
+                row.Icon.TextColor3 = owned and Theme.Green or Theme.Red
+            end
+        end
+
+        -- 8. Update Information
+        if ScriptStorage and ScriptStorage.Backpack then
+            if BoneLabel then
+                local bones = ScriptStorage.Backpack["Bones"]
+                BoneLabel.Text = bones and tostring(bones.Count) or "0"
+            end
+            if EctoplasmLabel then
+                local ecto = ScriptStorage.Backpack["Ectoplasm"]
+                EctoplasmLabel.Text = ecto and tostring(ecto.Count) or "0"
+            end
+            if EliteHunterLabel then
+                local elite = FunctionsHandler and FunctionsHandler.Yama and FunctionsHandler.Yama:Get("EliteCount") or 0
+                EliteHunterLabel.Text = tostring(elite)
+            end
+        end
+
+        -- 9. Update Farming
+        if AutoFarmLabel then
+            AutoFarmLabel.Text = AutoFarmEnabled and "✅ Enabled" or "❌ Disabled"
+            AutoFarmLabel.TextColor3 = AutoFarmEnabled and Theme.Green or Theme.Red
+        end
+        if FarmStatusLabel then
+            FarmStatusLabel.Text = FarmingStatus
+        end
+    end)
+end
+
+-- ============================================================
+-- REAL-TIME UPDATE LOOP
+-- ============================================================
+
+task.spawn(function()
+    while task.wait(1) do
+        pcall(UpdateUI)
+    end
+end)
+
+-- ============================================================
+-- CONNECT TOGGLE TO FARMSYSTEM
+-- ============================================================
+
+-- คลิกที่ Title เพื่อเปิด/ปิดฟาร์ม
+Title.MouseButton1Click:Connect(function()
+    AutoFarmEnabled = not AutoFarmEnabled
+    _G.KaitunEnabled = AutoFarmEnabled
+    
+    if AutoFarmEnabled then
+        Title.Text = "⚡ FARMING ACTIVE"
+        Title.TextColor3 = Theme.Green
+        FarmingStatus = "🟢 Farming..."
+    else
+        Title.Text = "STEPCONTROL HUB X KAITUN"
+        Title.TextColor3 = Theme.White
+        FarmingStatus = "🟡 Stopped"
+    end
+end)
+
+-- ============================================================
+-- EXPOSE VARIABLES FOR OTHER SCRIPTS
+-- ============================================================
+
+getgenv().UpdateKaitunUI = {
+    SetStatus = function(status)
+        FarmingStatus = status
+    end,
+    SetMob = function(mob)
+        CurrentMob = mob
+    end,
+    SetQuest = function(quest)
+        CurrentQuest = quest
+    end
+}
+
+-- ============================================================
+-- INITIAL UPDATE
+-- ============================================================
+
+task.wait(0.5)
+UpdateUI()
+
+--========================================================--
+-- DONE
+--========================================================--
+
+print("✅ STEPCONTROL HUB X KAITUN - ULTIMATE UI LOADED!")
+print("💖 All data is REAL-TIME from your game inventory!")
+print("⚡ Click the title to START/STOP farming!")
