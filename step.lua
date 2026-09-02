@@ -1,11 +1,3 @@
--- ============================================================
--- ⚡ STEPCONTROL HUB X KAITUN (COMPLETE SCRIPT)
--- PINK THEME | ULTIMATE UI | ALL FEATURES INTACT
--- ============================================================
--- VERSION: 4.0.0
--- STATUS: ✅ COMPLETE | READY TO RUN
--- ============================================================
-
 repeat
     task.wait()
 until game:IsLoaded() and game.Players.LocalPlayer
@@ -42,8 +34,8 @@ getgenv().SettingFarm = getgenv().SettingFarm
             ["Pull Level"] = false,
             ["Farm Dark Fragment At Sea2"] = false,
             ["Auto Collect Berry"] = false,
-            ["Auto Farm Boss Drops"] = true,
-            ["Rainbow Haki"] = true,
+            ["Auto Farm Boss Drops"] = true, -- Săn toàn bộ Boss lấy Items (Kiếm, Súng, Phụ kiện)
+            ["Rainbow Haki"] = true, -- 🌈 Tự động làm nhiệm vụ Rainbow Haki (Horned Man Quest)
         },
         ["Auto Chat"] = {
             ["Enabled"] = false,
@@ -68,7 +60,7 @@ getgenv().SettingFarm = getgenv().SettingFarm
             ["Auto Buy All Guns"] = false,
         },
         ["Sniper Fruit Shop"] = {
-            ["Enabled"] = true,
+            ["Enabled"] = true, -- Auto Buy Fruit in Shop Mirage and Normal
             ["Fruit Want Buy"] = { "Kitsune-Kitsune", "Dragon-Dragon", "Yeti-Yeti", "Gas-Gas" },
         },
         ["Webhook"] = {
@@ -80,7 +72,7 @@ getgenv().SettingFarm = getgenv().SettingFarm
         },
     }
 
--- Bridge mapping from SettingFarm to Config
+-- Cầu nối ánh xạ tương thích ngược từ SettingFarm vào Config
 local activeSetting = getgenv().SettingFarm
 Config = {
     Team = activeSetting["Team"] or "Pirates",
@@ -115,8 +107,7 @@ Config = {
 
 function sigmahub()
     local farmSettings = getgenv().SettingFarm or {}
-    
-    -- Lock FPS
+    -- Khóa FPS nếu bật Lock Fps
     pcall(function()
         local lockFpsConfig = farmSettings["Lock Fps"]
         if lockFpsConfig and lockFpsConfig["Enabled"] and typeof(setfpscap) == "function" then
@@ -124,7 +115,7 @@ function sigmahub()
         end
     end)
 
-    -- Black Screen / White Screen
+    -- Màn hình đen / màn hình trắng tiết kiệm GPU
     pcall(function()
         if farmSettings["Black Screen"] then
             local runService = game:GetService("RunService")
@@ -132,7 +123,7 @@ function sigmahub()
         end
     end)
 
-    -- Auto Chat
+    -- Tự động chat (Auto Chat)
     task.spawn(function()
         while task.wait(5) do
             if not getgenv().AutoKaitun or _G.Stop then
@@ -161,7 +152,7 @@ function sigmahub()
         end
     end)
 
-    -- Auto Buy Shop Skills
+    -- Tự động mua võ / kỹ năng trong Shop (Haki, Geppo, Soru, Observation, Haki Huyền Thoại)
     task.spawn(function()
         while task.wait(15) do
             if not getgenv().AutoKaitun or _G.Stop then
@@ -183,6 +174,7 @@ function sigmahub()
                     if shopConfig["Observation"] then
                         Remotes.CommF_:InvokeServer("KenTalk", "Buy")
                     end
+                    -- Mua màu Haki Huyền Thoại (Master of Auras / ColorsDealer)
                     if shopConfig["Auto Buy Haki Legendary"] then
                         Remotes.CommF_:InvokeServer("ColorsDealer", "1")
                         Remotes.CommF_:InvokeServer("ColorsDealer", "2")
@@ -192,7 +184,7 @@ function sigmahub()
         end
     end)
 
-    -- Sniper Fruit Shop
+    -- 🍎 SNIPER FRUIT SHOP (Tự động săn / mua trái ác quỷ trong Shop Normal & Mirage)
     task.spawn(function()
         while task.wait(30) do
             if getgenv().AutoKaitun and not _G.Stop then
@@ -209,15 +201,17 @@ function sigmahub()
                         targetFruits = { getgenv().SelectFruit }
                     end
 
+                    -- Cập nhật danh sách trái trong cửa hàng
                     Remotes.CommF_:InvokeServer("GetFruits")
 
+                    -- Tiến hành mua các trái mong muốn
                     for _, fruitName in ipairs(targetFruits) do
                         local buyRes = Remotes.CommF_:InvokeServer("PurchaseRawFruit", fruitName)
                         if buyRes then
                             alert("Sniper Fruit", "Successfully purchased: " .. tostring(fruitName))
                             Report(
-                                "Fruit Shop: Successfully sniped fruit " .. tostring(fruitName),
-                                "FRUIT SNIPER"
+                                "Cửa Hàng Trái: Săn mua thành công trái " .. tostring(fruitName),
+                                "SNIPER TRÁI"
                             )
                         end
                     end
@@ -226,7 +220,7 @@ function sigmahub()
         end
     end)
 
-    -- Auto Buy All Swords & Guns
+    -- Tự động mua toàn bộ Kiếm và Súng (Auto Buy All Swords & Guns)
     task.spawn(function()
         local SwordList = {
             "Bisento",
@@ -276,14 +270,16 @@ function sigmahub()
                         return
                     end
 
-                    -- BUY ALL SWORDS
+                    -- 🗡️ BUY ALL SWORDS (Gộp cả Legendary Sword Dealer ở Sea 2)
                     if shopSettings["Auto Buy All Swords"] then
+                        -- Mua kiếm Huyền Thoại (Legendary Sword Dealer)
                         if stats.Beli >= 2000000 and SeaIndex == 2 then
                             Remotes.CommF_:InvokeServer("LegendarySwordDealer", "1")
                             Remotes.CommF_:InvokeServer("LegendarySwordDealer", "2")
                             Remotes.CommF_:InvokeServer("LegendarySwordDealer", "3")
                         end
 
+                        -- Mua các loại kiếm thường
                         if stats.Beli >= 3000000 then
                             for _, swordName in ipairs(SwordList) do
                                 if swordName ~= "Midnight Blade" and not hasItem(swordName) then
@@ -292,18 +288,21 @@ function sigmahub()
                             end
                         end
 
+                        -- Mua Midnight Blade bằng Ectoplasm (cần 100 Ectoplasm)
                         local ectoplasm = Remotes.CommF_:InvokeServer("Ectoplasm", "Check")
                         if (type(ectoplasm) == "number" and ectoplasm >= 100) and not hasItem("Midnight Blade") then
                             Remotes.CommF_:InvokeServer("Ectoplasm", "Buy", 3)
                         end
                     end
 
-                    -- BUY ALL GUNS
+                    -- 🔫 BUY ALL GUNS
                     if shopSettings["Auto Buy All Guns"] then
+                        -- Mua Kabucha (cần 5,000 Fragments)
                         if stats.Fragments >= 5000 and not hasItem("Kabucha") then
                             Remotes.CommF_:InvokeServer("BlackbeardReward", "Slingshot", "2")
                         end
 
+                        -- Mua các loại súng thường
                         if stats.Beli >= 3000000 then
                             for _, gunName in ipairs(GunList) do
                                 if gunName ~= "Kabucha" and not hasItem(gunName) then
@@ -326,10 +325,12 @@ function sigmahub()
             )
         end)
     end
-
+    -- Đã gỡ toàn bộ UI riêng của Kaitun (Sigma Hub UI cũ).
+    -- Trạng thái được đẩy thẳng vào paragraph của ProxyLib qua các hàm getgenv() bên dưới.
     local FarmAnimation = Instance.new("Animation")
     FarmAnimation.AnimationId = "http://www.roblox.com/asset/?id=1elutruahuabuahd"
 
+    -- table.find fallback cho môi trường không có sẵn
     if not table.find then
         table.find = function(tbl, targetValue)
             for idx, val in ipairs(tbl) do
@@ -341,14 +342,16 @@ function sigmahub()
         end
     end
 
+    -- Cầu nối thông báo: thay thông báo Fluent bằng Notify của ProxyLib (định nghĩa bên file UI chính)
     local FarmFruitMastery = nil
-    local function alert(title, message)
+    local alert = function(title, message)
         if getgenv and getgenv().NatAov_Notify then
             pcall(getgenv().NatAov_Notify, tostring(title or ""), tostring(message or ""))
         end
     end
     getgenv().alert = alert
 
+    -- Safe wrappers for executor-dependent functions (bảo vệ trên mobile / executor yếu)
     local function safe_isnetworkowner(part)
         if typeof(isnetworkowner) == "function" then
             local success, isOwner = pcall(isnetworkowner, part)
@@ -398,6 +401,7 @@ function sigmahub()
         end)
     end
 
+    -- Cầu nối cập nhật trạng thái: đẩy Main Task / Sub Task / Live Time vào paragraph tương ứng
     function SetText(key, text)
         if key == "Task1" and getgenv().NatAov_SetMainTask then
             pcall(getgenv().NatAov_SetMainTask, text)
@@ -406,9 +410,10 @@ function sigmahub()
         elseif key == "LiveTime" and getgenv().NatAov_SetKaitunTime then
             pcall(getgenv().NatAov_SetKaitunTime, text)
         end
+        -- Các key khác (Currencies, Melees, DebugLine, MainTextLabel) không còn UI riêng nên bỏ qua
     end
 
-    alert("STEPCONTROL HUB", "Connected to NatAov Hub successfully")
+    alert("Kaitun Hub", "Connected to NatAov Hub successfully")
     OldSessionTime = isfile(".tdif-" .. game.Players.LocalPlayer.Name)
             and tonumber(readfile(".tdif-" .. game.Players.LocalPlayer.Name))
         or 0
@@ -439,15 +444,15 @@ function sigmahub()
             end
         end)
     end)
-    alert("STEPCONTROL HUB", "Loading components (1/2)...")
+    alert("Kaitun Hub", "Loading components (1/2)...")
 
     StartTick = tick()
     FarmStartTime = os.time()
     repeat
         task.wait()
     until SetText
-    alert("STEPCONTROL HUB", "Loading components (2/2)...")
-    SetText("MainTextLabel", "Initializing Script..")
+    alert("Kaitun Hub", "Loading components (2/2)...")
+    SetText("MainTextLabel", "Initalizing Script..")
     ScriptStorage = {
         IsInitalized = false,
         PlayerData = {},
@@ -468,6 +473,8 @@ function sigmahub()
     }
     Players = game.Players
     LocalPlayer = Players.LocalPlayer
+    -- Cache mastery melee ra file riêng theo tên tài khoản, tránh phải bay đi mua lại
+    -- melee chỉ để đọc mastery hiện tại (đỡ tốn thời gian mỗi lần Kaitun cần kiểm tra).
     MeleeCacheFolder = "NatAovHub Kaitun"
     MeleeCacheFile = MeleeCacheFolder .. "/Melee check " .. LocalPlayer.Name .. ".txt"
     pcall(function()
@@ -547,46 +554,49 @@ function sigmahub()
             )
         )
     end
-    
     -- ==============================================================================
-    -- COMPREHENSIVE DEBUG & ERROR REPORTING SYSTEM
+    -- 🐞 HỆ THỐNG DEBUG VÀ BÁO CÁO LỖI TOÀN DIỆN (TIẾNG VIỆT 100% - DỄ TÌM LỖI)
     -- ==============================================================================
     ScriptStorage.ErrorLogs = {}
     ScriptStorage.LastStuckCheck = os.time()
     getgenv().KaitunDebugMode = (getgenv().KaitunDebugMode == nil) and false or getgenv().KaitunDebugMode
 
+    -- 🔍 Hàm phân tích nguyên nhân lỗi thông minh (Smart Error Diagnosis)
     local function AnalyzeErrorReason(errMsg)
         local errLower = tostring(errMsg or ""):lower()
         if errLower:find("attempt to index nil") or errLower:find("attempt to index a nil value") then
-            return "Attempting to access object that does not exist or is not loaded yet."
+            return "Truy cập vào đối tượng không tồn tại hoặc chưa kịp nạp (Quái vừa chết, NPC chưa hồi sinh, hoặc bản đồ chưa nạp xong)."
         elseif errLower:find("timed out") or errLower:find("timeout") then
-            return "Timeout waiting for Server response (Network lag or Roblox Server congestion)."
+            return "Hết thời gian chờ phản hồi từ Server (Mạng bị lag hoặc Remote Server Roblox bị nghẽn)."
         elseif errLower:find("bad argument") then
-            return "Invalid data type passed to function (expected table but got string/nil)."
+            return "Dữ liệu truyền vào hàm không đúng định dạng (Ví dụ: cần bảng table nhưng lại nhận chuỗi/nil)."
         elseif errLower:find("cannot resume") or errLower:find("thread") then
-            return "Thread collision when running asynchronous tasks."
+            return "Xung đột tiến trình đa luồng (Thread collision) khi chạy tác vụ bất đồng bộ."
         elseif errLower:find("humanoid") or errLower:find("humanoidrootpart") then
-            return "Player or monster character died, respawning, or deleted from game."
+            return "Nhân vật người chơi hoặc quái vật đã bị chết, đang hồi sinh hoặc bị xóa khỏi game."
         elseif errLower:find("fireproximityprompt") or errLower:find("proximityprompt") then
-            return "ProximityPrompt interaction not found (object already activated or not loaded)."
+            return "Không tìm thấy nút bấm tương tác ProximityPrompt (Vật thể đã kích hoạt trước đó hoặc chưa nạp)."
         elseif errLower:find("tween") then
-            return "Tween movement error (Invalid target position or character destroyed mid-flight)."
+            return "Lỗi trong quá trình bay Tween (Tọa độ đích không hợp lệ hoặc nhân vật bị hủy giữa chừng)."
         else
-            return "Runtime error during script execution or Roblox game update."
+            return "Lỗi runtime phát sinh trong quá trình chạy script hoặc do game Roblox vừa cập nhật bản mới."
         end
     end
 
+    -- 📢 Hàm Report nâng cấp: Báo cáo lỗi chi tiết, dễ hiểu bằng tiếng Việt (Đã kèm cơ chế CHỐNG SPAM CONSOLE)
     local lastReportedTimes = {}
     function Report(message, customTag)
         pcall(function()
             local rawMsg = tostring(message or "")
             local timeNowSec = os.time()
 
+            -- 🛡️ CHỐNG SPAM CONSOLE: Nếu cùng một nội dung lỗi/báo cáo bị gọi lặp lại trong vòng 10 giây -> Bỏ qua, không in đè
             if lastReportedTimes[rawMsg] and (timeNowSec - lastReportedTimes[rawMsg] < 10) then
                 return
             end
             lastReportedTimes[rawMsg] = timeNowSec
 
+            -- Dọn dẹp cache thông điệp cũ sau mỗi 60 giây để tiết kiệm RAM
             if timeNowSec % 60 == 0 then
                 for cachedMsg, stamp in pairs(lastReportedTimes) do
                     if timeNowSec - stamp > 30 then
@@ -596,11 +606,12 @@ function sigmahub()
             end
 
             local timeNow = os.date("%H:%M:%S")
-            local currentTask = (ScriptStorage.Task and ScriptStorage.Task.MainTask) or "No task"
-            local currentSub = (ScriptStorage.Task and ScriptStorage.Task.SubTask) or "None"
+            local currentTask = (ScriptStorage.Task and ScriptStorage.Task.MainTask) or "Chưa có tác vụ"
+            local currentSub = (ScriptStorage.Task and ScriptStorage.Task.SubTask) or "Không có"
             local currentLevel = (ScriptStorage.PlayerData and ScriptStorage.PlayerData.Level) or "N/A"
-            local tag = customTag or "REPORT"
+            local tag = customTag or "BÁO CÁO"
 
+            -- Lưu trữ 100 sự kiện lỗi gần nhất để tra cứu
             table.insert(ScriptStorage.ErrorLogs, {
                 Time = timeNow,
                 Task = currentTask,
@@ -613,27 +624,31 @@ function sigmahub()
                 table.remove(ScriptStorage.ErrorLogs, 1)
             end
 
+            -- Phân loại: Nếu là Lỗi thì in khung cảnh báo nổi bật kèm nguyên nhân
             local isError = rawMsg:lower():find("error")
-                or rawMsg:lower():find("fail")
+                or rawMsg:lower():find("lỗi")
                 or rawMsg:lower():find("attempt")
+                or rawMsg:lower():find("fail")
                 or rawMsg:lower():find("nil")
 
             if isError then
                 local diagnosis = AnalyzeErrorReason(rawMsg)
                 warn("=================================================================")
                 warn(
-                    "❌ [KAITUN ERROR SYSTEM] Time: "
+                    "❌ [KAITUN BÁO LỖI HỆ THỐNG] Lúc: "
                         .. timeNow
                         .. " | Sea "
                         .. tostring(SeaIndex or "N/A")
-                        .. " | Level: "
+                        .. " | Cấp độ: "
                         .. tostring(currentLevel)
                 )
-                warn("📍 Current Task: " .. currentTask)
-                warn("🔎 Sub Task     : " .. currentSub)
-                warn("⚠️ Error Detail : " .. rawMsg)
-                warn("💡 Diagnosis    : " .. diagnosis)
-                warn("🔄 Action: Bot auto-recovering and switching to next safe task.")
+                warn("📍 Tác vụ đang chạy: " .. currentTask)
+                warn("🔎 Chi tiết tác vụ : " .. currentSub)
+                warn("⚠️ Chi tiết lỗi     : " .. rawMsg)
+                warn("💡 Nguyên nhân dự đoán: " .. diagnosis)
+                warn(
+                    "🔄 Hướng xử lý: Bot tự động phục hồi trạng thái và chuyển sang tác vụ kế tiếp an toàn."
+                )
                 warn("=================================================================")
             else
                 print("[Kaitun " .. tag .. " " .. timeNow .. "] " .. rawMsg)
@@ -643,24 +658,27 @@ function sigmahub()
         end)
     end
 
+    -- 🔍 Hàm DebugLog chuyên sâu: In dữ liệu theo dõi khi bật getgenv().KaitunDebugMode = true
     function DebugLog(...)
         if not getgenv().KaitunDebugMode then
             return
         end
         local args = { ... }
+        local argCount = select("#", ...)
         pcall(function()
-            for i = 1, select("#", ...) do
+            for i = 1, argCount do
                 args[i] = tostring(args[i])
             end
-            print("[Kaitun Debug " .. os.date("%H:%M:%S") .. "] 🔍 " .. table.concat(args, " | "))
+            print("[Kaitun Theo Dõi " .. os.date("%H:%M:%S") .. "] 🔍 " .. table.concat(args, " | "))
         end)
     end
 
-    getgenv().Kaitun_ViewErrors = function()
+    -- 📋 Lệnh 1: Xem toàn bộ danh sách lỗi gần nhất ngay trên F9 Console
+    getgenv().Kaitun_XemLoi = function()
         print("============================================================")
-        print("📜 [KAITUN ERROR LOG SUMMARY]")
+        print("📜 [BẢNG TỔNG HỢP LỖI CỦA KAITUN HUB]")
         print(
-            "👤 Player: "
+            "👤 Người chơi: "
                 .. tostring(LocalPlayer.Name)
                 .. " | Level: "
                 .. tostring(ScriptStorage.PlayerData and ScriptStorage.PlayerData.Level or "N/A")
@@ -668,81 +686,83 @@ function sigmahub()
         print(
             "🌊 Sea: "
                 .. tostring(SeaIndex or "N/A")
-                .. " | Current Task: "
+                .. " | Tác vụ hiện tại: "
                 .. tostring(ScriptStorage.Task and ScriptStorage.Task.MainTask or "N/A")
         )
         print("------------------------------------------------------------")
         if #ScriptStorage.ErrorLogs == 0 then
-            print("✅ No errors recorded, script is running stable!")
+            print("✅ Tuyệt vời! Không ghi nhận bất kỳ lỗi nào, script đang chạy rất ổn định.")
         else
             for idx, log in ipairs(ScriptStorage.ErrorLogs) do
-                print(string.format("[%02d] %s | Task: %s | Error: %s", idx, log.Time, log.Task, log.Message))
+                print(string.format("[%02d] Lúc %s | Tác vụ: %s | Lỗi: %s", idx, log.Time, log.Task, log.Message))
             end
         end
         print("============================================================")
     end
 
-    getgenv().Kaitun_SystemCheck = function()
+    -- 🩺 Lệnh 2: Bác sĩ chẩn đoán toàn diện tài khoản (System Health Check)
+    getgenv().Kaitun_KiemTra = function()
         print("============================================================")
-        print("🩺 [KAITUN SYSTEM HEALTH CHECK]")
+        print("🩺 [BẢNG CHẨN ĐOÁN SỨC KHỎE ACC & HỆ THỐNG KAITUN]")
         print("------------------------------------------------------------")
         local char = LocalPlayer.Character
         local hum = char and char:FindFirstChildOfClass("Humanoid")
         local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        print("1. Character:")
-        print("   • Status: " .. (char and "Loaded" or "Not Loaded"))
-        print("   • HP: " .. (hum and (math.floor(hum.Health) .. " / " .. math.floor(hum.MaxHealth)) or "N/A"))
+        print("1. Nhân vật:")
+        print("   • Trạng thái: " .. (char and "Đã nạp xong" or "Chưa nạp"))
+        print("   • Máu (HP): " .. (hum and (math.floor(hum.Health) .. " / " .. math.floor(hum.MaxHealth)) or "N/A"))
         print(
-            "   • Buso Haki: "
-                .. (char and char:FindFirstChild("HasBuso") and "🟢 ON" or "🔴 OFF")
+            "   • Haki Vũ Trang (Buso): "
+                .. (char and char:FindFirstChild("HasBuso") and "Đang BẬT 🟢" or "Đang TẮT 🔴")
         )
 
-        print("2. Location:")
-        print("   • Sea: " .. tostring(SeaIndex or "N/A"))
-        print("   • HRP Position: " .. (hrp and tostring(hrp.Position) or "Unknown"))
+        print("2. Tọa độ & Thế giới:")
+        print("   • Sea hiện tại: Sea " .. tostring(SeaIndex or "N/A"))
+        print("   • Tọa độ HRP: " .. (hrp and tostring(hrp.Position) or "Không xác định"))
 
-        print("3. Tasks:")
+        print("3. Tác vụ đang chạy:")
         print("   • MainTask: " .. tostring(ScriptStorage.Task and ScriptStorage.Task.MainTask or "N/A"))
         print("   • SubTask : " .. tostring(ScriptStorage.Task and ScriptStorage.Task.SubTask or "N/A"))
-        print("   • Active Task: " .. tostring(activeTaskName or "None"))
+        print("   • Task hiện tại: " .. tostring(activeTaskName or "Chưa chọn"))
 
-        print("4. Key Items:")
+        print("4. Vật phẩm cốt lõi (V4 / Soul Guitar):")
         local bp = LocalPlayer:FindFirstChild("Backpack")
         local function has(name)
             return (bp and bp:FindFirstChild(name))
                 or (char and char:FindFirstChild(name))
                 or (ScriptStorage.Backpack and ScriptStorage.Backpack[name])
         end
-        print("   • Mirror Fractal: " .. (has("Mirror Fractal") and "✅ Owned" or "❌ Missing"))
-        print("   • Dark Fragment : " .. (has("Dark Fragment") and "✅ Owned" or "❌ Missing"))
-        print("   • V4 Ready     : " .. (has("Mirror Fractal") and "✅ Ready" or "❌ Not Ready"))
+        print("   • Mirror Fractal: " .. (has("Mirror Fractal") and "Đã có 🟢" or "Chưa có 🔴"))
+        print("   • Dark Fragment : " .. (has("Dark Fragment") and "Đã có 🟢" or "Chưa có 🔴"))
+        print("   • Bánh Răng V4  : " .. (has("Mirror Fractal") and "Đủ điều kiện" or "Chưa đủ"))
         print(
-            "   • Bones Count: "
+            "   • Số lượng Xương: "
                 .. tostring(
                     (ScriptStorage.Backpack and ScriptStorage.Backpack.Bones and ScriptStorage.Backpack.Bones.Count)
                         or 0
                 )
         )
 
-        print("5. Error Memory:")
-        print("   • Total Errors Captured: " .. tostring(#ScriptStorage.ErrorLogs))
+        print("5. Bộ nhớ lỗi:")
+        print("   • Tổng số lỗi đã bắt: " .. tostring(#ScriptStorage.ErrorLogs))
         print("============================================================")
     end
 
-    getgenv().Kaitun_ExportReport = function()
+    -- 💾 Lệnh 3: Xuất toàn bộ báo cáo lỗi ra file văn bản trên máy
+    getgenv().Kaitun_XuatBaoCao = function()
         pcall(function()
             if typeof(writefile) == "function" then
                 local logLines = {}
-                table.insert(logLines, "=== KAITUN ERROR REPORT ===")
-                table.insert(logLines, "Export Time: " .. os.date("%Y-%m-%d %H:%M:%S"))
-                table.insert(logLines, "Player: " .. tostring(LocalPlayer.Name))
+                table.insert(logLines, "=== BÁO CÁO LỖI KAITUN HUB ===")
+                table.insert(logLines, "Thời gian xuất: " .. os.date("%Y-%m-%d %H:%M:%S"))
+                table.insert(logLines, "Người chơi: " .. tostring(LocalPlayer.Name))
                 table.insert(logLines, "Sea: " .. tostring(SeaIndex or "N/A"))
                 table.insert(
                     logLines,
-                    "Level: " .. tostring(ScriptStorage.PlayerData and ScriptStorage.PlayerData.Level or "N/A")
+                    "Cấp độ: " .. tostring(ScriptStorage.PlayerData and ScriptStorage.PlayerData.Level or "N/A")
                 )
                 table.insert(logLines, "----------------------------------------")
-                table.insert(logLines, "--- RECENT ERRORS ---")
+                table.insert(logLines, "--- DANH SÁCH LỖI GẦN NHẤT ---")
                 for idx, item in ipairs(ScriptStorage.ErrorLogs) do
                     table.insert(
                         logLines,
@@ -750,25 +770,29 @@ function sigmahub()
                     )
                 end
                 writefile(
-                    "Kaitun_ErrorReport_" .. tostring(LocalPlayer.Name) .. ".txt",
+                    "Kaitun_BaoCaoLoi_" .. tostring(LocalPlayer.Name) .. ".txt",
                     table.concat(logLines, string.char(10))
                 )
                 print(
-                    "✅ Error report exported: Kaitun_ErrorReport_"
+                    "✅ Đã xuất báo cáo lỗi thành công ra file: Kaitun_BaoCaoLoi_"
                         .. tostring(LocalPlayer.Name)
                         .. ".txt"
                 )
             else
-                print("❌ Executor does not support writefile!")
+                print("❌ Executor không hỗ trợ hàm writefile!")
             end
         end)
     end
 
-    getgenv().Kaitun_ToggleDebug = function(enabled)
+    -- 🎛️ Lệnh 4: Bật/Tắt chế độ Debug nhanh
+    getgenv().Kaitun_BatDebug = function(enabled)
         getgenv().KaitunDebugMode = (enabled == nil) and true or enabled
-        print(getgenv().KaitunDebugMode and "✅ Debug mode ENABLED" or "❌ Debug mode DISABLED")
+        if getgenv().KaitunDebugMode then
+            print("✅ [Kaitun Debug] ĐÃ BẬT chế độ xem nhật ký theo dõi chi tiết!")
+        else
+            print("❌ [Kaitun Debug] ĐÃ TẮT chế độ xem nhật ký theo dõi chi tiết!")
+        end
     end
-
     function SetTask(taskKey, value)
         if ScriptStorage.Task[taskKey] == value then
             return
@@ -1235,7 +1259,7 @@ function sigmahub()
         },
     }
     DropItemData = {
-        -- SEA 1
+        -- ==================== SEA 1 (OLD WORLD) ====================
         ["Shark Saw"] = { Sea = 1, Level = 100, Boss = "The Saw" },
         ["Grey Coat"] = { Sea = 1, Level = 130, Boss = "Vice Admiral" },
         ["Saber"] = { Sea = 1, Level = 200, Boss = "Saber Expert" },
@@ -1244,14 +1268,16 @@ function sigmahub()
         ["Wardens Sword"] = { Sea = 1, Level = 220, Boss = "Chief Warden" },
         ["Magma Blaster"] = { Sea = 1, Level = 350, Boss = "Magma Admiral" },
         ["Cool Shades"] = { Sea = 1, Level = 675, Boss = "Cyborg" },
-        -- SEA 2
+
+        -- ==================== SEA 2 (NEW WORLD) ====================
         ["Longsword"] = { Sea = 2, Level = 750, Boss = "Diamond" },
         ["Gravity Blade"] = { Sea = 2, Level = 800, Boss = "Orbitus", AltBoss = "Fajita" },
         ["Flail"] = { Sea = 2, Level = 800, Boss = "Smoke Admiral" },
         ["Dragon Trident"] = { Sea = 2, Level = 850, Boss = "Tide Keeper" },
         ["Swan Glasses"] = { Sea = 2, Level = 1000, Boss = "Don Swan" },
         ["Acidum Rifle"] = { Sea = 2, Level = 800, Boss = "Core" },
-        -- SEA 3
+
+        -- ==================== SEA 3 (THIRD WORLD) ====================
         ["Buddy Sword"] = { Sea = 3, Level = 1500, Boss = "Cake Queen" },
         ["Canvander"] = { Sea = 3, Level = 1500, Boss = "Beautiful Pirate" },
         ["Twin Hooks"] = { Sea = 3, Level = 1500, Boss = "Captain Elephant" },
@@ -1284,8 +1310,8 @@ function sigmahub()
     }
     SeaIndexes = { "Main", "Dressrosa", "Zou" }
     TasksOrder = {
-        "RaceAwakening",
-        "RainbowSaviour",
+        "RaceAwakening", -- Ưu tiên 1 tuyệt đối: Gạt cần Race V4 (Pull Lever)
+        "RainbowSaviour", -- Ưu tiên 2: Nhiệm vụ Rainbow Haki (Horned Man Quest)
         "Tushita",
         "Yama",
         "SpecialBossesTask",
@@ -1338,6 +1364,7 @@ function sigmahub()
         },
     })[SeaIndex]
     BossesOrder = {
+        -- Sea 1
         "The Saw",
         "Vice Admiral",
         "Saber Expert",
@@ -1346,6 +1373,7 @@ function sigmahub()
         "Chief Warden",
         "Magma Admiral",
         "Cyborg",
+        -- Sea 2
         "Awakened Ice Admiral",
         "Tide Keeper",
         "Diamond",
@@ -1353,6 +1381,7 @@ function sigmahub()
         "Fajita",
         "Smoke Admiral",
         "Don Swan",
+        -- Sea 3
         "Deandre",
         "Urban",
         "Diablo",
@@ -1496,7 +1525,7 @@ function sigmahub()
         end
         return string.format("%dday, %dhrs.", days, hours)
     end
-    DispTime = FormatElapsedTime
+    DispTime = FormatElapsedTime -- Alias tương thích ngược
     CalculateDistance = CaculateDistance
     CalculateCircleDirection = CaculateCircreDirection
     function GetCurrentDateTime()
@@ -1649,9 +1678,9 @@ function sigmahub()
         CurrentQuests = {},
         BlacklistedQuestIds = { BartiloQuest = 1, CitizenQuest = 1, Trainees = 1, MarineQuest = 1, ImpelQuest = 1 },
     }
-    local J = QuestManager
+    local J = QuestManager -- Alias tương thích ngược
     local GuideNPCList = require(game.ReplicatedStorage.GuideModule).Data.NPCList
-
+    -- Chờ nạp dữ liệu người chơi an toàn (LocalPlayer.Data.Level)
     local dataLoadTimeout = os.time() + 10
     repeat
         task.wait(0.2)
@@ -1755,7 +1784,7 @@ function sigmahub()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("ColorsDealer", "2")
         return Remotes.CommF_:InvokeServer("StartQuest", questId, step)
     end
-
+    -- local W = game:HttpGet('https://raw.githubusercontent.com/sucvatthieunang/Trackstat/refs/heads/main/boss')
     ScriptStorage.MobRegions = {}
     local spawnFolder = game:GetService("ReplicatedStorage"):FindFirstChild("FortBuilderReplicatedSpawnPositionsFolder")
     if spawnFolder then
@@ -2271,6 +2300,7 @@ function sigmahub()
                         return
                     end
 
+                    -- Tự động giữ Haki Buso (Aura) luôn BẬT trong lúc đánh quái
                     local myChar = LocalPlayer.Character
                     if myChar and not myChar:FindFirstChild("HasBuso") then
                         pcall(function()
@@ -2278,6 +2308,7 @@ function sigmahub()
                         end)
                     end
 
+                    -- Chống choáng / tự động nhảy thoát nếu bị quái đánh ngồi (Unsit)
                     local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
                     if myHum and myHum.Sit then
                         myHum.Sit = false
@@ -2369,7 +2400,7 @@ function sigmahub()
                 end
             elseif not useNearest then
                 if (os.time() - LastFound) > 200 then
-                    alert("STEPCONTROL HUB", "Mob spawn timeout, rejoining...")
+                    alert("Kaitun Hub", "Mob spawn timeout, rejoining...")
                     game.Players.LocalPlayer:Kick("Rejoining..")
                     return
                 end
@@ -2405,8 +2436,10 @@ function sigmahub()
                 end
                 if not regionList then
                     Report(
-                        "Mob data error: " .. tostring(mobName) .. " has no spawn location data!",
-                        "GAME ERROR"
+                        "Lỗi dữ liệu quái vật: Quái "
+                            .. tostring(mobName)
+                            .. " không có dữ liệu tọa độ hồi sinh!",
+                        "LỖI GAME"
                     )
                     return
                 end
@@ -2530,7 +2563,7 @@ function sigmahub()
     FunctionsHandler.RainbowSaviour:Register()
 
     -- ==============================================================================
-    -- RAINBOW HAKI QUEST SYSTEM
+    -- 🌈 RAINBOW HAKI QUEST SYSTEM (HORNED MAN / RAINBOW SAVIOUR)
     -- ==============================================================================
     local RainbowBossList = {
         "Stone",
@@ -2585,6 +2618,7 @@ function sigmahub()
     end
 
     FunctionsHandler.RainbowSaviour:RegisterMethod("Refresh", function()
+        -- 1. Kiểm tra cấu hình bật Rainbow Haki
         local currentSettings = getgenv().SettingFarm or farmSettings
         local getItems = currentSettings and currentSettings["Get Items"]
         local isEnabled = getItems and (getItems["Rainbow Haki"] or getItems["RGB Haki"])
@@ -2592,10 +2626,12 @@ function sigmahub()
             return false
         end
 
+        -- 2. Phải ở Sea 3 và Cấp độ >= 1950
         if SeaIndex ~= 3 or (ScriptStorage.PlayerData.Level or 0) < 1950 then
             return false
         end
 
+        -- 3. Kiểm tra xem đã sở hữu Rainbow Haki chưa
         if HasCompletedRainbowHaki() then
             return false
         end
@@ -2606,13 +2642,14 @@ function sigmahub()
     FunctionsHandler.RainbowSaviour:RegisterMethod("Start", function()
         if HasCompletedRainbowHaki() then
             alert("Rainbow Haki", "Rainbow Haki already unlocked!")
-            Report("Rainbow Haki: Player already completed this quest!", "RAINBOW HAKI")
+            Report("Nhiệm vụ Rainbow Haki: Người chơi đã hoàn thành từ trước!", "RAINBOW HAKI")
             return
         end
 
         local activeBoss = GetActiveRainbowHakiBoss()
 
         if activeBoss then
+            -- Trường hợp 1: Đang có quest đánh một trong 5 boss
             SetTask("MainTask", "Rainbow Haki | Hunting Boss | " .. activeBoss)
             local bossModel = ScriptStorage.Enemies[activeBoss]
                 or (Services.Workspace.Enemies and Services.Workspace.Enemies:FindFirstChild(activeBoss))
@@ -2627,6 +2664,7 @@ function sigmahub()
                 task.wait(1)
                 return
             else
+                -- Boss chưa hồi sinh trên server
                 local currentSettings = getgenv().SettingFarm or farmSettings
                 local canHopBoss = currentSettings
                     and currentSettings["Setting Hop"]
@@ -2643,6 +2681,7 @@ function sigmahub()
                 return
             end
         else
+            -- Trường hợp 2: Chưa có quest -> Bay tới NPC Horned Man để nhận nhiệm vụ
             SetTask("MainTask", "Rainbow Haki | Horned Man | Traveling to NPC")
             if CalculateDistance(HornedManCFrame) > 15 then
                 TweenController.Create(HornedManCFrame)
@@ -2657,7 +2696,7 @@ function sigmahub()
                 if betResult == 1 then
                     alert("Rainbow Haki", "Congratulations! Rainbow Haki unlocked successfully!")
                     Report(
-                        "Successfully completed Rainbow Haki quest chain!",
+                        "Chúc mừng! Đã hoàn thành toàn bộ chuỗi nhiệm vụ và mở khóa Rainbow Haki thành công!",
                         "RAINBOW HAKI"
                     )
                     if Storage and Storage.Set then
@@ -2684,9 +2723,8 @@ function sigmahub()
     FunctionsHandler.DarkBladeV3:Register()
     FunctionsHandler.ThirdSeaPuzzle:Register()
     FunctionsHandler.DojoQuest:Register()
-    
     -- ==============================================================================
-    -- RACE V4 & PULL LEVER HELPERS
+    -- ⚡ RACE V4 & PULL LEVER HELPERS (ĐIỀU KIỆN GẠT CẦN)
     -- ==============================================================================
     local RACES_V3 = {
         "Last Resort",
@@ -2737,6 +2775,7 @@ function sigmahub()
 
     FunctionsHandler.RaceAwakening:Register()
     FunctionsHandler.RaceAwakening:RegisterMethod("Refresh", function()
+        -- 1. Kiểm tra cấu hình bật Pull Level / Pull Lever
         local currentSettings = getgenv().SettingFarm or farmSettings
         local getItems = currentSettings["Get Items"] or {}
         local isPullLevelEnabled = getItems["Pull Level"] or getItems["Pull Lever"]
@@ -2744,32 +2783,39 @@ function sigmahub()
             return false
         end
 
+        -- 2. Điều kiện 1: Player phải trên Sea 3
         if SeaIndex ~= 3 then
             return false
         end
 
+        -- 3. Kiểm tra xem đã gạt cần thành công chưa (nếu đã xong thì bỏ qua để farm việc khác)
         if Storage and Storage.Get and Storage:Get("LeverPulledCompleted") then
             return false
         end
 
+        -- 4. Điều kiện 4: Player trong inventory phải có Mirror Fractal
         if not HasMirrorFractal() then
             return false
         end
 
+        -- 5. Điều kiện 3: Player phải có Race V3
         if not HasRaceAbility(LocalPlayer.Character) then
             return false
         end
 
+        -- 6. Điều kiện 2: Phải có Đảo Bí Ẩn (MysticIsland) hoặc đã có quyền mở cửa Temple of Time
         local mysticIsland = GetMysticIsland()
         local templeDoorCheck = false
         pcall(function()
             templeDoorCheck = Remotes.CommF_:InvokeServer("CheckTempleDoor")
         end)
 
+        -- Trường hợp 1: Đã xong bánh răng xanh trên đảo, cửa mở -> Vào gạt cần
         if templeDoorCheck then
             return { Step = "PullLeverInTemple" }
         end
 
+        -- Trường hợp 2: Có đảo bí ẩn xuất hiện -> Tiến hành các bước làm Đảo Bí Ẩn
         if mysticIsland then
             return { Step = "MirageIsland", Island = mysticIsland }
         end
@@ -2782,6 +2828,7 @@ function sigmahub()
             return
         end
 
+        -- Xử lý an toàn: Kiểm tra nhân vật còn sống hay bị giết
         if not CheckIsPlayerAlive(LocalPlayer) then
             SetTask("MainTask", "Race V4 | Player Respawning | Waiting...")
             AwaitUntilPlayerLoaded(LocalPlayer)
@@ -2791,6 +2838,7 @@ function sigmahub()
 
         EnsureTempleOfTimeLoaded()
 
+        -- Kiểm tra tiến trình Race V4 ban đầu qua Remote Check
         local raceV4Check = nil
         pcall(function()
             raceV4Check = Remotes.CommF_:InvokeServer("RaceV4Progress", "Check")
@@ -2833,13 +2881,17 @@ function sigmahub()
             return
         end
 
+        -- ======================================================================
+        -- BƯỚC 1: XỬ LÝ TRÊN ĐẢO BÍ ẨN (MYSTIC / MIRAGE ISLAND)
+        -- ======================================================================
         if targetData.Step == "MirageIsland" then
             local mysticIsland = GetMysticIsland()
+            -- Xử lý lỗi: MẤT ĐẢO BÍ ẨN KHI ĐANG LÀM
             if not mysticIsland or not mysticIsland.Parent then
                 SetTask("MainTask", "Race V4 | Mirage Island Despawned | Resuming Farm")
                 Report(
-                    "Mirage Island disappeared! Pausing pull lever process.",
-                    "RACE V4"
+                    "Đảo Bí Ẩn (Mirage Island) đã biến mất! Tạm dừng quy trình gạt cần để quay lại farm.",
+                    "TỘC V4"
                 )
                 pcall(function()
                     if TweenInstance then
@@ -2850,6 +2902,7 @@ function sigmahub()
                 return
             end
 
+            -- 1. Tìm Bánh Răng Xanh (Blue Gear) trên đảo
             local blueGear = nil
             for _, item in ipairs(mysticIsland:GetDescendants()) do
                 if
@@ -2863,16 +2916,18 @@ function sigmahub()
                 end
             end
 
+            -- Nếu đã xuất hiện Bánh Răng Xanh: Bay tới nhặt ngay
             if blueGear then
                 SetTask("MainTask", "Race V4 | Blue Gear Found | Collecting Gear...")
                 TweenController.Create(blueGear.CFrame)
                 if CalculateDistance(blueGear.CFrame) < 8 then
                     task.wait(1)
-                    Report("Successfully collected Blue Gear on Mirage Island!", "RACE V4")
+                    Report("Đã nhặt thành công Bánh Răng Xanh (Blue Gear) trên Đảo Bí Ẩn!", "TỘC V4")
                 end
                 return
             end
 
+            -- Nếu chưa có Bánh Răng Xanh: Cần lên đỉnh cao nhất, nhìn trăng và bật tộc V3
             local islandCenter = mysticIsland:FindFirstChild("Center")
             if not islandCenter then
                 SetTask("MainTask", "Race V4 | Mirage Island | Locating Island Center")
@@ -2885,6 +2940,7 @@ function sigmahub()
             TweenController.Create(miragePeak)
 
             if CalculateDistance(miragePeak) < 150 then
+                -- Kiểm tra trời tối (Night time)
                 local currentClock = Lighting.ClockTime
                 local isNight = (currentClock > 16.5 or currentClock < 5.5)
 
@@ -2899,6 +2955,7 @@ function sigmahub()
                     return
                 end
 
+                -- Xoay góc nhìn Camera nhìn thẳng vào Mặt Trăng
                 SetTask("MainTask", "Race V4 | Mirage Island | Resonating Moon & V3 Ability")
                 pcall(function()
                     local camera = workspace.CurrentCamera
@@ -2909,6 +2966,7 @@ function sigmahub()
                 end)
                 task.wait(0.5)
 
+                -- Bật kỹ năng tộc V3
                 pcall(function()
                     game:GetService("ReplicatedStorage").Remotes.CommE:FireServer("ActivateAbility")
                 end)
@@ -2917,6 +2975,9 @@ function sigmahub()
             return
         end
 
+        -- ======================================================================
+        -- BƯỚC 2: VÀO TEMPLE OF TIME VÀ GẠT CẦN (PULL LEVER)
+        -- ======================================================================
         if targetData.Step == "PullLeverInTemple" then
             SetTask("MainTask", "Race V4 | Temple of Time | Entering Temple")
             EnsureTempleOfTimeLoaded()
@@ -2924,12 +2985,14 @@ function sigmahub()
             local templeLeverPosition = CFrame.new(28575, 14937, 72)
             local currentDistance = CalculateDistance(templeLeverPosition)
 
+            -- Nếu đang ở xa ngoài đảo, dùng cổng dịch chuyển vào trước
             if currentDistance > 500 then
                 RequestEntrance(Vector3.new(28283, 14897, 105))
                 TweenController.Create(templeLeverPosition)
                 return
             end
 
+            -- Khi đã tới gần vị trí cần gạt
             if currentDistance > 10 then
                 TweenController.Create(templeLeverPosition)
                 return
@@ -2948,17 +3011,18 @@ function sigmahub()
                     task.wait(1)
                     alert("Race V4", "Congratulations! Pulled the lever successfully!")
                     Report(
-                        "Successfully pulled lever at Temple of Time unlocking Race V4!",
-                        "RACE V4"
+                        "Chúc mừng! Đã gạt cần thành công tại Temple of Time mở khóa cổng Tộc V4!",
+                        "TỘC V4"
                     )
                     if Storage and Storage.Set then
                         Storage:Set("LeverPulledCompleted", true)
                         Storage:Save()
                     end
                 else
+                    -- Nếu không thấy Prompt, có thể cần đã được gạt trước đó
                     Report(
-                        "Lever prompt not found (already pulled or temple open)!",
-                        "RACE V4"
+                        "Không tìm thấy nút bấm cần gạt (Cần đã gạt trước đó hoặc phòng thử thách đã mở)!",
+                        "TỘC V4"
                     )
                     if Storage and Storage.Set then
                         Storage:Set("LeverPulledCompleted", true)
@@ -3045,15 +3109,16 @@ function sigmahub()
     FunctionsHandler.LevelFarm:RegisterMethod("Refresh", function()
         local level = (ScriptStorage.PlayerData and ScriptStorage.PlayerData.Level) or 0
 
+        -- ⚡ 100% Tự động sử dụng SKIP MODE tối ưu tốc độ cày Level 1-70 ở Sea 1
         if SeaIndex == 1 then
             if level < 50 then
-                return 1
+                return 1 -- Floor 1: Bay tắt Đảo Trời đánh Sky Bandit (Level 1 -> 50)
             elseif level < 70 then
-                return 2
+                return 2 -- Floor 2: Bay tắt Đảo Trời đánh God's Guard (Level 50 -> 70)
             end
         end
 
-        return 4
+        return 4 -- Level 70+ cày theo chuỗi nhiệm vụ chuẩn
     end)
     FunctionsHandler.LevelFarm:RegisterMethod("Start", function(farmMode)
         if SeaIndex == 3 then
@@ -3122,8 +3187,8 @@ function sigmahub()
                             end
                         else
                             Report(
-                                "NPC " .. tostring(questInfo[4]) .. " not found on map!",
-                                "NPC WARNING"
+                                "Không tìm thấy NPC " .. tostring(questInfo[4]) .. " trên bản đồ!",
+                                "CẢNH BÁO NPC"
                             )
                         end
                         QuestManager.StartQuest(questInfo[1], questInfo[2])
@@ -3207,7 +3272,7 @@ function sigmahub()
                             return
                         end
                     else
-                        Report("Cake Quest Giver 1 NPC not found!", "NPC WARNING")
+                        Report("Không tìm thấy NPC Cake Quest Giver 1 tại Đảo Bánh!", "CẢNH BÁO NPC")
                     end
                     QuestManager.StartQuest("CakeQuest1", 1)
                     return
@@ -3276,8 +3341,8 @@ function sigmahub()
                     then
                         HauntedQuest2NotFoundWarnDebounce = os.time()
                         Report(
-                            "Haunted Quest Giver 2 NPC not found at Haunted Castle!",
-                            "NPC WARNING"
+                            "Không tìm thấy NPC Haunted Quest Giver 2 tại Lâu Đài Bóng Đêm!",
+                            "CẢNH BÁO NPC"
                         )
                     end
                 end
@@ -3309,8 +3374,8 @@ function sigmahub()
                 if not questNpcPos then
                     return QuestManager:RefreshQuest()
                         and Report(
-                            "Could not determine NPC position for current quest!",
-                            "QUEST ERROR"
+                            "Lỗi không xác định được tọa độ NPC nhận nhiệm vụ cấp độ hiện tại!",
+                            "LỖI NHIỆM VỤ"
                         )
                 end
                 TweenController.Create(questNpcPos + Vector3.new(0, 5, 3))
@@ -4031,14 +4096,16 @@ function sigmahub()
                     fireproximityprompt(summonBtn.ProximityPrompt)
                 else
                     Report(
-                        "Raid summon button on " .. islandName .. " missing Click/Prompt trigger!",
-                        "RAID ERROR"
+                        "Nút bấm triệu hồi Raid trên đảo "
+                            .. islandName
+                            .. " bị thiếu bộ kích hoạt Click/Prompt!",
+                        "LỖI RAID"
                     )
                 end
             else
                 Report(
-                    "Raid summon station not found on " .. islandName .. "!",
-                    "RAID ERROR"
+                    "Không tìm thấy nút bấm bệ triệu hồi Raid trên đảo " .. islandName .. "!",
+                    "LỖI RAID"
                 )
             end
             local waitStartTime = os.time()
@@ -4055,7 +4122,7 @@ function sigmahub()
             if os.time() - waitStartTime > 30 then
                 game.Players.LocalPlayer:Kick("Rejoining..")
                 SetTask("MainTask", "Auto Raid | Timeout | Raid Did Not Start")
-                Report("Raid start timeout (>30s), canceling!", "RAID ERROR")
+                Report("Hết thời gian chờ Raid bắt đầu (quá 30 giây), hủy lượt!", "LỖI RAID")
             end
             LastRaidAlert = 0
         else
@@ -4116,7 +4183,7 @@ function sigmahub()
     end)
 
     -- ==============================================================================
-    -- AUTO COLLECT BERRY
+    -- 🍓 AUTO COLLECT BERRY (Ưu tiên ngang nhặt trái tự nhiên)
     -- ==============================================================================
     local activeBerryBush = nil
     local CollectionService = game:GetService("CollectionService")
@@ -4182,6 +4249,7 @@ function sigmahub()
                 return
             end
         else
+            -- Đang đứng tại bụi dâu: Nhận quả qua Remote và nhặt Berries
             pcall(function()
                 local netModules = game.ReplicatedStorage:FindFirstChild("Modules")
                     and game.ReplicatedStorage.Modules:FindFirstChild("Net")
@@ -4408,7 +4476,7 @@ function sigmahub()
             Remotes.CommF_:InvokeServer("BuyDragonTalon", true)
             Remotes.CommF_:InvokeServer("BuyDragonTalon")
             IsFireEssenceGave = true
-            Report("Fire Essence delivered to Uzoth for Dragon Talon unlock!", "DRAGON TALON")
+            Report("Đã giao Tinh Hoa Lửa (Fire Essence) cho NPC Uzoth mở khóa Dragon Talon!", "DRAGON TALON")
         elseif currentUtilityItem == "Soul Reaper Spawner" then
             DebugLog("Use Hallow Essence")
             local soulReaper = ScriptStorage.Enemies["Soul Reaper"]
@@ -4550,7 +4618,7 @@ function sigmahub()
         end
         return Lighting.ClockTime > 18 or Lighting.ClockTime < 5
     end
-
+    -- Hàm phát hiện rương gần nhất để tìm Fist of Darkness ở Sea 2
     local function DetectNearestChest()
         local nearestChest = nil
         local minDistance = math.huge
@@ -4601,6 +4669,7 @@ function sigmahub()
             return
         end
 
+        -- Nếu chưa có Dark Fragment: Tự động về Sea 2 săn Darkbeard hoặc farm rương tìm Fist of Darkness
         if not ScriptStorage.Backpack["Dark Fragment"] then
             return "GetDarkFragment"
         end
@@ -4608,10 +4677,12 @@ function sigmahub()
         local ectoplasm = (ScriptStorage.Backpack["Ectoplasm"] or { Count = 0 })["Count"]
         local bones = (ScriptStorage.Backpack["Bones"] or { Count = 0 })["Count"]
 
+        -- Nếu chưa đủ Ectoplasm (cần 250): Farm quái Tàu Ma ở Sea 2
         if ectoplasm < 250 then
             return 1
         end
 
+        -- Đã có Dark Fragment & đủ Ectoplasm nhưng đang ở Sea 2 -> Quay lại Sea 3
         if SeaIndex ~= 3 then
             return "TravelToSea3"
         end
@@ -4640,6 +4711,7 @@ function sigmahub()
     end)
     FunctionsHandler.SoulGuitar:RegisterMethod("Start", function(step)
         if step == "GetDarkFragment" then
+            -- Nếu đang ở Sea 3: Di chuyển về Sea 2
             if SeaIndex == 3 then
                 SetTask("MainTask", "Soul Guitar | Dark Fragment | Traveling to Sea 2")
                 alert("Soul Guitar", "Traveling to Sea 2 for Dark Fragment")
@@ -4648,7 +4720,9 @@ function sigmahub()
                 return
             end
 
+            -- Đang ở Sea 2:
             if SeaIndex == 2 then
+                -- 1. Kiểm tra Boss Darkbeard đã spawn chưa -> Nếu có đánh luôn
                 local darkbeardBoss = ScriptStorage.Enemies["Darkbeard"]
                     or (Services.Workspace.Enemies and Services.Workspace.Enemies:FindFirstChild("Darkbeard"))
                     or (game.ReplicatedStorage and game.ReplicatedStorage:FindFirstChild("Darkbeard"))
@@ -4660,6 +4734,7 @@ function sigmahub()
                     return
                 end
 
+                -- 2. Kiểm tra xem người chơi đã có Fist of Darkness chưa
                 local hasFist = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Fist of Darkness"))
                     or (LocalPlayer:FindFirstChild("Backpack") and LocalPlayer.Backpack:FindFirstChild(
                         "Fist of Darkness"
@@ -4677,6 +4752,7 @@ function sigmahub()
                     return
                 end
 
+                -- 3. Chưa có Fist of Darkness và chưa có Boss: Farm rương tìm Fist of Darkness
                 SetTask("MainTask", "Soul Guitar | Fist of Darkness | Farming Chests in Sea 2")
                 local nearestChest = DetectNearestChest()
                 if nearestChest and nearestChest.Parent then
@@ -4690,6 +4766,7 @@ function sigmahub()
                     task.wait(0.2)
                     return
                 else
+                    -- Hết rương ở Sea 2 -> Tự động Hop server tìm rương mới / tìm server có Darkbeard
                     SetTask("MainTask", "Soul Guitar | Fist of Darkness | No Chests Left, Hopping Server")
                     alert("Soul Guitar", "No chests left in Sea 2! Hopping server to find Fist of Darkness...")
                     Hop("Soul Guitar - No chests left in Sea 2 / Finding Fist of Darkness")
@@ -5107,7 +5184,7 @@ function sigmahub()
                 CdkProgess = nil
             elseif progressState[2] == 3 then
                 Report(
-                    "Soul Reaper found for Yama Evil Trial #3!",
+                    "Đã phát hiện Boss Soul Reaper để hoàn thành Thử Thách Quỷ số 3 của Yama!",
                     "CDK QUEST"
                 )
                 while not (os.time() - TorchEnabledTime < 100 or not ScriptStorage.Enemies["Soul Reaper"]) do
@@ -5162,7 +5239,7 @@ function sigmahub()
                     CombatController.Attack("Cake Queen")
                 until os.time() - TorchEnabledTime < 10 or not ScriptStorage.Enemies["Cake Queen"]
                 TweenController.Create(LocalPlayer.Character.HumanoidRootPart.CFrame)
-                Report("Entering Heavenly Dimension via Cake Queen!", "CDK QUEST")
+                Report("Đang tiến vào Chiều Không Gian Thiên Đường qua Boss Cake Queen!", "CDK QUEST")
                 FunctionsHandler.CursedDualKatana.Methods.DoDimension.Callback("Heavenly Dimension")
                 CdkProgess = nil
             end
@@ -5234,9 +5311,12 @@ function sigmahub()
             end
         end)
     end
-
     -- ==============================================================================
-    -- SERVER HOP SYSTEM
+    -- 🔁 HOP SERVER: dùng Roblox Public Games API để lấy danh sách server,
+    -- rồi hop qua remote __ServerBrowser (thay cho GetServers/Hop/LowHop cũ)
+    -- ==============================================================================
+    -- ==============================================================================
+    -- 🛡️ AN TOÀN & BẢO VỆ: HOP KHI PING CAO & KHI CÓ ADMIN VÀO SERVER
     -- ==============================================================================
     local AdminList = {
         "red_game43",
@@ -5268,6 +5348,7 @@ function sigmahub()
         return false
     end
 
+    -- Lắng nghe ngay khi Admin vừa kết nối vào Server
     game:GetService("Players").PlayerAdded:Connect(function(newPlayer)
         local currentSettings = getgenv().SettingFarm or farmSettings
         local hopAdmin = currentSettings
@@ -5279,6 +5360,7 @@ function sigmahub()
         end
     end)
 
+    -- Vòng lặp định kỳ kiểm tra Admin trong Server
     task.spawn(function()
         while task.wait(3) do
             if getgenv().AutoKaitun and not _G.Stop then
@@ -5298,6 +5380,7 @@ function sigmahub()
         end
     end)
 
+    -- Giám sát Ping cao để Hop Server (Hop When High Ping)
     local function GetCurrentNetworkPing()
         local pingVal = nil
         pcall(function()
@@ -5572,7 +5655,9 @@ function sigmahub()
             Hop("Autohop")
         end
     end)
-
+    -- Farm Hallow Essence (đổi Bones) để triệu hồi Soul Reaper - chạy độc lập,
+    -- không chiếm slot ưu tiên của RefreshTasksData nên không chặn các task khác
+    -- (LevelFarm, BossesTask...) trong lúc chờ roll ra được essence.
     task.spawn(function()
         while getgenv().AutoKaitun do
             task.wait(1)
@@ -5612,12 +5697,12 @@ function sigmahub()
         FunctionsHandler.MeleesController.Methods.Start:Call()
         local taskSuccess, taskError = xpcall(RefreshTasksData, debug.traceback)
         if not taskSuccess then
-            Report("Task execution error: " .. tostring(taskError), "TASK ERROR")
+            Report("Lỗi trong quá trình thực thi tác vụ: " .. tostring(taskError), "LỖI TÁC VỤ")
         end
     end
 
     -- ==============================================================================
-    -- DISCORD WEBHOOK NOTIFICATION SYSTEM
+    -- 📊 DISCORD WEBHOOK NOTIFICATION SYSTEM (THỐNG KÊ TÀI KHOẢN & TÚI ĐỒ)
     -- ==============================================================================
     local function StartWebhookMonitor()
         local function GetPlayerStats()
@@ -5818,10 +5903,12 @@ function sigmahub()
 end
 
 -- ==============================================================================
--- KAITUN ON/OFF CONTROLLER
+-- BỘ ĐIỀU KHIỂN BẬT / TẮT KAITUN QUA getgenv().AutoKaitun
 -- ==============================================================================
 getgenv().AutoKaitun = (getgenv().AutoKaitun == nil) and false or getgenv().AutoKaitun
 
+-- Huỷ mọi tween đang chạy + trả lại trạng thái bình thường cho player,
+-- không để các hàm tween của Kaitun giữ player lại
 local function KaitunRestorePlayerState()
     pcall(function()
         if TweenInstance then
@@ -5869,6 +5956,7 @@ local function KaitunRestorePlayerState()
     end
 end
 
+-- Đồng bộ _G.Stop liên tục theo công tắc AutoKaitun (chặn TweenController tạo tween mới ngay khi tắt)
 task.spawn(function()
     while true do
         _G.Stop = not getgenv().AutoKaitun
@@ -5892,16 +5980,16 @@ task.spawn(function()
             if getgenv().NatAov_Notify then
                 pcall(
                     getgenv().NatAov_Notify,
-                    "Kaitun Error",
-                    "Error (" .. consecutiveFailures .. "/3): " .. tostring(err)
+                    "Kaitun Báo Lỗi",
+                    "Gặp lỗi (" .. consecutiveFailures .. "/3): " .. tostring(err)
                 )
             end
             if consecutiveFailures >= 3 then
                 if getgenv().NatAov_Notify then
                     pcall(
                         getgenv().NatAov_Notify,
-                        "Kaitun Safe Stop",
-                        "Paused after 3 consecutive errors. Toggle Auto Kaitun OFF/ON to resume."
+                        "Kaitun Dừng An Toàn",
+                        "Đã tạm dừng sau 3 lỗi liên tiếp. Tắt rồi bật lại Auto Kaitun để tiếp tục."
                     )
                 end
                 consecutiveFailures = 0
