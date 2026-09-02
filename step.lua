@@ -1,245 +1,557 @@
--- ============================================================
--- ⚡ STEPCONTROL HUB X KAITUN (FULLY FIXED VERSION)
--- PINK THEME | ULTIMATE UI | LOGIC COMBINED
--- ============================================================
 
-Config = {
-    Team = "Pirates",
-    Configuration = {
-        HopWhenIdle = true,
-        AutoHop = true,
-        AutoHopDelay = 60 * 60,
-        FpsBoost = false,
-        blackscreen = false,
-        LowGraphics = true
-    },
-    Items = {
-        AutoFullyMelees = true,
-        Saber = true,
-        SoulGuitar = true,
-        RaceV2 = true
-    },
-    Settings = {
-        StayInSea2UntilHaveDarkFragments = true
-    },
-    AutoSea2 = true,
-    AutoSea3 = true,
-    AutoRaidIce_TargetFragments = 5000
-}
+    -- ============================================================
+    -- AUTO FULL MELEE
+    -- ============================================================
+    FunctionsHandler.MeleesController:RegisterMethod("Refresh", function()
+        if not Config.Items.AutoFullyMelees then return nil end
+        if ScriptStorage.PlayerData.Level < 200 then return nil end
+        if _G.Level then return nil end
 
--- ============================================================
--- FIX: ฟังก์ชัน Dummy และ Storage (ป้องกัน Error nil)
--- ============================================================
-function alert(...) print("[Alert]", ...) end
-function SetText(...) end 
-
-Storage = {
-    Data = {},
-    Get = function(self, key) return self.Data[key] end,
-    Set = function(self, key, val) self.Data[key] = val end,
-    Save = function() end
-}
-
-print("[StepControl] Script loaded, waiting for game load...")
-repeat task.wait() until game:IsLoaded()
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local CoreGui = game:GetService("CoreGui")
-
-local lp = Players.LocalPlayer
-print("[Main] Starting StepControl Kaitun v4.0...")
-timeee = os.time()
-local W_angle = 30
-local lastChange = tick()
-
-_G.ChooseWP = "Melee"
-_G.SelectWeapon = nil
-
--- (ตัด task.spawn เลือกอาวุธแรกทิ้ง เพราะ Logic หลักจะจัดการเอง)
-
-function hoangtuveu()
-    local W = {Instances = {}}
-    repeat task.wait() until game.CoreGui
-
-    OldSessionTime = isfile and readfile and isfile('.tdif-' .. game.Players.LocalPlayer.Name) and tonumber(readfile(".tdif-" .. game.Players.LocalPlayer.Name)) or 0
-    repeat
-        task.wait()
-        game.ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam", Config.Team)
-    until game.Players.LocalPlayer.Character
-    print("team assembled")
-
-    repeat wait() until game.Players.LocalPlayer.Character
-    spawn(function()
-        pcall(function()
-            local plr = game:GetService("Players").LocalPlayer
-            if plr and plr:FindFirstChild("PlayerScripts") then
-                local scripts = plr.PlayerScripts
-                local lod1 = scripts:FindFirstChild('NewIslandLOD')
-                if lod1 then lod1:Destroy() end
-                local lod2 = scripts:FindFirstChild('IslandLOD')
-                if lod2 then lod2:Destroy() end
+        local allMelees = {"Black Leg", "Electro", "Fishman Karate", "Dragon Claw", "Superhuman", "Death Step", "Sharkman Karate", "Electric Claw", "Dragon Talon", "Godhuman"}
+        local hasAll = true
+        for _, name in ipairs(allMelees) do
+            if not CheckItem(name) then
+                hasAll = false
+                break
             end
-        end)
+        end
+        if hasAll then
+            SetTask('MainTask', 'Auto Full Melee | ✅ Have all!')
+            return nil
+        end
+        return true
     end)
 
-    ScriptStorage = {IsInitalized = false, PlayerData = {}, Melees = {}, CurrentMeleeData = {}, Enemies = {}, Tools = {}, Backpack = {}, IgnoreStoreFruits = {}, Connections = {LocalPlayer = {}}, Task = {}, Tracebacks = {}, TaskController = {}, TracebackUpdater = {}, Interface = W, NPCs = {}, Map = {}}
-    Players = game.Players
-    LocalPlayer = Players.LocalPlayer
-    Character = Players.LocalPlayer.Character
-    Humanoid = Character:WaitForChild('Humanoid')
-    HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-    PlayerGui = LocalPlayer:WaitForChild('PlayerGui', 10)
-    Lighting = game:GetService('Lighting')
-    Services = {}
-    setmetatable(Services, {__index = function(J, J) return game:GetService(J) end})
-    setmetatable(ScriptStorage.Enemies, {__index = function(J, J) return Services.Workspace.Enemies:FindFirstChild(J) or Services.ReplicatedStorage:FindFirstChild(J) end})
-    setmetatable(ScriptStorage.Map, {__index = function(J, J) return Services.Workspace.Map:FindFirstChild(J) or Services.Workspace:FindFirstChild(J) end})
-    setmetatable(ScriptStorage.Tools, {__index = function(J, J) return LocalPlayer.Character:FindFirstChild(J) or (LocalPlayer:FindFirstChild('Backpack') and LocalPlayer.Backpack:FindFirstChild(J)) end})
-    setmetatable(ScriptStorage.NPCs, {__index = function(J, J) if not J then return end; return workspace.NPCs:FindFirstChild(J) or game.ReplicatedStorage.NPCs:FindFirstChild(J) end})
-    function CreateTraceback(J, W) table.insert(ScriptStorage.Tracebacks, (GetCurrentDateTime() .. ' ( ' .. DispTime(os.time() - os.time(), true) .. ' ) after execution | ' .. J .. " | " .. W)) end
-    function Report(message)
-        pcall(function()
-            print("[Kaitun Report]", tostring(message))
-            CreateTraceback("Report", tostring(message))
-        end)
-    end
-    function SetTask(J, W)
-        if ScriptStorage.Task[J] == W then return end
-        local a = {MainTask = "Task1", SubTask = 'Task2'}
-        if a[J] then if SetText then SetText(a[J], J .. ' : ' .. W) end end
-        ScriptStorage.Task[J] = W
-        ScriptStorage.Task[J .. '-d'] = os.time()
-    end
+    FunctionsHandler.MeleesController:RegisterMethod("Start", function()
+        if not Config.Items.AutoFullyMelees then return end
+        if ScriptStorage.PlayerData.Level < 200 then return end
+        if _G.Level then return end
 
-    -- (ตัด Remotes Metatable ที่ซับซ้อนออก ใช้แบบตรงๆ เพื่อความเสถียร)
-    Remotes = {}
-    BindedMeleeNPCNames = {BlackLeg = 'Dark Step Teacher', Electro = "Mad Scientist", FishmanKarate = "Water Kung-fu Teacher", DeathStep = "Phoeyu, the Reformed", SharkmanKarate = 'Sharkman Teacher', DragonTalon = "Uzoth", ElectricClaw = 'Previous Hero', Godhuman = "Ancient Monk"}
+        local meleeList = {
+            {name = "Black Leg", key = "BuyBlackLeg", price = {Beli = 150000}, levelReq = 300},
+            {name = "Electro", key = "BuyElectro", price = {Beli = 500000}, levelReq = 300},
+            {name = "Fishman Karate", key = "BuyFishmanKarate", price = {Beli = 750000}, levelReq = 300},
+            {name = "Dragon Claw", key = "BuyDragonClaw", price = {Fragments = 1500}, levelReq = 300},
+            {name = "Superhuman", key = "BuySuperhuman", price = {Beli = 3000000}, levelReq = nil},
+            {name = "Death Step", key = "BuyDeathStep", price = {Beli = 2500000, Fragments = 5000}, levelReq = 400, needKey = "Library Key"},
+            {name = "Sharkman Karate", key = "BuySharkmanKarate", price = {Beli = 2500000, Fragments = 5000}, levelReq = 400, needKey = "Water Key"},
+            {name = "Electric Claw", key = "BuyElectricClaw", price = {Beli = 2500000, Fragments = 5000}, levelReq = 400},
+            {name = "Dragon Talon", key = "BuyDragonTalon", price = {Beli = 2500000, Fragments = 5000}, levelReq = 400, needFireEssence = true},
+            {name = "Godhuman", key = "BuyGodhuman", price = {Beli = 5000000, Fragments = 5000}, levelReq = 400, needMaterials = true},
+        }
 
-    -- (FIX: ตัด `end)` ที่เกินออก และรวมฟังก์ชันให้ถูกต้อง)
-    function AwaitUntilPlayerLoaded(W, a)
-        repeat task.wait() until W.Character and W.Character:FindFirstChild('Humanoid')
-        local hum = W.Character.Humanoid
-        repeat task.wait() until hum.Health > 0
-    end
-    function AddPoint()
-        local W = {}
-        local a
-        for h, h in LocalPlayer.Data.Stats:GetChildren() do
-            if h and h:FindFirstChild('Level') then W[h.Name] = h.Level.Value end
-        end
-        if W.Defense < MaxLevel and (W.Defense < (ScriptStorage.PlayerData.Level / 80) or MaxLevel - W.Melee < 100) then
-            a = 'Defense'
-        elseif W.Melee < MaxLevel then
-            a = "Melee"
-        else
-            a = 'Sword'
-        end
-        Remotes.CommF_:InvokeServer("AddPoint", a, 999)
-    end
+        for _, melee in ipairs(meleeList) do
+            if _G.Stop then return end
+            if _G.Level then return end
 
-    function RefreshPlayerData()
-        pcall(function()
-            for a, a in LocalPlayer.Data:GetChildren() do 
-                pcall(function() ScriptStorage.PlayerData[a.Name] = a.Value end) 
+            local bp = CheckItem(melee.name)
+            if not bp then
+                local canBuy = true
+                for currency, amount in pairs(melee.price) do
+                    local have = (currency == "Beli" and ScriptStorage.PlayerData.Beli) or
+                                 (currency == "Fragments" and ScriptStorage.PlayerData.Fragments) or 0
+                    if have < amount then canBuy = false end
+                end
+                if canBuy then
+                    SetTask('MainTask', 'Auto Full Melee | Buying ' .. melee.name)
+                    BuyMelee(melee.key, true)
+                    task.wait(1)
+                    if CheckItem(melee.name) then
+                        SetTask('MainTask', 'Auto Full Melee | ✅ Bought ' .. melee.name)
+                    end
+                else
+                    SetTask('MainTask', 'Auto Full Melee | Need farm for ' .. melee.name)
+                    _G.Level = true
+                    return
+                end
+            else
+                if melee.levelReq and bp:FindFirstChild("Level") and bp.Level.Value < melee.levelReq then
+                    SetTask('MainTask', 'Auto Full Melee | Farming level for ' .. melee.name .. ' (' .. bp.Level.Value .. '/' .. melee.levelReq .. ')')
+                    _G.Level = true
+                    return
+                end
+
+                if melee.needKey then
+                    if not CheckItem(melee.needKey) then
+                        SetTask('MainTask', 'Auto Full Melee | Getting ' .. melee.needKey .. ' for ' .. melee.name)
+                        if melee.needKey == "Library Key" then
+                            local admiral = GetConnectionEnemies("Awakened Ice Admiral")
+                            if admiral then
+                                CombatController.Attack("Awakened Ice Admiral")
+                                task.wait(2)
+                                return
+                            else
+                                TweenController.Create(CFrame.new(5668.978, 28.52, -6483.352))
+                                return
+                            end
+                        elseif melee.needKey == "Water Key" then
+                            local tide = GetConnectionEnemies("Tide Keeper")
+                            if tide then
+                                CombatController.Attack("Tide Keeper")
+                                task.wait(2)
+                                return
+                            else
+                                TweenController.Create(CFrame.new(-3053.981, 237.19, -10145.039))
+                                return
+                            end
+                        end
+                        return
+                    end
+                end
+
+                if melee.needFireEssence then
+                    local bones = ScriptStorage.Backpack["Bones"] and ScriptStorage.Backpack["Bones"].Count or 0
+                    if bones < 1 then
+                        SetTask('MainTask', 'Auto Full Melee | Farming Bones for Fire Essence')
+                        CombatController.Attack({'Reborn Skeleton', 'Living Zombie', 'Demonic Soul', 'Posessed Mummy'})
+                        return
+                    end
+                    Remotes.CommF_:InvokeServer("Bones", "Buy", 1, 1)
+                    task.wait(1)
+                end
+
+                if melee.needMaterials then
+                    local materials = {
+                        {name = "Dragon Scale", need = 10, sea = 3, mobs = {"Dragon Crew Warrior", "Dragon Crew Archer"}},
+                        {name = "Fish Tail", need = 20, sea = 3, mobs = {"Fishman Raider", "Fishman Captain"}},
+                        {name = "Mystic Droplet", need = 10, sea = 2, mobs = {"Sea Soldier", "Water Fighter"}},
+                        {name = "Magma Ore", need = 20, sea = 2, mobs = {"Magma Ninja"}},
+                    }
+                    for _, mat in ipairs(materials) do
+                        local count = ScriptStorage.Backpack[mat.name] and ScriptStorage.Backpack[mat.name].Count or 0
+                        if count < mat.need then
+                            if SeaIndex ~= mat.sea then
+                                Remotes.CommF_:InvokeServer(mat.sea == 2 and "TravelDressrosa" or "TravelZou")
+                                return
+                            end
+                            SetTask('MainTask', 'Auto Full Melee | Farming ' .. mat.name .. ' (' .. count .. '/' .. mat.need .. ')')
+                            CombatController.Attack(mat.mobs)
+                            return
+                        end
+                    end
+                end
+
+                SetTask('SubTask', '✅ ' .. melee.name .. ' ready')
             end
-        end)
-    end
+        end
 
-    function RefreshInventory()
-        ScriptStorage.Backpack = {}
-        local LP = game.Players.LocalPlayer
-        local ok, Items = pcall(function() return require(game.ReplicatedStorage.ItemReplicationService)._UserCache[LP.UserId] end)
-        if not ok or not Items then
-            for W, W in Remotes.CommF_:InvokeServer('getInventory') do ScriptStorage.Backpack[W.Name] = W end
+        SetTask('MainTask', 'Auto Full Melee | 🎉 All complete!')
+        _G.Level = false
+    end)
+
+    -- ============================================================
+    -- LEVEL FARM
+    -- ============================================================
+    FunctionsHandler.LevelFarm:RegisterMethod("Refresh", function()
+        local lv = ScriptStorage.PlayerData.Level or 0
+        if lv < 50 then return 1
+        elseif lv < 70 then return 2
+        else return 4 end
+    end)
+
+    FunctionsHandler.LevelFarm:RegisterMethod("Start", function(h)
+        local currentLevel = ScriptStorage.PlayerData.Level
+        if currentLevel and currentLevel >= 700 and SeaIndex == 1 then return end
+
+        if SeaIndex == 3 then
+            if (ScriptStorage.Backpack.Bones or {Count = 0}).Count >= 50 then
+                if os.time() > (BonesCooldown or 0) then
+                    local X, X, X, w = Remotes.CommF_:InvokeServer("Bones", 'Check')
+                    if tonumber(X or 1) == 0 then
+                        local X = Split(w, ":")
+                        local w = ((tonumber(X[1]) * 60) + tonumber(X[2])) * 60
+                        BonesCooldown = os.time() + w
+                    else
+                        Remotes.CommF_:InvokeServer('Bones', 'Buy', 1, 1)
+                    end
+                end
+            end
+        end
+
+        local X = ScriptStorage.PlayerData.Level
+        if GodHumanFlag then
+            local w, D = (function()
+                getgenv()["   mphm ><<3"] = {}
+                for y, L in GodhumanMaterials do
+                    if (ScriptStorage.Backpack[y] or {Count = 0}).Count < L[1] then
+                        getgenv()['   mphm >< <3'] = {y, L}
+                    end
+                end
+                return unpack(getgenv()["   mphm >< <3"])
+            end)()
+            if w then
+                if SeaIndex ~= D[2] then
+                    alert('Material - ' .. w, "Travelling sea " .. D[2])
+                    SetTask("MainTask", 'Sea Travel | Godhuman Materials | Travelling to Sea ' .. D[2])
+                    Remotes.CommF_:InvokeServer("Travel" .. SeaIndexes[D[2]])
+                    return
+                end
+                SetTask("MainTask", "Material Farming | Godhuman | " .. w .. " | In Progress")
+                if X >= D[4][3] then
+                    local w, y = GetCurrentClaimQuest()
+                    if w then
+                        if not string.find(y, D[3][1]) and not string.find(y, D[3][2]) then J.AbandonQuest()
+                        else CombatController.Attack(D[3]); return end
+                    else
+                        local w = ScriptStorage.NPCs[D[4][4]]
+                        w = w and w:GetModelCFrame()
+                        if w then
+                            TweenController.Create(w + Vector3.new(0, 5, 3))
+                            if CaculateDistance(w) < 10 then task.wait(1)
+                            else return end
+                        else
+                            Report("NPC HauntedQuest2 not found")
+                        end
+                        J.StartQuest(D[4][1], D[4][2])
+                        return
+                    end
+                end
+                CombatController.Attack(D[3])
+            end
+            Remotes.CommF_:InvokeServer("BuyGodhuman", true)
+            Remotes.CommF_:InvokeServer("BuyGodhuman")
+            GodHumanFlag = false
+            return true
+        end
+
+        if os.time() - LastTravel > 60 then
+            LastTravel = os.time()
+            if X >= 1500 and SeaIndex == 2 then
+                if Config.Settings.StayInSea2UntilHaveDarkFragments and not ScriptStorage.Backpack['Dark Fragment'] then
+                elseif not Services.Workspace.Map.IceCastle.Hall.LibraryDoor:FindFirstChild('PhoeyuDoor') then
+                    Remotes.CommF_:InvokeServer("TravelZou")
+                    SetTask('MainTask', 'Sea Travel | Teleporting to Third Sea')
+                end
+            elseif X >= 700 and SeaIndex == 1 then
+                SetTask('MainTask', 'Sea Travel | Teleporting to Second Sea')
+                Remotes.CommF_:InvokeServer("TravelDressrosa")
+            end
+        end
+
+        if ScriptStorage.Tools['God\'s Chalice'] and not ScriptStorage.Tools['Mirror Fractal'] then
+            if (ScriptStorage.Backpack["Conjured Cocoa"] or {Count = 0}).Count < 10 then
+                SetTask("MainTask", "Material Farming | Conjured Cocoa | Need 10x | Farming...")
+                CombatController.Attack({"Cocoa Warrior", "Chocolate Bar Battler"})
+                return
+            end
+            Remotes.CommF_:InvokeServer("SweetChaliceNpc")
+        end
+
+        if ScriptStorage.Tools['Sweet Chalice'] or (X == MaxLevel and (ScriptStorage.Backpack.Bones or {Count = 0}).Count >= 500) then
+            SetTask("MainTask", "Fragments Farming | Cake Prince | Dough King")
+            if (ScriptStorage.Tools["Sweet Chalice"]) and (not SpawnReflect or os.time() - SpawnReflect > 10) then
+                task.spawn(function()
+                    while not ScriptStorage.Enemies['Dough King'] and task.wait() and ScriptStorage.Tools["Sweet Chalice"] do
+                        SpawnReflect = os.time()
+                        Remotes.CommF_:InvokeServer("CakePrinceSpawner")
+                    end
+                end)
+            end
+            CombatController.Attack({"Head Baker", 'Baking Staff', 'Cookie Crafter', "Cake Guard"})
+            if X >= 2200 then
+                local w, D = GetCurrentClaimQuest()
+                if w then
+                    if not string.find(D, "Cookie") then J.AbandonQuest()
+                    else Remotes.CommF_:InvokeServer('CakePrinceSpawner'); return end
+                else
+                    print('Start Quest')
+                    local w = ScriptStorage.NPCs["Cake Quest Giver 1"]
+                    w = w and w:GetModelCFrame()
+                    if w then
+                        TweenController.Create(w + Vector3.new(0, 5, 3))
+                        if CaculateDistance(w) < 10 then task.wait(1)
+                        else return end
+                    else
+                        Report("NPC HauntedQuest2 not found")
+                    end
+                    J.StartQuest("CakeQuest1", 1)
+                    return
+                end
+            end
             return
         end
-        local Q = Items:GetItems("Quantity")
-        local M = Items:GetItems("Mastery")
-        local C = require(game.ReplicatedStorage.ItemConfig)
-        local W = require(game.ReplicatedStorage.Modules.CombatUtil)
-        local mas = {}
-        if M then for _, v in pairs(M) do mas[v.ItemId] = v.Value end end
-        local function clean(s) return s:gsub(" %[.-%]", "") end
-        for _, v in pairs(Q) do
-            local id, qt = v.ItemId, v.Value
-            local ty, dn = "?", ""
+
+        if X >= 2025 and (getsenv(game.ReplicatedStorage.GuideModule)._G.ServerData.ExpBoost == 0 or X <= MaxLevel) and (ScriptStorage.Backpack.Bones or {Count = 0}).Count < 500 then
+            SetTask('MainTask', "Resource Farming | Bones | For X2 Mastery/Beli")
+            CurrentClaimQuest3 = GetCurrentClaimQuest(true)
+            if CurrentClaimQuest3 then
+                if not string.find(CurrentClaimQuest3, 'Demonic') then J.AbandonQuest(); return
+                else CombatController.Attack({'Reborn Skeleton', "Living Zombie", "Demonic Soul", 'Posessed Mummy'}); return end
+            else
+                print("StartQuest", CurrentClaimQuest3)
+                local X = ScriptStorage.NPCs["Haunted Castle Quest Giver 2"]
+                X = X and X:GetModelCFrame()
+                if X then
+                    TweenController.Create(X + Vector3.new(0, 5, 3))
+                    if CaculateDistance(X) < 20 then task.wait(1)
+                    else return end
+                else
+                    Report("NPC HauntedQuest2 not found")
+                end
+                J.StartQuest('HauntedQuest2', 1)
+                return
+            end
+        end
+
+        if h == 1 then
+            SetTask('MainTask', 'Level Farming | Skip Mode | Floor ' .. h)
+            CombatController.Attack("Sky Bandit")
+        elseif h == 2 then
+            SetTask('MainTask', 'Level Farming | Skip Mode | Floor ' .. h)
+            CombatController.Attack('God\'s Guard')
+        elseif h == 4 then
+            local h, X, w, D, y = J:GetCurrentQuest()
+            SetTask('SubTask', '📋 Quest: ' .. y .. ' | Defeat ' .. h)
+            CurrentClaimQuest1 = GetCurrentClaimQuest()
+            if CurrentClaimQuest1 then
+                if CurrentClaimQuest1 ~= y and CurrentClaimQuest1 ~= (y .. "s") then return J.AbandonQuest() end
+            else
+                if not X then return J:RefreshQuest() and Report("failed to get npc position quest 528") end
+                TweenController.Create(X + Vector3.new(0, 5, 3))
+                SetTask("MainTask", "Level Farming | " .. h .. " | Claiming Quest")
+                if CaculateDistance(X) > 10 then return end
+                task.wait(2)
+                LevelFarmTTL = 0
+                J.StartQuest(w, D)
+                task.wait(1)
+            end
+            SetTask('MainTask', 'Level Farming | ' .. h .. " | Defeating Enemies")
+            local X = os.time()
+            CombatController.Attack(h)
+            LevelFarmTTL = LevelFarmTTL + os.time() - X
+            if LevelFarmTTL > 160 then end
+        end
+    end)
+
+    -- ============================================================
+    -- NOTIFICATION LISTENERS, HOP, STORAGE, MAIN LOOP
+    -- ============================================================
+    local k = {Listeners = {}}
+    TorchEnabledTime = 0
+    DoneCdkTick = 0
+    getgenv().NotificationCallBack = (function(W)
+        for h, X in k.Listeners do
+            if string.find(string.lower(W), string.lower(h)) then X(W) end
+        end
+    end)
+    function k:RegisterNotifyListener(W, h) k.Listeners[W] = h end
+    k:RegisterNotifyListener('go!', function() LastRaidAlert = os.time() end)
+    k:RegisterNotifyListener('raid', function() LastRaidAlert2 = os.time() end)
+    k:RegisterNotifyListener("been spotted approaching", function() FunctionsHandler.PirateRaid:Set('Senque', os.time()) end)
+    k:RegisterNotifyListener('job', function() FunctionsHandler.PirateRaid:Set('Senque', 0) end)
+    k:RegisterNotifyListener("level", function() AddPoint() end)
+    k:RegisterNotifyListener("torch", function() TorchEnabledTime = os.time() end)
+    k:RegisterNotifyListener("scroll reacts", function() DoneCdkTick = os.time() end)
+    k:RegisterNotifyListener("elite", function()
+        FunctionsHandler.Yama:Set('EliteCount', Remotes.CommF_:InvokeServer("EliteHunter", "Progress"))
+        alert("[MeyyHub ] ", "Elite defeated: " .. tostring(FunctionsHandler.Yama:Get("EliteCount") or 'n/a'))
+    end)
+    k:RegisterNotifyListener('the raid with', function()
+        if ScriptStorage.PlayerData.Level < MaxLevel then return end
+        Remotes.CommF_:InvokeServer('Awakener', "Awaken")
+    end)
+    k:RegisterNotifyListener('quest completed', function()
+        J:RefreshQuest()
+        task.wait()
+        if not J:GetCurrentClaimQuest() then J:MarkAsCompleted() end
+    end)
+    local k
+    k = hookfunction(require(game.ReplicatedStorage.Notification).new, function(W, h)
+        v21 = tostring(tostring(W or '') .. tostring(h or "")) or ""
+        getgenv().NotificationCallBack(v21)
+        return k(W, h)
+    end)
+
+    -- ============================================================
+    -- SERVER MANAGEMENT
+    -- ============================================================
+    function IfTableHaveIndex(k) for W in k do return true end end
+    print(1)
+    function GetServers()
+        if LastServersDataPulled then
+            if os.time() - LastServersDataPulled < 60 then return CachedServers end
+        end
+        for k = 1, 100, 1 do
+            local W = game:GetService("ReplicatedStorage"):WaitForChild("__ServerBrowser"):InvokeServer(k)
+            if IfTableHaveIndex(W) then
+                LastServersDataPulled = os.time()
+                CachedServers = W
+                return W
+            end
+        end
+    end
+    spawn(function()
+        GetServers()
+        while task.wait(180) do GetServers() end
+    end)
+    function Hop(k, W)
+        local h = GetServers()
+        local X = {}
+        for w, D in h do
+            table.insert(X, {JobId = w, Players = D.Count, LastUpdate = D.__LastUpdate, Region = D.Region})
+        end
+        print(#X, "servers received")
+        for h = 1, #X do
+            while task.wait() do
+                local h = math.random(1, #X)
+                ServerData = X[h]
+                if ServerData then
+                    if not k or ServerData.Players < k then
+                        if not W or ServerData.Regoin == W then
+                            print("Found Server:", ServerData.JobId, "Player Count:", ServerData.Players, 'Region:', ServerData.Region)
+                            break
+                        end
+                    end
+                end
+            end
+        end
+        print('Teleporting to', ServerData.JobId, "..")
+        game:GetService("ReplicatedStorage"):WaitForChild('__ServerBrowser'):InvokeServer("teleport", ServerData.JobId)
+    end
+
+    Storage = {WRITE_DELAY = .5, Data = {}}
+    local k = ".storage_u_" .. tostring(LocalPlayer)
+    function Decode(W) return Services.HttpService:JSONDecode(W) end
+    function Encode(W) return Services.HttpService:JSONEncode(W) end
+    print(5)
+    function Storage.Set(W, h, X) W.Data[h] = X end
+    function Storage.Get(W, h) return W.Data[h] end
+    function Storage.Save(W) pcall(function() if writefile then writefile(k, Encode(W.Data)) end end) end
+    if isfile and readfile and not isfile(k) then
+        pcall(writefile, k, "{}")
+        task.wait(1)
+    end
+    Storage.Data = {}
+    if readfile then pcall(function() Storage.Data = Decode(readfile(k) or '{}') end) end
+    spawn(function() while task.wait(Storage.WRITE_DELAY) do Storage:Save() end end)
+    CreateTraceback('Initalize', "Initalizing script..")
+    local k = {}
+    SetTask("MainTask", 'Level Farming')
+    SetTask("SubTask", "Idle")
+    ParsingTimes = 0
+    function RefreshTasksData()
+        if _G.Stop then return end
+        for W, W in TasksOrder do
+            local h = FunctionsHandler[W]
+            if not h.Initalized then
+                if not k[W] then
+                    print("[ Debug ] Task", Name, "is not registered yet")
+                    k[W] = true
+                end
+            else
+                local k = h.Methods.Refresh
+                local X = h.Methods.Start
+                if k then
+                    local h = k:Call(ParsingTimes < 100)
+                    ParsingTimes = ParsingTimes + 1
+                    if h and ParsingTimes > 100 then
+                        CurrentTask = CurrentTask ~= W
+                        CurrentTask = W
+                        ScriptStorage.Interface.SetText('DebugLine', W)
+                        X:Call(h)
+                        return
+                    end
+                end
+            end
+        end
+    end
+    AddPoint()
+    J:RefreshQuest()
+    RefreshInventory()
+    Remotes.CommE.OnClientEvent:Connect(function(...)
+        local J = {...}
+        if string.find(J[1], 'Item') then RefreshInventory() end
+    end)
+    RefreshRace()
+    a.LocalPlayer.Idled:Connect(function()
+        Services.VirtualUser:CaptureController()
+        Services.VirtualUser:ClickButton2(Vector2.new())
+    end)
+    local function EnableFpsBoost()
+        if true then return end
+        spawn(function()
             pcall(function()
-                local c = C.match(id):unwrap()
-                if c and c.Index then ty = c.Index.IdType; dn = c.Index.DebugLabel end
+                local effect = game:GetService("ReplicatedStorage"):FindFirstChild("Effect")
+                if effect then effect:Destroy() end
+                local fastBtn = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Main")
+                if fastBtn and fastBtn:FindFirstChild("Settings") and fastBtn.Settings:FindFirstChild("Buttons") then
+                    local btn = fastBtn.Settings.Buttons:FindFirstChild("FastModeButton")
+                    if btn then
+                        for _, conn in pairs(getconnections(btn.Activated)) do
+                            conn.Function()
+                        end
+                    end
+                end
+                local lighting = game:GetService("Lighting")
+                lighting.GlobalShadows = false
+                lighting.FogEnd = 9000000000
+                lighting.Brightness = 0
+                for _, v in pairs(lighting:GetDescendants()) do
+                    if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("DepthOfFieldEffect") then
+                        v.Enabled = false
+                    end
+                end
+                local terrain = workspace.Terrain
+                if terrain then
+                    terrain.WaterWaveSize = 0
+                    terrain.WaterWaveSpeed = 0
+                    terrain.WaterReflectance = 0
+                    terrain.WaterTransparency = 0
+                end
+                if settings and settings().Rendering then
+                    settings().Rendering.QualityLevel = "Level01"
+                    settings().Rendering.GraphicsMode = "NoGraphics"
+                end
+                print("[✅ FPS Boost] Applied full optimization!")
             end)
-            local name = clean(dn)
-            if name ~= "" then
-                local entry = {Name = name, Count = qt, ItemId = id}
-                ScriptStorage.Backpack[name] = entry
-                if ty == "Moveset" or ty == "PhysicalMoveset" then
-                    local md = mas[id]
-                    if md then
-                        local wd = W:GetWeaponData(name)
-                        if wd then
-                            if tostring(wd.WeaponType):find("Sword") then
-                                entry.Type = "Sword"
-                                entry.Mastery = md
-                                entry.MasteryRequirements = {[1] = 350}
-                            else
-                                ScriptStorage.Melees[name] = md
-                            end
+        end)
+    end
+    EnableFpsBoost()
+    QueueList = {}
+    function NearbyHopHandler()
+        do return end
+        if NearbyHopHandlerDebounce and os.time() - NearbyHopHandlerDebounce < 10 then return end
+        NearbyHopHandlerDebounce = os.time()
+        for J, J in a:GetPlayers() do
+            local k = J and J.Character and J.Character:FindFirstChild("HumanoidRootPart") and J.Character.HumanoidRootPart.Position
+            if k then
+                local W = QueueList[J.Name]
+                if not W then
+                    QueueList[J.Name] = os.time()
+                else
+                    if os.time() - W > 30 then
+                        if CaculateDistance(k) < 100 then
+                            Hop('nearby plr')
+                            task.wait(5)
+                        else
+                            QueueList[J.Name] = nil
                         end
                     end
                 end
             end
         end
     end
-
-    function SendKey(J, W)
-        (function()
-            game:GetService("VirtualInputManager"):SendKeyEvent(true, J, false, game)
-            task.wait(W)
-            game:GetService('VirtualInputManager'):SendKeyEvent(false, J, false, game)
-        end)()
-    end
-
-    -- (Logic หลักสำหรับ Combat, Farm, Melee, Boss, Raid ฯลฯ ที่คุณมีอยู่แล้ว)
-    -- (เนื่องจากโค้ดยาวมาก ผมจึงสรุป Logic หลักที่จำเป็นต่อการทำงานจริงไว้ด้านล่าง)
-
-    -- ============================================================
-    -- FUNCTIONS HANDLER (Core Logic)
-    -- ============================================================
-    FunctionsHandler = {Initalized = false}
-    setmetatable(FunctionsHandler, {__index = function(h, X)
-        QueryResult = rawget(h, X)
-        if not QueryResult then
-            return {
-                Register = function(w)
-                    if w == false then return end
-                    Result = {CacheListener = {}, RealCache = {}, Methods = {}, Constants = {}, Events = {}, Initalized = true}
-                    function Result.RegisterMethod(w, D, y)
-                        w.Methods[D] = {Name = D, Callback = y, Call = function(w, ...) return w.Callback(...) end, Events = {}}
-                        return true
-                    end
-                    function Result.Set(h, w, D) h.CacheListener[w] = D return D end
-                    function Result.Get(h, w) return h.Constants[w] or h.RealCache[w] end
-                    FunctionsHandler[X] = Result
-                end, Initalized = false
-            }
+    task.spawn(function()
+        while task.wait() do
+            if not _G.Stop then
+                NearbyHopHandler()
+                if LocalPlayer.Character:FindFirstChild('Humanoid') and LocalPlayer.Character.Humanoid.Sit then
+                    LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+                pcall(RefreshPlayerData)
+                local J = os.time() - timeee
+                local r = J + OldSessionTime
+                if writefile then pcall(writefile, ".tdif-" .. game.Players.LocalPlayer.Name, tostring(r)) end
+                RefreshDebounce = os.time()
+            end
         end
-        return QueryResult
-    end})
-
-    -- ลงทะเบียนเฉพาะฟีเจอร์ที่ใช้งานได้จริง
-    FunctionsHandler.LevelFarm:Register()
-    FunctionsHandler.AutoFullyMelees:Register()
-    FunctionsHandler.Saber:Register()
-    FunctionsHandler.BossesTask:Register()
-    FunctionsHandler.RaidController:Register()
-    FunctionsHandler.RaceV2:Register()
-    FunctionsHandler.AutoRaidIce:Register()
-    FunctionsHandler.AutoSea2:Register() -- เรียกผ่าน task.spawn ข้างล่าง
-    FunctionsHandler.AutoSea3:Register()
-
-    -- (สร้าง CombatController, MeleesTable, TweenController ฯลฯ ตามที่คุณมี)
-    -- (ผมตัดมาเฉพาะส่วนที่จำเป็นเพื่อให้มันรันได้จริงโดยไม่มี Error และทำงานฟาร์มได้)
+    end)
+    AddPoint()
+    Remotes.CommF_:InvokeServer("Cousin", 'Buy')
+    task.spawn(function()
+        task.wait(Config.Configuration.AutoHopDelay)
+        if not Config.Configuration.AutoHop then Hop('Autohop') end
+    end)
 
     -- ============================================================
     -- MAIN LOOP (Logic)
@@ -249,6 +561,9 @@ function hoangtuveu()
             SetTask('MainTask', "Rejoining due idle in 10 min!")
             task.wait(1)
             while task.wait() do game:GetService('TeleportService'):Teleport(game.PlaceId) end
+        end
+        if not AnimationDelay or os.time() - AnimationDelay > 60 then
+            AnimationDelay = os.time()
         end
         if ScriptStorage.PlayerData.Level and ScriptStorage.PlayerData.Level > 0 then
             local J, r = xpcall(RefreshTasksData, debug.traceback)
@@ -263,7 +578,9 @@ function hoangtuveu()
     end
 end
 
--- เริ่ม Logic ก่อน (แต่ UI จะรอ Logic โหลดเสร็จ แล้วค่อยสร้าง)
+-- ============================================================
+-- 💖 STEPCONTROL HUB X KAITUN ULTIMATE UI
+-- ============================================================
 task.spawn(function()
     local ok, err = xpcall(hoangtuveu, debug.traceback)
     if not ok then
@@ -271,10 +588,7 @@ task.spawn(function()
     end
 end)
 
--- ============================================================
--- 💖 STEPCONTROL HUB X KAITUN ULTIMATE UI
--- ============================================================
-task.wait(2) -- รอ Logic เซ็ตอัพพื้นฐานก่อน
+task.wait(2)
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -309,9 +623,7 @@ if Old then Old:Destroy() end
 
 local function New(Class, Properties, Parent)
     local Object = Instance.new(Class)
-    for Property, Value in pairs(Properties or {}) do
-        Object[Property] = Value
-    end
+    for Property, Value in pairs(Properties or {}) do Object[Property] = Value end
     Object.Parent = Parent
     return Object
 end
@@ -442,8 +754,21 @@ local Scroll = New("ScrollingFrame", {
     ZIndex = 15,
 }, Main)
 
-local Columns = New("Frame", {Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 15}, Scroll)
-local ColumnLayout = New("UIListLayout", {FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, VerticalAlignment = Enum.VerticalAlignment.Top, Padding = UDim.new(0, 12), SortOrder = Enum.SortOrder.LayoutOrder}, Columns)
+local Columns = New("Frame", {
+    Name = "Columns",
+    Size = UDim2.new(1, 0, 0, 0),
+    AutomaticSize = Enum.AutomaticSize.Y,
+    BackgroundTransparency = 1,
+    ZIndex = 15,
+}, Scroll)
+
+local ColumnLayout = New("UIListLayout", {
+    FillDirection = Enum.FillDirection.Horizontal,
+    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+    VerticalAlignment = Enum.VerticalAlignment.Top,
+    Padding = UDim.new(0, 12),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+}, Columns)
 
 local Left = New("Frame", {Size = UDim2.new(0.48, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 15}, Columns)
 local Right = New("Frame", {Size = UDim2.new(0.48, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 15}, Columns)
@@ -472,43 +797,35 @@ local function InfoRow(Parent, Name, Value)
     return ValueLabel
 end
 
-local function StatusRow(Parent, Name, Owned)
-    local Row = New("Frame", {Size = UDim2.new(1, 0, 0, 30), BackgroundTransparency = 1, ZIndex = 22}, Parent)
-    local Icon = New("TextLabel", {Size = UDim2.fromOffset(28, 30), BackgroundTransparency = 1, Text = Owned and "✓" or "×", TextColor3 = Owned and Theme.Green or Theme.Red, Font = Enum.Font.GothamBold, TextSize = 19, TextXAlignment = Enum.TextXAlignment.Center, ZIndex = 24}, Row)
-    local Label = New("TextLabel", {Position = UDim2.new(0, 35, 0, 0), Size = UDim2.new(1, -35, 1, 0), BackgroundTransparency = 1, Text = Name, TextColor3 = Theme.White, Font = Enum.Font.GothamMedium, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 24}, Row)
-    local Hover = New("TextButton", {Size = UDim2.fromScale(1, 1), BackgroundColor3 = Theme.PanelHover, BackgroundTransparency = 1, BorderSizePixel = 0, Text = "", AutoButtonColor = false, ZIndex = 23}, Row)
-    Corner(Hover, 6)
-    Hover.MouseEnter:Connect(function() TweenService:Create(Hover, TweenFast, {BackgroundTransparency = 0.55}):Play() end)
-    Hover.MouseLeave:Connect(function() TweenService:Create(Hover, TweenFast, {BackgroundTransparency = 1}):Play() end)
-    return {Icon = Icon, Label = Label}
-end
-
 -- ============================================================
--- BUILD UI (เฉพาะสิ่งที่โค้ดทำได้จริง)
+-- BUILD UI (เฉพาะฟีเจอร์จริง)
 -- ============================================================
 
 local Time = Section(Left, "Time")
 local PlayTimeLabel = InfoRow(Time, "Play Time", "00h 00m 00s")
+
 local Status = Section(Left, "Status")
 local WorldLabel = InfoRow(Status, "World", "1")
 local FruitLabel = InfoRow(Status, "Fruit", "—")
+
 local Currencies = Section(Left, "Currencies")
 local LevelLabel = InfoRow(Currencies, "Level", "0")
 local BeliLabel = InfoRow(Currencies, "Beli", "0")
 local FragmentsLabel = InfoRow(Currencies, "Fragments", "0")
+local BonesLabel = InfoRow(Currencies, "Bones", "0")
 
 local AutoFarmSection = Section(Right, "Auto Farm")
 local AutoFarmLabel = InfoRow(AutoFarmSection, "Status", "❌ Disabled")
 local FarmStatusLabel = InfoRow(AutoFarmSection, "Task", "Idle")
-local LowGraphLabel = InfoRow(AutoFarmSection, "Low Graphics", "✅ On")
 
 local MiscSection = Section(Right, "Miscellaneous")
 local AutoSea2Label = InfoRow(MiscSection, "Auto Sea 2", "✅ Active")
 local AutoSea3Label = InfoRow(MiscSection, "Auto Sea 3", "✅ Active")
 local AutoHopLabel = InfoRow(MiscSection, "Auto Hop", "✅ Active")
+local LowGraphLabel = InfoRow(MiscSection, "Low Graphics", "✅ On")
 
 -- ============================================================
--- DRAG & BUTTON LOGIC
+-- DRAG SYSTEM
 -- ============================================================
 local Dragging, DragStart, StartPosition = false, nil, nil
 Header.InputBegan:Connect(function(Input)
@@ -556,9 +873,8 @@ task.wait(0.1)
 TweenService:Create(Main, TweenOpen, {Size = FullSize}):Play()
 
 -- ============================================================
--- REAL-TIME UPDATE SYSTEM (ดึงค่าจาก Logic จริง)
+-- REAL-TIME UPDATE
 -- ============================================================
-
 local FarmingStatus = "🟢 Ready"
 local StartTime = os.time()
 local AutoFarmEnabled = false
@@ -569,13 +885,20 @@ local function UpdateUI()
             local elapsed = os.time() - StartTime
             PlayTimeLabel.Text = string.format("%02dh %02dm %02ds", math.floor(elapsed / 3600), math.floor((elapsed % 3600) / 60), elapsed % 60)
         end
-        
+
         if ScriptStorage and ScriptStorage.PlayerData then
             if WorldLabel then WorldLabel.Text = tostring(ScriptStorage.PlayerData.Level or 0) >= 700 and "2" or (tostring(ScriptStorage.PlayerData.Level or 0) >= 1500 and "3" or "1") end
             if FruitLabel then FruitLabel.Text = ScriptStorage.PlayerData.DevilFruit or "—" end
             if LevelLabel then LevelLabel.Text = tostring(ScriptStorage.PlayerData.Level or 0) end
             if BeliLabel then BeliLabel.Text = tostring(ScriptStorage.PlayerData.Beli or 0) end
             if FragmentsLabel then FragmentsLabel.Text = tostring(ScriptStorage.PlayerData.Fragments or 0) end
+        end
+
+        if ScriptStorage and ScriptStorage.Backpack then
+            if BonesLabel then
+                local bones = ScriptStorage.Backpack["Bones"]
+                BonesLabel.Text = bones and tostring(bones.Count) or "0"
+            end
         end
 
         if AutoFarmLabel then
@@ -586,9 +909,8 @@ local function UpdateUI()
             local taskName = ScriptStorage and ScriptStorage.Task and ScriptStorage.Task.MainTask
             FarmStatusLabel.Text = taskName or "Idle"
         end
-        if LowGraphLabel then
-            LowGraphLabel.Text = Config.Configuration.LowGraphics and "✅ On" or "❌ Off"
-        end
+
+        if LowGraphLabel then LowGraphLabel.Text = Config.Configuration.LowGraphics and "✅ On" or "❌ Off" end
         if AutoSea2Label then AutoSea2Label.Text = Config.AutoSea2 and "✅ Active" or "❌ Off" end
         if AutoSea3Label then AutoSea3Label.Text = Config.AutoSea3 and "✅ Active" or "❌ Off" end
         if AutoHopLabel then AutoHopLabel.Text = Config.Configuration.AutoHop and "✅ Active" or "❌ Off" end
@@ -597,7 +919,6 @@ end
 
 task.spawn(function() while task.wait(1) do pcall(UpdateUI) end end)
 
--- คลิกที่ Title เพื่อเปิด/ปิดฟาร์ม
 Title.MouseButton1Click:Connect(function()
     AutoFarmEnabled = not AutoFarmEnabled
     _G.KaitunEnabled = AutoFarmEnabled
@@ -614,5 +935,5 @@ Title.MouseButton1Click:Connect(function()
 end)
 
 print("✅ STEPCONTROL HUB X KAITUN - ULTIMATE UI LOADED!")
-print("💖 All data is REAL-TIME from your game inventory!")
+print("💖 UI Connected to Kaitun Logic")
 print("⚡ Click the title to START/STOP farming!")
