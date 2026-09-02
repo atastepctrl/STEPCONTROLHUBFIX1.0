@@ -340,14 +340,18 @@ end
             end
         end
     end
-    SetText('MainTextLabel', 'Refreshing Player Data')
+    -- SetText('MainTextLabel', 'Refreshing Player Data')  -- ❌ ลบหรือ Comment
+    print('Refreshing Player Data')  -- ✅ ใช้ print แทน
     MeleeCheck(LocalPlayer.Character:FindFirstChildOfClass('Tool'))
     RefreshPlayerData()
     function RegisterLocalPlayerEventsConnection()
         task.spawn(function()
             task.wait(6)
             if LocalPlayer.Character:FindFirstChild('HasBuso') then return end
-            Remotes.CommF_:InvokeServer("Buso")
+            -- Remotes.CommF_:InvokeServer("Buso")  -- ❌ ถ้า Remotes ยังไม่มี
+            game.ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")  -- ✅ ใช้แบบเต็ม
+        end)
+    end
         end)
         for W, W in ScriptStorage.Connections.LocalPlayer do pcall(function() W:Disconnect() end) end
         AwaitUntilPlayerLoaded(LocalPlayer)
