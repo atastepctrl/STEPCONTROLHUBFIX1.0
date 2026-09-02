@@ -1,6 +1,6 @@
 -- ============================================================
 -- ⚡ STEPCONTROL HUB X KAITUN (FULL SOURCE)
--- VERSION: 4.0.0 | PINK THEME | ALL FEATURES
+-- VERSION: 4.0.0 | PINK THEME | AUTO START
 -- ============================================================
 
 Config = {
@@ -28,11 +28,15 @@ Config = {
     AutoRaidIce_TargetFragments = 5000
 }
 
--- FIX: ฟังก์ชัน Dummy (กัน Error nil)
+-- ตั้งค่าให้เริ่มฟาร์มอัตโนมัติทันที (ไม่ต้องกดปุ่ม)
+_G.KaitunEnabled = true
+_G.Stop = false
+
+-- ฟังก์ชัน Dummy (กัน Error nil)
 function alert(...) print("[Alert]", ...) end
 function SetText(...) end 
 
--- FIX: สร้าง Storage ก่อน (กัน Error nil)
+-- สร้าง Storage ไว้ก่อน (กัน Error nil)
 Storage = {
     Data = {},
     Get = function(self, key) return self.Data[key] end,
@@ -1790,7 +1794,7 @@ local Subtitle = New("TextLabel", {
     Position = UDim2.new(0, 22, 0, 36),
     Size = UDim2.new(0.7, 0, 0, 18),
     BackgroundTransparency = 1,
-    Text = "⚡ CLICK TITLE TO TOGGLE FARM",
+    Text = "⚡ AUTO FARM RUNNING",
     TextColor3 = Theme.PinkLight,
     Font = Enum.Font.GothamMedium,
     TextSize = 9,
@@ -1893,7 +1897,7 @@ local FragmentsLabel = InfoRow(Currencies, "Fragments", "0")
 local BonesLabel = InfoRow(Currencies, "Bones", "0")
 
 local AutoFarmSection = Section(Right, "Auto Farm")
-local AutoFarmLabel = InfoRow(AutoFarmSection, "Status", "❌ Disabled")
+local AutoFarmLabel = InfoRow(AutoFarmSection, "Status", "✅ Running")
 local FarmStatusLabel = InfoRow(AutoFarmSection, "Task", "Idle")
 
 local MiscSection = Section(Right, "Miscellaneous")
@@ -1947,9 +1951,9 @@ Main.Size = UDim2.fromScale(0, 0)
 task.wait(0.1)
 TweenService:Create(Main, TweenOpen, {Size = FullSize}):Play()
 
-local FarmingStatus = "🟢 Ready"
+local FarmingStatus = "🟢 Running"
 local StartTime = os.time()
-local AutoFarmEnabled = false
+local AutoFarmEnabled = true
 
 local function UpdateUI()
     pcall(function()
@@ -1971,7 +1975,7 @@ local function UpdateUI()
             end
         end
         if AutoFarmLabel then
-            AutoFarmLabel.Text = AutoFarmEnabled and "✅ Enabled" or "❌ Disabled"
+            AutoFarmLabel.Text = AutoFarmEnabled and "✅ Running" or "❌ Disabled"
             AutoFarmLabel.TextColor3 = AutoFarmEnabled and Theme.Green or Theme.Red
         end
         if FarmStatusLabel then
@@ -1987,21 +1991,6 @@ end
 
 task.spawn(function() while task.wait(1) do pcall(UpdateUI) end end)
 
-Title.MouseButton1Click:Connect(function()
-    AutoFarmEnabled = not AutoFarmEnabled
-    _G.KaitunEnabled = AutoFarmEnabled
-    
-    if AutoFarmEnabled then
-        Title.Text = "⚡ FARMING ACTIVE"
-        Title.TextColor3 = Theme.Green
-        FarmingStatus = "🟢 Farming..."
-    else
-        Title.Text = "STEPCONTROL HUB X KAITUN"
-        Title.TextColor3 = Theme.White
-        FarmingStatus = "🟡 Stopped"
-    end
-end)
-
 print("✅ STEPCONTROL HUB X KAITUN - ULTIMATE UI LOADED!")
 print("💖 UI Connected to Kaitun Logic")
-print("⚡ Click the title to START/STOP farming!")
+print("⚡ Auto Farm is running automatically!")
